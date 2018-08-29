@@ -7192,3 +7192,66 @@ ingreso:=(Prompter prompt:'ingrese algo' default:'').
                                       cont:=0.
 1 to: (ingreso size) do:[:i| ((ingreso at:i) isVowel) ifTrue:[ cont:= cont + 1 ].].
 MessageBox message:'la cantidad de vocales de ', ingreso asString , 'son ', cont asString.!
+
+"evaluate" 
+|ingreso ingreso2 cont|
+
+ingreso:= (Prompter prompt:'ingrese algo' default:'') .
+ingreso2:=(Prompter prompt:'ingrese algo mas' default:'') .
+   cont:=0.
+1 to: ( ingreso size ) do:[:i| (i=' ') ifTrue:[ cont:= cont +1]. ].!
+
+"evaluate"  
+|ingreso ingreso2 cont|
+
+ingreso:= (Prompter prompt:'ingrese algo' default:'') .
+ingreso2:=(Prompter prompt:'ingrese algo mas' default:'') .
+   cont:=0.
+1 to: ( ingreso size ) do:[:i| (i=' ') ifTrue:[ cont:= cont +1]. ]. ^cont!
+
+"evaluate"
+|ingreso ingreso2 cont|
+
+ingreso:= (Prompter prompt:'ingrese algo' default:'') .
+ingreso2:=(Prompter prompt:'ingrese algo mas' default:'').
+   cont:=0.
+1 to: ( ingreso size ) do:[:i| ( (ingreso at:i)=' ') ifTrue:[ cont:= cont +1.]. ]. ^cont!
+
+"evaluate"  
+|ingreso ingreso2 cont|
+
+ingreso:= (Prompter prompt:'ingrese algo' default:'') .
+ingreso2:=(Prompter prompt:'ingrese algo mas' default:'').
+   cont:=0.
+1 to: ( ingreso size ) do:[:i| ( (ingreso at:i)=(( 32 asCharacter) asciiValue)) ifTrue:[ cont:= cont +1.]. ]. ^cont!
+
+"evaluate"   
+|ingreso ingreso2 cont|
+
+ingreso:= (Prompter prompt:'ingrese algo' default:'') .
+ingreso2:=(Prompter prompt:'ingrese algo mas' default:'').
+   cont:=0.
+1 to: ( ingreso size ) do:[:i| ( (ingreso at:i)==(( 32 asCharacter) asciiValue)) ifTrue:[ cont:= cont +1.]. ]. ^cont!
+
+"evaluate"  
+|ingreso ingreso2 cont|
+
+ingreso:= (Prompter prompt:'ingrese algo' default:'') .
+" ingreso2:=(Prompter prompt:'ingrese algo mas' default:''). "
+   cont:=0.
+1 to: ( ingreso size ) do:[:i| ( (ingreso at:i)==(( 32 asCharacter) asciiValue)) ifTrue:[ cont:= cont +1.]. ]. ^cont!
+
+"evaluate"  
+(32 asCharacter) asciiValue!
+
+"evaluate"
+(32 asCharacter)  asciiValue!
+
+"evaluate"   
+((32 asCharacter)  asciiValue)!
+
+"evaluate" 
+((64 asCharacter)  asciiValue)!
+
+"evaluate" 
+((91 asCharacter)  asciiValue)!

@@ -50,8 +50,19 @@ MessageBox message:'la cantidad de vocales de ', ingreso asString , ' son ', con
 5. Ingresar dos cadenas y devolver una 3º que contenga los elementos de las 2
 anteriores pero intercalados.
 
-|ingreso ingreso2|
-   
-                                        
-                                                                            
-   
+|ingreso ingreso2 cont|
+
+ingreso:= (Prompter prompt:'ingrese algo' default:'') .
+" ingreso2:=(Prompter prompt:'ingrese algo mas' default:''). "
+   cont:=0.
+1 to: ( ingreso size ) do:[:i| ( (ingreso at:i)==(( 32 asciiValue)) ifTrue:[ cont:= cont +1.]. ]. ^cont
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+                          
+
+                          
