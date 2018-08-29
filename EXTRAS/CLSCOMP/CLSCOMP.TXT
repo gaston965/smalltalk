@@ -1,0 +1,170 @@
+
+ClassComparisonTool
+
+
+OVERVIEW
+--------
+ClassComparisonTool is a tool which compares the classes in
+two images, telling you the following information:
+
+    - what classes have been added or deleted from the images
+    - for classes which the two images have in common, what
+    methods have been added, deleted, or changed.
+
+You can use this tool to list the changes you have made to your image,
+so that when you upgrade to a new version of Smalltalk/V Windows 
+you know what classes and methods you should fileOut in order to 
+save your work.
+
+
+READ THIS FIRST
+------------
+The ClassComparisonTool works by comparing the classes in your currently
+running image (the 'native image') to a file containing a snapshot taken of 
+another image (the 'source image').  Before you use the ClassComparisonTool, 
+you need to create this snapshot file.  The tool which creates this snapshot 
+is called the ClassDumper tool.  To use this tool, you need to:
+
+    - Start up the source image.  If you want to find out what changes you've
+    made to your original VWin 1.1 image, for example, you would need to
+    start up a fresh installation of VWin 1.1.
+
+    - Install the ClassDumper into the source image.  Instructions on how to
+    install and use the ClassDumper are located in the file DUMPER.TXT
+    in this directory.
+
+    - Create the snapshot file of the source image, following the directions in
+    DUMPER.TXT.
+
+    - Start up the image you want to compare to the source image.  This is
+    the native image.
+
+    - Install and run the ClassComparisonTool in your native image, following
+    the instructions below.
+
+
+INSTALLATION
+------------
+To install the ClassComparisonTool, install (file in) CLSCOMP.ST in
+this directory.
+
+
+INVOCATION
+----------
+The ClassComparisonTool works by comparing the classes in your currently
+running image to a snapshot taken of a fresh image.  To compare the classes
+in your current image to those in a fresh Smalltalk/V Win 1.1 image, 
+evaluate the following expression:
+
+    ClassComparison new compareClasses
+
+You will be presented with a dialog box which requests four pieces
+of information:
+
+    - a snapshot file
+    - a descriptive string
+    - a results file
+    - a list of classes
+
+The snapshot file is the file containing the snapshot of the source image
+(see above).  
+
+The descriptive string is a string you can specify to 
+describe your image.  It is used as a column header in the output file 
+(see below).  This can be any string, but it is suggested you keep it less
+than 15 characters.
+
+The results file is a filename in which to store the results of the
+comparison.  How to interpret this file is described below.
+
+The list of classes enables you to compare only certain classes,
+not the entire image.  If you click on the 'Select...' button, you will
+be presented with another dialog box which enables you to 
+select or unselect certain classes.  If you do not click on the 
+'Select...' button, the default behavior is to compare all classes.
+
+
+READING THE OUTPUT FILE
+-----------
+Important note:  the output file is generated in a column-based 
+format.  It is much easier to read this file if you use a constant-width
+font (such as Courier).
+
+The output file is divided into three main sections:
+
+    - The classes the native image has in common with the source image
+    - The classes you have added to the source image
+    - The classes you have deleted from the source image
+
+The latter two sections simply list the appropriate classes.  The
+first section lists, on a class-by-class basis, the following information:
+
+    - whether the class has a different superclass (i.e. it appears
+    in a different place in the hierarchy)
+
+    - whether the class has different variables (i.e. a different class
+    definition)
+
+    - what class and instance methods have been changed, added, or
+    deleted.  If a method has been changed, an entry will appear in
+    both columns in the output file (see the example below).  If a
+    method is missing from an image, a '---' will appear in that column.
+    If a method is missing from a class but is inherited from a superclass,
+    that superclass is shown in <> characters.  
+
+For instance, the following excerpt comes from the comparison of a base 
+VWin 1.1 image (the source image) and a VWin 2.0 image with all 
+extras and examples filed in (the native image).  Note that it's easiest to 
+read this with a constant width font:
+
+
+---------- Class name: DDEAuxClient ----------
+
+instance methods                             V/Win 1.1        VWin 2.0
+  close                                      present          present
+  waitForData                                present          present
+
+  setTimeOut                                   ---            present
+  wmTimer:with:                              <Window>         present
+
+
+The following classes only appear in VWin 2.0 
+
+PrintAbortDialog
+SystemWindow
+DoubleByteSymbol
+...
+
+
+This example details several things:
+
+1.  A number of classes were added to the native image, including 
+PrintAbortDialog, SystemWindow, etc.  (Note: this is only a partial 
+listing of all new, example, and extra classes.)
+
+2.  The method DDEAuxclient>>setTimeOut exists in the native image, but 
+is absent in the source image.  
+
+3.  The #close and #waitForData in DDEAuxClient are present in both images.  
+The fact that they are included in the output indicates that the source
+code for the methods is different between the two images.
+
+
+4.  The method #wmTimer:with: exists in DDEAuxClient in the native image,
+but is inherited from Window in the source image.
+
+
+KNOWN PROBLEMS
+--------------
+- If you do a comparison which includes the classes IndexedCollection
+and FileStream, there are two methods which appear which were
+actually added by the tool, not by you.  These methods are
+IndexedCollection>>findNext:startingFrom:, and FileStream>>nextBlock:.
+
+- If you click "Select" to select the classes to compare, then select some
+classes, then click "Select" again (say to add more classes to the 
+comparison), the classes you originally selected are not highlighted.  You
+must re-select the entire list again.  This is only a problem on V/Windows 1.1;
+on 2.0, the selection in the MultipleSelectListBox works correctly.
+
+

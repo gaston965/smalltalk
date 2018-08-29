@@ -1,0 +1,349 @@
+TUTORIAL EXAMPLES FOR CHAPTER 9 -- GRAPHICS
+
+"Point"
+
+"Evaluate each of the following with Show it."
+
+    5 @ 10
+       
+    (5 @ 10) x
+
+    (5 @ 10) y
+
+    (1 @ 2) rightAndDown: (1 @ 2)    
+
+    (1 @ 2) leftAndUp: (1 @ 2)      
+
+    (1 @ 2) * ( 1/2 @ ( 1/2 ) )
+
+    (1 @ 2) < (3 @ 4)
+
+    (3 @ 5) > (3 @ 4)
+
+    (1 @ 2) + 1
+
+    (1 @ 2) // 2
+
+
+"Evaluate the following and you'll get a walkback."
+
+    1 @ 2 < 3
+
+"Evaluate the following with Show it."
+
+    | aPoint |
+    aPoint := (5 @ 10).
+    aPoint x: 1.
+    aPoint y: 2.
+    ^aPoint 
+                              
+                     
+"Rectangle"
+
+"Evaluate each with Show it."
+
+    1 @ 1 corner: 100 @ 100
+
+    1 @ 1 extent: 99 @ 99
+
+"Evaluate each with Show it." 
+
+    (Display boundingBox leftTop rightAndDown: 1@1) 
+        extentFromLeftTop: 99@99
+
+    (0 @ 0 extent: 100 @ 100) center
+
+    (0 @ 0 extent: 100 @ 100) insetBy: 10
+
+    (-5 @ -10 extent: 20 @ 20)
+        intersect: (1 @ 2 extent: 20 @ 20)
+ 
+    (-5 @ -10 extent: 20 @ 20)
+        containsPoint: 0 @ 0 
+
+
+"Bitmap"
+
+"Evaluate with Do it to draw a bitmap directly on screen."
+
+    | bitmap |
+    bitmap := Bitmap screenExtent: 100 @ 100. 
+        "creates a Bitmap with same colors per pixel as the screen." 
+    bitmap pen                                                       
+        home;
+        fill: ClrRed;
+        foreColor: ClrGreen;
+        ellipse: 40 minor: 20;
+        displayText: 'Hi'.
+    bitmap displayAt: 10 @ 100 with: Display pen.
+    bitmap release  "Delete bitmap from memory" 
+
+"Hint:  The above method draws a bitmap directly on the screen.
+  You can get rid of it by moving any window over it." 
+
+Evaluate with Do it.
+
+     | major minor |
+     Pictures := Array new: 8.
+    1 to: Pictures size do: [ :i |
+        Pictures at: i put: ( Bitmap screenExtent: 100 @ 100 ).
+        major := ( i - 1 * 10 ) integerCos // 2.
+        minor := ( i - 1 * 10 ) integerSin // 2. 
+        (Pictures at: i) pen
+            home;
+            fill: ClrRed;
+            foreColor: ClrGreen;
+            ellipseFilled: major minor: minor].
+    Window turtleWindow: 'Flexing Ellipses'.
+    10 timesRepeat: [1 to: Pictures size do: [:i |
+        (Pictures at: i) displayAt: 10 @ 100 with: Turtle] ]
+
+
+"GraphicsTools"  
+
+"Evaluate each with Inspect it." 
+
+    (Bitmap width: 100 height: 100) pen  
+
+    Printer new pen 
+
+    Display pen
+
+
+"TextTool"
+
+"Evaluate with Do it."
+                            
+    | aWindow textTool |
+    aWindow := TextWindow windowLabeled: 'TextTool Examples'
+        frame: ( 100 @ 100 extent: 400 @ 200 ).
+    aWindow nextPutAll: 'Hi!' ; cr.   "display initial text"
+    textTool := aWindow pane pen. "access the TextTool"
+    textTool place: 24 @ 16;            "set position"
+        displayText: 'Welcome'.        "display string at position"
+    textTool displayText: 'to'
+        at: textTool location + (50 @ 30).  "down and  right from location"
+    textTool centerText: 'Smalltalk/V'
+        at: textTool extent // 2.           "display a string at center"
+    textTool lineDisplay: 'Windows'
+        at: ( textTool width - 60) @ (textTool height - 20 ).
+         " In lower right corner and blank the rest of the line"
+
+"Evaluate with Do it."
+
+    | font aWindow textTool |
+    aWindow := TextWindow windowLabeled: 'TextTool Examples'
+        frame: (100 @ 100 extent: 400 @ 200).
+    textTool := aWindow pane pen.
+    font := Font chooseAFont: 'Select a font, please.'.
+    font isNil ifTrue: [^self].
+    textTool
+        font: font;
+        foreColor: ClrLightgray;
+        displayText: 'Hello, World!' at: (60 @ (textTool height // 2));
+        foreColor: ClrBlack;
+        displayText: 'Hello, World!' at: (60 @ (textTool height // 2 +
+            font height))
+ 
+
+"Pen"   
+
+"Evaluate with Do it."
+
+    Window turtleWindow: 'Pen Examples'.
+    Turtle
+        goto: 30 @ 30;
+        box: Turtle extent - 30;        "extent is height and width of pane"
+        home.                                  "home is center of window"
+    10 timesRepeat: [
+         4 timesRepeat: [
+            Turtle
+                go: 100;
+                turn: 90 ].
+        Turtle turn: 36]
+            
+"Move the Pen Examples window so it is side
+  by side with this window;  then evaluate with Do it."
+
+"******  Important Note  ******"  
+"YOU MUST HAVE THE PEN EXAMPLES WINDOW OPEN
+ FOR THIS NEXT EXAMPLE TO WORK.  IF YOU HAVE CLOSED
+ IT, RE-EVALUATE THE PREVIOUS EXAMPLE." 
+"****** End of Important Note ******"
+
+    Turtle   
+        fill: ClrBlue;                                "fill pane with blue color"
+        home;
+        foreColor: ClrDarkgray;              
+        defaultNib: 8;  
+        boxOfSize: 100 @ 100; 
+        foreColor: ClrYellow;
+        defaultNib: 4;
+        home;
+        circle: 50;
+        displayText: 'Hello' at: 10 @ 20    
+
+                                                    
+"RecordingPen"
+
+"Evaluate the following with Do it."
+
+    Window turtleWindow: 'RecordingPen Examples'.
+    Turtle drawRetainPicture: [
+        Turtle
+            fill: ClrBlue;
+            home;
+            mandala: 16 diameter: 250 ] 
+
+"Move the RecordingPen Examples window so it is side
+  by side with this window;  then evaluate with Do it." 
+
+                                       
+"Network Nodes"
+
+"Evaluate the following with Do it if class
+ NetworkNode has not been defined."
+
+     Object subclass: #NetworkNode
+         instanceVariableNames:
+             'name position'
+         classVariableNames: ''
+         poolDictionaries: 'WinConstants'
+
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\nodes9.st') fileIn; close
+
+
+"Network"
+
+"Evaluate the following with Do it if class Network
+ has not been defined."
+
+     Object subclass: #Network
+         instanceVariableNames:
+             'connections'
+         classVariableNames: ''
+         poolDictionaries: ''
+
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\network9.st') fileIn; close 
+
+
+"Building a Network"
+
+"Evaluate the following with Do it if you did not
+do so in chapter 7."
+
+     Net := Network new initialize.       
+     N1 := NetworkNode new name: 'one' position: 100 @ 100.
+     N2 := NetworkNode new name: 'two' position: 150 @ 150.
+     N3 := NetworkNode new name: 'three' position: 200 @ 120.
+     N4 := NetworkNode new name: 'four' position: 50 @ 50.
+     N5 := NetworkNode new name: 'five' position: 125 @ 220.
+     N6 := NetworkNode new name: 'six' position: 260 @ 120.
+     Net
+         connect: N1 to: N2;
+         connect: N2 to: N3;
+         connect: N4 to: N5;
+         connect: N5 to: N1;
+         connect: N3 to: N6;
+         connect: N3 to: N5;
+         connect: N3 to: N1  
+
+"Evaluate with Do it."
+
+     Net draw           
+ 
+                            
+"Commander"
+
+"Evaluate with Do it."
+
+    Window turtleWindow: 'Commander Dragons'.
+    (Commander pen: 8 forDC: Turtle handle medium: Turtle graphicsMedium)
+        up;
+        home;
+        down;
+        fanOut;       "set fan out direction"
+        up;
+        go: 60;       "set starting point"
+        down;
+        dragon: 9   "draw dragon" 
+
+
+"Animation"
+
+"Evaluate with Do it."
+
+    Animator := AnimationPane openWindow: 'Animation Examples'.
+                                                           
+"Move the Animation Examples window so it is side
+  by side with this window;  then evaluate with Do it."
+
+"******  Important Note  ******"
+"YOU MUST HAVE THE ANIMATION EXAMPLES WINDOW OPEN
+ FOR THIS NEXT EXAMPLE TO WORK.  IF YOU HAVE CLOSED
+ IT, RE-EVALUATE THE PREVIOUS EXAMPLE."
+"****** End of Important Note ******"  
+
+"Evaluate with Do it."
+
+    Bouncer := AnimatedObject new
+        bouncer;
+        direction: 45;
+        speed: 1;
+        stepsPerFrame: 1;
+        frames: Pictures;
+        position: Animator pen extent // 2.
+    Animator addObject: Bouncer.
+    Bouncer animate
+
+"Evaluate each of these individually with Do it."
+
+    Bouncer speed: 5
+
+    Bouncer direction: 95
+
+    Bouncer stepsPerFrame: 16
+
+    Bouncer stop
+
+
+ "Evaluate with Do it to install the dog bitmaps for the
+ next example."
+
+    "Load the dog bitmaps from disk files."
+    | dogPictures |
+    TutorialPictures := Dictionary new.
+    dogPictures := Array new: 4.
+    1 to: dogPictures size do: [ :i |
+        dogPictures at: i put: (
+            Bitmap fromFile: 'tutorial\dog', i printString,'.bmp' ) ].
+    TutorialPictures at: 'dogs' put: dogPictures
+                                                
+"Evaluate with Do it.  The dog will follow the mouse cursor."
+
+"******  Important Note  ******"
+
+"YOU MUST HAVE THE ANIMATION EXAMPLES WINDOW OPEN
+ FOR THIS NEXT EXAMPLE TO WORK.  IF YOU HAVE CLOSED
+ IT, RE-EVALUATE THE PREVIOUS EXAMPLE."
+
+"****** End of Important Note ******"
+                      
+    | dogs |
+    dogs := TutorialPictures at: 'dogs'.
+    Chaser := AnimatedObject new
+        chaser;
+        direction: 45;
+        frames: dogs.
+    Animator addObject: Chaser.
+    Chaser animate 
+
+"When you are finished, execute the following with Do it to
+ free up space associated with the global variables." 
+
+    Animator :=  Chaser := Bouncer := nil  "get rid of the instance"
+

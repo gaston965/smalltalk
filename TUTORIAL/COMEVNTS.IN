@@ -1,0 +1,114 @@
+| nodes |                   
+nodes := SalesStrategy at: 'StratNodes'.
+(nodes at: 'Kick-off Ltr') info
+    at: '1.Strategy' put: 'Prospecting';
+    at: '2.Type' put: 'L';
+    at: '3.Message' put: '
+
+I won''t take much of your time.  We both know how
+busy a growing business keeps you.  I''ll get to
+the point.
+
+Whizzard WORMS optical disks are available now at
+a price you can afford.  Wouldn''t it be worth just
+a few dollars a day for 10 GIGABYTES of PC compatible
+mass storage?
+
+I''d like to show you how you can own a WORM of your
+own.  Call me to find out more about our next
+educational seminar.
+
+Best Regards,
+
+Susan Heath
+Whizzard Sales Exec';
+    at: '4.Next Step' put: 'Fol-Up Ltr';
+    at: '5.Days Til NS' put: 7;
+    at: '6.MTD' put: 0;
+    at: '7.YTD' put: 2.
+
+(nodes at: 'Fol-Up Ltr') info
+    at: '1.Strategy' put: 'Prospecting';
+    at: '2.Type' put: 'L';
+    at: '3.Message' put: '
+
+There is still room for a busy executive such as yourself
+at our next WORM Warmer.  Free food and drinks with a
+small dose of techno-dog-and-pony at:
+
+    The Huba Huba Room
+    Slatter''s Hotel and Convention Center
+    2342 Main Place
+
+    Monday afternoon, 4:00 pm
+
+You could add vast mass storage to your PC for just
+a few dollars a day.  Join us, please.
+
+Best Regards,
+
+Susan Heath
+Whizzard Sales Exec';
+    at: '4.Next Step' put: 'Phone Call';
+    at: '5.Days Til NS' put: 4;
+    at: '6.MTD' put: 0;
+    at: '7.YTD' put: 2.
+
+(nodes at: 'Phone Call') info
+    at: '1.Strategy' put: 'Prospecting';
+    at: '2.Type' put: 'P';
+    at: '3.Message' put: ' 
+
+How are you .... NAME .... ?
+This is Susan Heath of Whizzard WORMS.
+
+Do you have a minute to talk?  Great.
+Did you get my letters?
+Can I pencil you in for our next seminar?';
+    at: '4.Next Step' put: 'Wake Up Ltr';  "Phone call menu overrides this default."
+    at: '5.Days Til NS' put: 1;
+    at: '6.MTD' put: 0;
+    at: '7.YTD' put: 2.
+
+(nodes at: 'Wake Up Ltr') info
+    at: '1.Strategy' put: 'Prospecting';
+    at: '2.Type' put: 'L';
+    at: '3.Message' put: '
+
+You asked me to get back to you about your interest
+in Whizzard WORM optical disks.
+
+Our next WORM Warmer is this Monday afternoon at the
+Huba Huba Room of the Slatter Hotel at Main Place.
+I''ll call to give you details.
+
+Thanks for you continued interest in our products.
+
+Best Regards,
+
+
+Susan Heath
+Whizzard Sales Executive';
+    at: '4.Next Step' put: 'Phone Call';
+    at: '5.Days Til NS' put: 4;
+    at: '6.MTD' put: 0;
+    at: '7.YTD' put: 0.
+
+(nodes at: 'Exit Seminar') info
+    at: '1.Strategy' put: 'Prospecting';
+    at: '2.Type' put: 'E';  "An Exit node"
+    at: '3.Message' put: 'This customer is moving on!!';
+    at: '4.Next Step' put: 'Transfer to Seminar Strategy';
+    at: '5.Days Til NS' put: 1;
+    at: '6.MTD' put: 0;
+    at: '7.YTD' put: 0.
+
+(nodes at: 'Exit Dead Leads') info
+    at: '1.Strategy' put: 'Prospecting';
+    at: '2.Type' put: 'E'; "An Exit node"
+    at: '3.Message' put: 'Get this dead head outa here!!';
+    at: '4.Next Step' put: 'Transfer to Dead Leads';
+    at: '5.Days Til NS' put: 1;
+    at: '6.MTD' put: 0;
+    at: '7.YTD' put: 0.
+

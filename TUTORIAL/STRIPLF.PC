@@ -1,0 +1,10 @@
+This is a file that contains 10 line feed (ASCII 10) characters.
+This is a file that contains 10 line feed (ASCII 10) characters.
+This is a file that contains 10 line feed (ASCII 10) characters.
+This is a file that contains 10 line feed (ASCII 10) characters.
+This is a file that contains 10 line feed (ASCII 10) characters.
+This is a file that contains 10 line feed (ASCII 10) characters.
+This is a file that contains 10 line feed (ASCII 10) characters.
+This is a file that contains 10 line feed (ASCII 10) characters.
+This is a file that contains 10 line feed (ASCII 10) characters.
+This is a file that contains 10 line feed (ASCII 10) characters.

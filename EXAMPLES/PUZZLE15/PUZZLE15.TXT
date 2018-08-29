@@ -1,0 +1,75 @@
+Puzzle15 is a game program.  It is an example of the Help
+Manager and multinational program development.
+
+To install this game evaluate to following expression:
+
+    (File pathName: 'examples\puzzle15\puzzle15.st') fileIn; close
+
+NOTE:
+ - Puzzle15 expects its .hlp and its .rc files to be in a
+   subdirectory named 	examples\puzzle15\.
+ - The method topPaneClass is reimplemented in Puzzle15 class
+   because Puzzle15 changes the Help menu and in MDI mode the 
+   help menu for the MDI documents is not built. 
+
+To start the game, evaluate the following:   
+
+    Puzzle15 new open                 
+
+The objective of this game is to arrange the pieces of the puzzle
+in ascending order. Only one piece can be moved at a time
+and that piece must move to an adjacent empty slot.   
+To move a piece to an empty slot, click the left mouse button
+over the piece you want to move.
+
+Puzzle15 includes an example of how to use the HelpManager.
+As a user, you can press the help key (F1) while the window is
+active and you will see the extended help for the application 
+displayed.  Or, you can button down on one of the menus and
+see the appropriate help panel describing the particular menu.
+You can also invoke one of the two dialog windows, New Size and
+15 Puzzle Color Dialog, and see the relevant help panels by
+pressing the F1 key.  For an example of associating a help panel with
+a dialog item, select the 'Face Color' combo box and press the F1 key
+and you will see a help panel describing the 'Face Color' dialog item.
+
+The Puzzle15.RTF and Puzzle15.hpj files, which was used to generate
+Puzzle15.HLP, is included in this directory for an example.
+
+Program Internationalization
+=======================
+Puzzle15 is an example of a multinational program. It has the
+capabilities of being easily translated to any national language
+of your choice without changing the program code.
+
+The program presentation text is externalized in a resource
+definition file. The file PUZZLE15.US is included and contains
+the text for US English. You may translate all the text definitions
+and produce multiple resource files, one for each desired 
+language with a unique filename extension. The help text must
+also be translated for a true multinational program.
+
+When you run the Puzzle15 program, one of the first thing it
+does is load the resource text from file PUZZLE15.RC. It expects
+this file in a subdirectory named 
+    examples\puzzle15\
+Initially (as shipped) this file is a copy of PUZZLE15.US. 
+ 
+To run PUZZLE15 in the language native to the systems
+country and language setting,  you must first copy the appropriate 
+text resource file to PUZZLE15.RC and then run the program.
+
+Note: 
+The Prompter dialog display 'Ok' and 'Cancel' text in bushbutton.
+This is considered part of the Smalltalk/V development environment
+and because the environment itself has not been translated for 
+multinational use, these two strings are displayed in English. 
+However, in a true stand alone application, you would most likely,
+have your own dialog without the Smalltalk/V in the title.
+
+File PUZZLE15.H is included for those of you who may want to compile
+the text definition file. The compiled string resource can then be put into 
+a resource DLL or added to your EXE file . See the NLSDBCS.TXT file for
+details.    
+
+

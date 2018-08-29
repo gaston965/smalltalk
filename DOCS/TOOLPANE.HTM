@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>ToolPane Class Instructions</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00FFFF" alink="#FF0000">
+<h1 align=center><a name="top"><font color="#0000FF">ToolPane</font></a></h1>
+<pre><hr>This document describes how to use the ToolPane classes for Smalltalk/V 
+Windows.</pre>
+<pre>ToolPane (along with StatusPane and MDI) can be installed by filing in 
+&quot;mdi.st&quot; in the extras\mdi subdirectory.  This has already been done in Smalltalk Express.</pre>
+<pre>For an example, look at the MDIDemo class, in the extras\mdi\mdidemo
+subdirectory</pre>
+<p>Programming Interface<br>
+<hr>
+<br>
+Class ToolPane provides the necessary methods for creating and using a <br>
+ToolPane. ToolPane is a subclass of GroupPane and therefore inherits all <br>
+the behavior of SubPane. Create a ToolPane in your application's open <br>
+method just as you would do for any other subpane.</p>
+<p>A ToolPane window uses a helper class called Tool.  To make a ToolPane <br>
+look and behave the way you want, you will send the contents:  message to it. <br>
+The parameter of the contents: method is a collection of Tool objects.</p>
+<pre>The responsibilities of the Tool class are:</pre>
+<pre>1. Displaying the Bitmap associated with the Tool.  The user must provide a
+bitmap for each Tool. This bitmap must include the up state and the down 
+state for the tool.  One part of the bitmap is used for the up state, and
+the other part for the down state. The default size of a tool is 25 X 22
+pixels.  There is a reference bitmap in the extras\mdi subdirectory called ref.bmp. 
+You can start your custom bitmap with it.
+   </pre>
+<pre>The .bmp files are always DIB file. The indices 4, 8 and 9 in the color
+table of the bitmap are set to the buttonText color, buttonShadow color
+and buttonFace color, respectively.</pre>
+<pre>2. Performing a selector associated with the Tool.  The user must also 
+provide a selector and an owner for each tool.  The message will be sent 
+whenever a tool is clicked on.</pre>
+<pre>The ToolPane has a default framingBlock, and therefore you do not need to 
+specify it. The application can change the height. The default height is the
+height of the caption bar.</pre>
+<h2>ToolPane instance methods</h2>
+<pre><hr></pre>
+<pre>contents
+        &quot;Answer the receiver's contents, i.e.
+        a collection of Tool objects.&quot;</pre>
+<pre>contents:aToolCollection
+        &quot;Set the receiver's contents.
+        aToolCollection is a collection of Tool objects.&quot;</pre>
+<pre>height
+        &quot;Answer the receiver's height.&quot;</pre>
+<pre>height:anInteger
+        &quot;Set the receiver's height.&quot;</pre>
+<pre>isToolPane
+        &quot;Answer true if receiver is an instance of class
+         ToolPane, else answer false.&quot;</pre>
+<pre>toolAt: toolSymbol
+        &quot;Answer the first tool with the name toolSymbol.&quot;
+</pre>
+<h2>Tool class methods</h2>
+<pre>fromFile:aFileName
+        &quot;Create a new tool. aFileName is a .BMP file name.&quot;</pre>
+<pre>fromModule:aFileName id:aString
+        &quot;Create a new tool. aFileName is a DLL file name.
+        aString is a BITMAP name in this DLL.&quot;</pre>
+<pre>fromBitmap: aBitmap
+        &quot;Create a new tool from aBitmap object.&quot;</pre>
+<h2>Tool instance methods</h2>
+<pre><hr>extent
+        &quot;Answer the receiver's extent.&quot;</pre>
+<pre>extent:aPoint
+        &quot;Set the receiver's extent.&quot;</pre>
+<pre>name
+        &quot;Answer the tool name.  Tool's name is established by
+         sending the 'name:' message to the tool.&quot;</pre>
+<pre>name: aSymbol
+        &quot;Set the tool name to aSymbol
+         which can be a Symbol or a String.&quot;</pre>
+<pre>owner
+        &quot;Answer the receiver's owner.&quot;</pre>
+<pre>owner:anOwner
+        &quot;Set the receiver's owner.&quot;</pre>
+<pre>selector
+    &quot;Answer the receiver's selector.&quot;</pre>
+<pre>selector:aSymbol
+        &quot;Set the receiver's selector. It can be either
+        aSymbol or a message.&quot;</pre>
+<pre>space
+        &quot;Answer the receiver's offset in pixel units.&quot;</pre>
+<pre>space:anInteger
+        &quot;Set the receiver's offset to anInteger
+        pixel units.
+        An offset specifies the distance between a tool and the previous one.&quot;</pre>
+<h2>Example</h2>
+<pre><hr>Look at the MDIDemo class in the extras\mdi\mdidemo subdirectory. 
+MDIDemo creates a ToolPane with a comboBox.</pre>
+<pre>MDIDemo&gt;&gt;open
+.......</pre>
+<pre>    self
+        addSubpane:(toolPane :=
+            (ToolPane new
+                owner: self;
+                height: 45;
+                when: #doubleClicked perform: #toolPaneDoubleClicked:;
+                when: #getContents perform:#toolPane:)).
+    toolPane
+        addSubpane:(
+            ComboBox new
+            font: (Font face:'Helv' size:0 @ 8 fixedWidth:false);
+            dropDownList;
+            when: #select perform: #selectColor:;
+            when: #getContents perform: #comboBox:;
+            framingBlock:[:box | 2 @ 8 extent: 100 @ 200]).
+......</pre>
+<pre>MDIDemo&gt;&gt;toolPane: aPane
+......</pre>
+<pre>    aTool:=Tool fromBitmap: bmp.
+    aTool selector:#doc2;owner:self;extent: 38 @ 38;space: 11.
+    aToolCollection add:aTool.</pre>
+<pre>    aPane contents: aToolCollection.
+</pre>
+<hr>
+<p>[<a href="#top">top</a>] <a href="index.htm">[index]</a></p>
+</body>
+
+</html>

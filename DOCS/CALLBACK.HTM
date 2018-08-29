@@ -1,0 +1,177 @@
+<HTML>
+<HEAD>
+<TITLE>Untitled</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z">
+</HEAD>
+<BODY BGCOLOR="#ffffff" TEXT="#000000" LINK="#0000ff" VLINK="#00ffff">
+<H1><CENTER><A NAME="top"><FONT SIZE=6 COLOR=#0000FF>CallBack</FONT></A></CENTER>
+</H1>
+<HR>
+<H2>Purpose:</H2>
+<P>
+<FONT SIZE=2>To provide the capability of calling Smalltalk from
+outside of Smalltalk.  This mechanism allows for Smalltalk to
+execute a function outside of Smalltalk, such as an API, which
+itself requires some Smalltalk processing before returning.</FONT>
+<H2>Programming Interface:</H2>
+<P>
+<FONT SIZE=2>In the Smalltalk development environment, the callback
+facility is used to enumerate the system supported fonts. This
+example will be used in discussing the programmer interface. 
+<BR>
+</FONT>
+<P>
+<FONT SIZE=2>First, the API must be defined. In the case of fonts,
+this is in the method</FONT>
+<P>
+<FONT SIZE=2>GDIDLL&gt;&gt;enumFonts:lpFacename:lpFontFunc:lpData:
+<BR>
+</FONT>
+<P>
+<FONT SIZE=2>enumFonts: hDC lpFacename: lpFacename lpFontFunc:
+lpEnumFunc lpData: lpData</FONT>
+<P>
+<FONT SIZE=2>&lt;api: enumFonts ushort ulong ulong ulong short&gt;</FONT>
+<P>
+<FONT SIZE=2>^self invalidArgument<BR>
+</FONT>
+<P>
+<FONT SIZE=2>lpEnumFunc is the FARPROC procedure-instance address
+of the callback function. In Smalltalk it is a long pointer to
+the code in the virtual machine which identifies the Smalltalk
+call back message processing. This is obtained by registering
+a message with the CallBack class as explained in detail below.</FONT>
+<P>
+<FONT SIZE=2>Now the necessary Smalltalk message processing must
+be registered with the class CallBack. Look at the method Font
+class&gt;&gt;allFonts, which contains code which looks like this:</FONT>
+<HR>
+<P>
+<FONT SIZE=2>| aCallBack aMessage faceList allFonts font |</FONT>
+<P>
+<FONT SIZE=2>aMessage := Message new.</FONT>
+<P>
+<FONT SIZE=2>aMessage receiver: Font.</FONT>
+<P>
+<FONT SIZE=2>aMessage selector: #enumFaces:lpTextMetrics:nFontType:lpData:.</FONT>
+<P>
+<FONT SIZE=2>aCallBack := CallBack</FONT>
+<P>
+<FONT SIZE=2>registerMessage: aMessage</FONT>
+<P>
+<FONT SIZE=2>parameterTypes:#(ulong ulong short ulong)</FONT>
+<P>
+<FONT SIZE=2>returnType: #short</FONT>
+<P>
+<FONT SIZE=2>callingConvention:#pascal.</FONT>
+<P>
+<FONT SIZE=2>&quot;some other code appears in here...&quot;</FONT>
+<P>
+<FONT SIZE=2>GDILibrary</FONT>
+<P>
+<FONT SIZE=2>enumFonts: graphicsMedium deviceContext</FONT>
+<P>
+<FONT SIZE=2>lpFacename: 0</FONT>
+<P>
+<FONT SIZE=2>lpFontFunc: aCallBack asParameter</FONT>
+<P>
+<FONT SIZE=2>lpData: 0.</FONT>
+<P>
+<FONT SIZE=2>aCallBack release.</FONT>
+<P>
+<FONT SIZE=2>&quot;the rest of the method appears here...&quot;</FONT>
+<HR>
+<P>
+<FONT SIZE=2>The message</FONT>
+<HR>
+<P>
+<FONT SIZE=2>CallBack</FONT>
+<P>
+<FONT SIZE=2>registerMessage: stMessage</FONT>
+<P>
+<FONT SIZE=2>parameterTypes: aParameterTypeArray</FONT>
+<P>
+<FONT SIZE=2>returnType: aReturnType</FONT>
+<P>
+<FONT SIZE=2>callingConvention: aCcType<BR>
+</FONT>
+<HR>
+<P>
+<FONT SIZE=2>registers the message processing with the CallBack
+class. The arguments are as follows: stMessage is the actual Smalltalk
+message to be performed when the call back is invoked. For the
+EnumFont API this would be the actual call back function, a Smalltalk
+message:</FONT>
+<P>
+<FONT SIZE=2>aMessage := Message new.</FONT>
+<P>
+<FONT SIZE=2>aMessage receiver: Font.</FONT>
+<P>
+<FONT SIZE=2>aMessage selector: #enumFaces:lpTextMetrics:nFontType:lpData:.
+<BR>
+</FONT>
+<P>
+<FONT SIZE=2>- aParameterTypeArray is an array of argument types.
+This collection</FONT>
+<P>
+<FONT SIZE=2>indicates how to convert the procedure parameter
+into a Smalltalk object.</FONT>
+<P>
+<FONT SIZE=2>Currently, possible parameter types are:</FONT>
+<P>
+<FONT SIZE=2>#short</FONT>
+<P>
+<FONT SIZE=2>#ushort</FONT>
+<P>
+<FONT SIZE=2>#long</FONT>
+<P>
+<FONT SIZE=2>#ulong</FONT>
+<P>
+<FONT SIZE=2>#handle</FONT>
+<P>
+<FONT SIZE=2>Currently, #float and #double parameter types are
+not supported. For the EnumFont API this would be an array of
+argument conversation selectors for the call back function:</FONT>
+<P>
+<FONT SIZE=2>#(ulong ulong short ulong)<BR>
+</FONT>
+<P>
+<FONT SIZE=2>- aReturnType is the type that is expected to be
+returned from the callback function. For EnumFont API this would
+be #short. </FONT>
+<P>
+<FONT SIZE=2>- aCcType is the type of calling convention used
+for passing the procedure parameters, such as standard C or Pascal.
+This is to enable the virtual-machine to correctly handle the
+stacked parameters. Currently, possible calling convention types
+are:</FONT>
+<P>
+<FONT SIZE=2>#pascal</FONT>
+<P>
+<FONT SIZE=2>#c</FONT>
+<P>
+<FONT SIZE=2>For the EnumWindows API this would be #pascal. <BR>
+</FONT>
+<P>
+<FONT SIZE=2>This creates an instance of CallBack and returns
+a long pointer. This is the actual FARPROC procedure-instance
+address of the callback function that is passed to the API requiring
+the call back capability; in the case of fonts, this is the lpEnumFunc
+parameter to the API.</FONT>
+<P>
+<FONT SIZE=2>Usage notes:</FONT>
+<P>
+<FONT SIZE=2>Remember to send a &quot;asParameter&quot; message
+to the CallBack object before passing it to the API.</FONT>
+<P>
+<FONT SIZE=2>When the CallBack object is no longer needed is should
+be released using CallBack&gt;&gt;release method.</FONT>
+<P>
+<FONT SIZE=2>A CallBack object needs to be recreated for each
+Smalltalk session.</FONT>
+<HR>
+<P>
+<A HREF="#top" >[top]</A> <A HREF="index.htm" >[index]</A>
+</BODY>
+</HTML>

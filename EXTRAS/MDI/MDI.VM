@@ -1,0 +1,2066 @@
+
+
+!ApplicationWindow methods !
+
+disableSysMenu: aPosition
+    "Private - Disable the item menu at aPosition in the receiver's system menu."
+
+    | m buffer winaddress menuString|
+    m := UserLibrary
+            getSystemMenu: self asParameter
+            revert: 0.
+    buffer:=String new:64.
+    winaddress:=WinAddress copyToNonSmalltalkMemory: buffer.
+    UserLibrary
+        getMenuString: m
+        position:aPosition
+        string:winaddress asParameter
+        max:64
+        flags:MfByposition.
+    menuString:=String fromAddress:winaddress.
+    winaddress unlockAndFree.
+    UserLibrary
+        modifyMenu: m
+        position: aPosition
+        flags:  MfByposition|MfDisabled|MfGrayed
+        newId: (    UserLibrary
+            getMenuItemId: m
+            position: aPosition)
+        newContents: menuString asParameter!
+   
+modifySysMenu: aString  position:aPosition
+    "Private - Change the string of the item menu at aPosition in the receiver's system menu."
+
+    | m |
+    m := UserLibrary
+            getSystemMenu: self asParameter
+            revert: 0.
+    UserLibrary
+        modifyMenu: m
+        position: aPosition
+        flags:  MfByposition
+        newId: (    UserLibrary
+            getMenuItemId: m
+            position: aPosition)
+        newContents: aString asParameter.! !
+
+
+!WinClientCreateStruct class methods !
+ 
+sizeInBytes
+         "Private - Answer the default size in bytes."
+    ^4! !
+
+
+!WinClientCreateStruct methods !
+
+hMenu
+
+    ^self uShortAtOffset:0!
+
+idFirstChild
+
+    ^self shortAtOffset:2!
+  
+hMenu: anInteger
+
+    ^self uShortAtOffset:0  put: anInteger!
+ 
+idFirstChild: anInteger
+
+    ^self shortAtOffset:2  put: anInteger! !
+
+
+!MDIFrame class methods !
+  
+supportedEvents
+        "Answer the Set of events that MDIFrames can notify
+         their owners about."
+    ^super supportedEvents
+        add: #mdiMenuBuilt;
+        add: #toggleKey;
+        add: #childActivate;
+        add: #childDeactivate;
+        add: #childClose;
+        yourself!
+  
+startUp
+        "Private - Initialize the receiver's class variable."
+    |vmLibrary|
+    vmLibrary:=DynamicLinkLibrary getHandle:'vwvm20.dll'.
+    MDIFrameWndProcAddress:=KernelLibrary  getProcAddress:vmLibrary asParameter procName:'VwDefFrameWndProc' asParameter.
+    MDIFrameWndProcAddress:=(WinAddress fromString:MDIFrameWndProcAddress) asInteger.! !
+
+
+!MDIFrame methods !
+ 
+getFreeClientArea: aRectangle
+    "Private - Answer the client area available for children of the receiver.
+     It may differ from the actual client area when supplemental windows
+     such as a Status Bar or a Tool Bar are added transparently."
+
+    self zoomed ifTrue: [^aRectangle].
+    (children select: [:each | each respondsTo: #freeClientArea: ]) do:
+        [:eachSupp |eachSupp freeClientArea: aRectangle].
+    ^aRectangle!
+   
+mdiClient
+        "Private- Answer the receiver's MDI client subpane."
+
+    ^self propertyAt:#mdiClient!
+  
+addMdipane:aWindow
+        "Private - An MDI docuement was created
+        Add it to the receiver's mdiChildren."
+
+    mdiChildren addLast: aWindow.
+    aWindow parent: self mdiClient.!
+   
+renumber:aWindow
+        "Private - Renumber the documents."
+
+    |documentsToRenumber i|
+    documentsToRenumber:=mdiChildren select:[:each |
+            each label = aWindow label].
+    documentsToRenumber size > 1 ifTrue:[
+        i:=0.
+        documentsToRenumber do:[:each |
+            i:=i + 1.
+            each isHandleOk ifTrue:[
+                each setWindowText: each label,':',i printString]]].
+    documentsToRenumber size = 1 ifTrue:[
+        documentsToRenumber first setWindowText:documentsToRenumber first label]!
+ 
+mdiClose:aWindow
+            "Private - close a Window."
+            UserLibrary sendMessage: self mdiClient asParameter
+                                msg:WmMdirestore
+                                wparam:aWindow asParameter
+                                lparam:0.
+            aWindow close.!
+ 
+mdiCascade
+        "Cascade the MDI documents."
+
+    UserLibrary sendMessage: self mdiClient asParameter
+                        msg:WmMdicascade
+                        wparam:0
+                        lparam:0.!
+  
+avoidDestroyCurrentMenu:anMdiChild
+
+    "Private - see Microsoft online Q67244."
+    "do not destroy the menu that is currently in use."
+    |menuHandle|
+
+    menuHandle:=UserLibrary getMenu:self asParameter.
+    menuHandle:=WinHandle fromInteger:menuHandle.
+    menuHandle=anMdiChild menuWindow handle ifTrue:[
+        self setInitMenu.
+    ].
+    ^menuHandle=anMdiChild menuWindow handle!
+ 
+initialize
+        "Private - initialize the receiver"
+    super  initialize.
+    mdiChildren := OrderedCollection new.!
+ 
+wmSize: wordInteger with: longInteger
+        "Private - Process the erase wmSize message."
+        "Reimplemented here because the MDIClient is
+        resized by Smalltalk."
+    super  wmSize: wordInteger with: longInteger.
+    ^true!
+
+mdiClient:aSubpane
+        "Private- Set the receiver's MDI client subpane."
+
+    self propertyAt:#mdiClient put:aSubpane!
+
+helpContext
+        "Private - Answer the receiver help context."
+    |active|
+
+    active := self mdiGetActive.
+    active notNil
+        ifTrue:[^active helpContext]
+        ifFalse:[^super helpContext].!
+
+setInitMenu
+    "Private-Update the frame menu bar when no mdi documents are opened."
+    |aMenuWindow winlong|
+
+    menuWindow:=self mdiInitMenu.
+
+    aMenuWindow:=self mdiMenu window handle.
+    winlong:=WinLong new.
+    winlong uShortAtOffset:0 put: menuWindow handle asInteger.
+    winlong uShortAtOffset:2 put: aMenuWindow asInteger.
+    UserLibrary sendMessage: self mdiClient asParameter
+            msg:WmMdisetmenu
+            wparam:0
+            lparam: winlong asParameter.
+
+    UserLibrary drawMenuBar: self asParameter.!
+
+mdiRestore:aWindow
+            "Private - restore the MDI document aWindow."
+            UserLibrary sendMessage: self mdiClient asParameter
+                                msg:WmMdirestore
+                                wparam:aWindow asParameter
+                                lparam:0.!
+ 
+winClass
+        "Private-answer receiver's window class
+        Common for all mdi frame."
+    | className wndClass lptr answer|
+    className := 'SmalltalkV',self class name.
+    wndClass := WinWindowClass new.
+    answer:=UserLibrary getClassInfo: WIN hInstanceExe
+        className: className asParameter
+        wndClass: wndClass asParameter.
+    answer ifTrue:[^className].
+    wndClass := WinWindowClass new.
+    wndClass style:0.
+    wndClass wndExtra:2.
+    wndClass windProc:MDIFrameWndProcAddress.
+    wndClass hInstance:WIN hInstanceExe.
+    wndClass hIcon:0;
+            className: (lptr := WinAddress
+            copyToNonSmalltalkMemory: className asAsciiZ) asParameter.
+    UserLibrary registerClass: wndClass asParameter.
+    lptr unlock; free.
+   ^className!
+
+mdiDestroy:aWindow
+        "Private - destroy the mdi document a Window."
+            UserLibrary sendMessage: self mdiClient asParameter
+                                msg:WmMdidestroy
+                                wparam:aWindow asParameter
+                                lparam:0.!
+
+mdiIsMaximized
+
+    "Private - Answer a boolean.Indicates if the active mdi document is minimized."
+
+    |mdiActive|
+
+
+    mdiActive:=(WinLong fromBytes:(
+                            UserLibrary sendMessage: self mdiClient asParameter
+                                                msg:WmMdigetactive
+                                                wparam:0
+                                                lparam:0)) highHalf.
+    mdiActive=1 ifTrue:[^true]
+                         ifFalse:[^false].!
+  
+mdiCloseAll
+         "Close all the MDI documents which are not minimized."
+    |childrenToClose|
+    childrenToClose:=mdiChildren copy.
+    childrenToClose do:[:each|
+        ((each isHandleOk ifTrue:[each minimized] ifFalse:[false]) not & each systemMenuItemClose)
+            ifTrue:[each close]].!
+  
+mdiTile
+        "Tile the mdi documents."
+
+    UserLibrary sendMessage: self mdiClient asParameter
+                        msg:WmMditile
+                        wparam:0
+                        lparam:0.!
+   
+makeMdiMenu
+    "Private - Make the receiver's  mdi menu bar
+    The menubar is created each time a document
+    is created."
+    mdiMenu:=MenuWindow new.
+    self event:#mdiMenuBuilt.
+    self helpManager notNil
+        ifTrue: [self helpManager buildMdiMenuBar].
+    ^mdiMenu!
+   
+buildMenuBar
+        "Private - Create the menus that make up the menu bar."
+
+    |mw|
+
+    self event:#menuBuilt.
+
+    self hasSmalltalkMenuBar ifTrue:[
+        self menuWindow menus isEmpty ifTrue:[
+            self menuWindow addMenu:self fileMenu owner:self]].
+
+    mw:=self makeMdiMenu.
+    mw menus do:[:m|
+        m isMDIMenu ifFalse:[self menuWindow addMenu:m].
+    ].
+    self menuWindow systemMenu owner:self.
+    self hasSmalltalkMenuBar ifTrue:[
+        self menuWindow systemMenu
+            insertItem: '&Zoom Text    Alt+Z'
+            selector: #zoom
+            accelKey: $z
+            accelBits: AfAlt
+            after: 5.
+        self menuWindow systemMenu
+            insertItem: 'Fonts...'
+            selector: #setFonts
+            accelKey: nil
+            accelBits: nil
+            after: 6].
+
+    self menuWindow owner:self.
+    self mdiInitMenu:menuWindow.!
+  
+accel: aChar  afBits: theAfBits
+
+    "Private - Allows a window to intercept character input
+     before it is processed either by the menu or the child window.  Returning
+     true will cause the character input to be ignored from here on."
+    |accelTable index|
+    aChar=NumLockKey ifTrue:[self event:#toggleKey].
+    aChar=InsertKey ifTrue:[self event:#toggleKey].
+    aChar=CapitalKey ifTrue:[self event:#toggleKey].
+    ^super accel: aChar  afBits: theAfBits!
+ 
+helpContext: anAssociation
+        "Private - Set the receiver help context."
+    |active|
+
+    active := self mdiGetActive.
+    active notNil
+        ifTrue:[^active helpContext: anAssociation]
+        ifFalse:[^super helpContext: anAssociation].!
+  
+removeMdipane: aWindow
+        "Private - An mdi document is being closed."
+
+    mdiChildren remove: aWindow ifAbsent:[].!
+
+clearTextModified
+        "Private - Clear the modified flag on all the
+         receiver's TextPanes."
+    mdiChildren do: [:pane |   pane clearTextModified].
+    ^super clearTextModified.!
+  
+mdiMaximize:aWindow
+            "Private - Maximize the mdi document aWindow."
+            UserLibrary sendMessage: self mdiClient asParameter
+                                msg:WmMdimaximize
+                                wparam:aWindow asParameter
+                                lparam:0.!
+  
+childDeactivate
+
+        "Private - an mdi document was deactivated
+        Raise the  childDeactivate event."
+
+    self event:#childDeactivate!
+
+validate
+        "Private - Reimplemented here to force
+        the repainting of the MDIFrame before the
+        creation of the MDI documents."
+    |answer|
+
+    answer := super validate.
+    answer notNil
+        ifTrue:[self updateWindow].
+    ^answer!
+
+mdiInitMenu
+
+        "Private - answer the receiver's initMenu."
+
+    ^initMenu!
+ 
+buildWindow
+        "Private - Create the host window for the receiver."
+
+    menuWindow:=self mdiInitMenu.
+    super buildWindow.!
+ 
+mdiActivate:aWindow
+        "Private- activate aWindow."
+    UserLibrary sendMessage: self mdiClient asParameter
+                        msg:WmMdiactivate
+                        wparam:aWindow asParameter
+                        lparam:0.!
+
+mdiInitMenu:aMenuWindow
+
+        "Private - set the receiver's initMenu."
+
+    ^initMenu:=aMenuWindow!
+   
+resize: aRectangle repaint: repaint
+        "Private - The size of the receiver has been changed
+         to aRectangle.  If repaint is true then always repaint
+        else repaint only if the aRectangle is different from
+        rectangle."
+    self getFreeClientArea: aRectangle.
+    ^super resize: aRectangle repaint: repaint.!
+   
+uncheckItem:itemName forAllMDIChildMenus:menuName
+        "Uncheck the itemName of the menuName.
+        This menu item will be unchecked for all the MDI documents."
+
+    | theMenu|
+    self  mdiChildren do:[:mdi|
+        theMenu := mdi menuWindow menuTitled: menuName.
+        theMenu uncheckItem: itemName].
+    theMenu:=self mdiInitMenu menuTitled:menuName.
+    theMenu notNil ifTrue:[theMenu uncheckItem:itemName].!
+ 
+mdiMenu
+        "Private- answer MDI Window menu."
+
+    ^menuWindow menus detect:[:m|m isMDIMenu] ifNone:[^menuWindow menus last]!
+
+makeInitMdiMenu
+        "Private - Answer receiver's initial
+        menu bar when there is no opened document."
+    |tempMenu menu eachMenu|
+    tempMenu:=menuWindow.
+    menuWindow:=MenuWindow new.
+    self event:#menuBuilt.
+    menu:=menuWindow.
+    menuWindow:=tempMenu.
+    menu menus do:[:m|
+            eachMenu:=self  menuWindow menuTitled:m title.
+            eachMenu notNil ifTrue:[m copyAttributesFrom:eachMenu]].
+    ^menu!
+ 
+defWindowProc:msg with:wordInteger with: longInteger
+        "Private - MDIFrame default proc.
+        If the Mdi client handle is null, this is considered as a call to the normal
+        default procedure. See Microsoft documentation for the defFrameProc."
+
+    ^WinLong fromBytes:(UserLibrary defFrameProc: self handle
+                        mdiClient: self mdiClient asParameter
+                        msg: msg
+                        wparam: wordInteger
+                        lparam: longInteger)!
+   
+getNextMdiChildId
+        "Private - Answer the next available id for the reciever's mdiChildren."
+
+   1 to: mdiChildren size + 1 do:[:i|
+        mdiChildren at: i ifAbsent:[ ^ i]].!
+  
+activeTextPane
+        "Answer the subpane of the active MDIChild that has the typing focus."
+
+    |aTextPane mdiDocument|
+    mdiDocument:=self mdiGetActive.
+    mdiDocument isNil ifTrue:[^nil].
+    ^mdiDocument activeTextPane!
+  
+defaultFrameStyle
+        "Private - Answer the default frame style for the receiver."
+
+    ^WsMaximizebox |
+        WsMinimizebox |
+        WsThickframe |
+        WsSysmenu |
+        WsCaption |
+        WsOverlapped |
+        WsClipchildren |
+        WsClipsiblings!
+   
+childActivate
+        "Private - an MDI document was created
+        Raise the  #childActivate event."
+    self event:#childActivate!
+ 
+mdiNext
+        "Private - Activate the next mdi document."
+    UserLibrary sendMessage: self mdiClient asParameter
+                        msg:WmMdinext
+                        wparam:0
+                        lparam:0.!
+   
+activate
+        "Private - The receiver was activated."
+
+    self isHandleOk ifFalse:[^self].
+    super activate.!
+ 
+disableItem:itemName forAllMDIChildMenus:menuName
+        "Disable the itemName of the menuName.
+        This menu item will be disabled for all the MDI documents."
+
+    | theMenu|
+    self  mdiChildren do:[:mdi|
+        theMenu := mdi menuWindow menuTitled: menuName.
+        theMenu disableItem: itemName].
+    theMenu:=self mdiInitMenu menuTitled:menuName.
+    theMenu notNil ifTrue:[theMenu disableItem:itemName].!
+  
+setDocumentMenu: anMdiChild
+        "Private- Update frame's menu bar."
+    |aMenuWindow winlong|
+    self mdiGetActive == anMdiChild
+        ifFalse:[^self].
+    menuWindow:=anMdiChild menuWindow.
+
+    aMenuWindow:=self mdiMenu window handle.
+    winlong:=WinLong new.
+    winlong uShortAtOffset:0 put: menuWindow handle asInteger.
+    winlong uShortAtOffset:2 put: aMenuWindow asInteger.
+    UserLibrary sendMessage: self mdiClient asParameter
+            msg:WmMdisetmenu
+            wparam:0
+            lparam: winlong asParameter.
+
+    UserLibrary drawMenuBar: self asParameter.!
+
+isMDIFrame
+        "Answer true if receiver is an instance of class
+         MDIFrame, else answer false."
+
+    ^true!
+  
+openIn: aRectangle
+        "Private - Open the receiver in aRectangle."
+    |mdiClient|
+
+    self buildIcon.
+    mdiClient:=MDIClient new
+                    owner: self.
+    self addSubpane:mdiClient.
+    self mdiClient:mdiClient.
+    self initSize: aRectangle.
+    self buildMenuBar.
+    children do: [:subpane | subpane open].
+    ^self validate!
+   
+mdiMenuWindow
+        "Answer the MDI menu window. It contains the menus
+        at the right side of the menubar, after the menus specific
+        to the MDI document."
+
+    ^mdiMenu!
+
+mdiArrange
+        "Arrange the MDI documents."
+
+    UserLibrary sendMessage: self mdiClient asParameter
+                        msg:WmMdiiconarrange
+                        wparam:0
+                        lparam:0.!
+  
+wmCommand: wordInteger with: longInteger
+        "Private - Process the command message.
+        need to be reimplemented to send directly
+        #performMenuItem to the menuWindow's owner."
+
+    | control|
+    (self helpModeCommand: wordInteger) notNil ifTrue:[^0].
+    (( longInteger \\ 65536 ) > 0 or: [self isKindOf: DialogTopPane])
+        ifTrue: [                    "= 0 for 'enter' key"
+            control :=  self childAtId: wordInteger.
+            control notNil
+                ifTrue: [ control
+                    syncControlEvent: ( longInteger // 65536 ) ]]
+        ifFalse: [
+            self menuWindow owner sendInputEvent: #performMenuItem:     "specify the receiver now !!"
+                with: wordInteger ].
+
+    ^nil!
+   
+childClose
+        "Private - an MDI document was closed.
+        Raise the #childClose event."
+
+    self event:#childClose!
+ 
+mdiGetActive
+        "Answer the MDI active document if any, else answer nil."
+
+    |mdiActive|
+
+    self mdiClient isHandleOk ifFalse:[^nil].
+    mdiActive:=(WinStructure fromBytes:(
+                            UserLibrary sendMessage: self mdiClient asParameter
+                                                msg:WmMdigetactive
+                                                wparam:0
+                                                lparam:0)) uShortAtOffset:0.
+
+    ^mdiActive:=Notifier findWindow:mdiActive.!
+
+cancelMode
+        "Private - Cancel any internal mode of the receiver, if any."
+    |mdiDocument|
+    mdiDocument:=self mdiGetActive.
+    mdiDocument notNil
+        ifTrue:[mdiDocument cancelMode].
+    ^super cancelMode!
+  
+wmErasebkgnd: wordInteger with: longInteger
+        "Private - Process the erase background message."
+        "Will be erased by the MDIClient"
+    ^1!
+  
+close
+        "The receiver is being closed
+        Answer nil if one of the receiver's document has not
+        been closed."
+    super close.
+    mdiChildren size >0 ifTrue:[^nil].!
+ 
+helpManager
+        "Private - Answer the mdi active document's help manager if any
+        else answer the receiver's help manager."
+
+    |active hm|
+    active := self mdiGetActive.
+    active notNil
+        ifTrue:[hm := active propertyAt: #helpManager].
+    hm notNil ifTrue:[^hm].
+    ^self propertyAt: #helpManager.!
+  
+checkItem:itemName forAllMDIChildMenus:menuName
+    "Check the menu itemName of the menuName.
+    This menu item will be checked for all the MDI documents."
+
+    | theMenu|
+    self  mdiChildren do:[:mdi|
+        theMenu := mdi menuWindow menuTitled: menuName.
+        theMenu checkItem: itemName].
+    theMenu:=self mdiInitMenu menuTitled:menuName.
+    theMenu notNil ifTrue:[theMenu checkItem:itemName].!
+  
+enableItem:itemName forAllMDIChildMenus:menuName
+        "Enable the itemName of the menuName.
+        This menu item will be enabled for all the MDI documents."
+
+    | theMenu|
+    self  mdiChildren do:[:mdi|
+        theMenu := mdi menuWindow menuTitled: menuName.
+        theMenu enableItem: itemName].
+    theMenu:=self mdiInitMenu menuTitled:menuName.
+    theMenu notNil ifTrue:[theMenu enableItem:itemName].!
+   
+mdiChildren
+        "Answer a collection of the currently opened MDI documents."
+
+    ^mdiChildren! !
+
+
+!MDIClient methods !
+   
+wmMdiactivate: wordInteger with: longInteger
+    "Private - for optimization only."
+    |active|
+
+    active:=self parent mdiGetActive.
+    active isNil ifTrue:[^nil].
+    self sendInputEvent:#selected.
+    ^nil!
+  
+buildControl: parentWindow
+        "Private - Create the Control for the receiver."
+    (super buildControl: parentWindow) isNil ifTrue:[^nil].
+    self receiveAllWindowMessages.!
+  
+frameStyle
+        "Private - Answer an Integer with appropriate styles in it."
+    ^
+    WsHscroll |
+    WsVscroll |
+    WsChild |
+    WsClipsiblings |
+    WsClipchildren | 1!
+ 
+selected
+        "Private- An MDI document has been selected from the menu bar."
+    MDISystem mdiSelected:true.!
+  
+isMDIClient
+        "Answer true if receiver is an instance of class
+         MDIChild, else answer false."
+
+    ^true!
+ 
+winClass
+        "Private - Answer the Windows class for an MDIClient."
+    ^'MDICLIENT'!
+ 
+buildWindow:parentWindow
+        "Private - Build the MDI Client."
+    |clientCreateStruct addrClassName addrStruct addrTitleName|
+    style isNil ifTrue: [style := self frameStyle].
+    clientCreateStruct:=WinClientCreateStruct new.
+    clientCreateStruct hMenu:parentWindow menuWindow asParameter.
+    clientCreateStruct idFirstChild:100.
+    addrClassName:=WinAddress copyToNonSmalltalkMemory: self winClass asParameter.
+    addrTitleName:=WinAddress copyToNonSmalltalkMemory: '' asParameter.
+    addrStruct:=WinAddress copyToNonSmalltalkMemory: clientCreateStruct asParameter.
+    handle:= WindowHandle fromInteger:
+        (UserLibrary
+            createWindow: addrClassName asParameter
+            name: addrTitleName asParameter
+            style: style
+            x: 0
+            y: 0
+            width: 0
+            height: 0
+            parent: parentWindow asParameter
+            menu: self id
+            instance: self dsHandle
+            param: addrStruct asParameter).
+
+    addrStruct unlockAndFree.
+    addrClassName unlockAndFree.
+    addrTitleName unlockAndFree.
+    UserLibrary setWindowWord:self parent asParameter index:0 word:self asParameter.
+    self initGraphics.
+    self receiveMessages.
+    self buildControl: parentWindow!
+ 
+wmCommand: wordInteger with: longInteger
+        "Private - Process the command message."
+    ^nil! !
+
+
+!WindowHandle methods !
+
+defMDIChildProc:anMDIChild
+        "Private - Change the default Windows procedure of the receiver
+         to use the DefMDIChildProc."
+    self propertyAt: 'oldProc'
+        put: anMDIChild class defMDIChildProcAddress.! !
+
+
+!WinMdiCreateStruct class methods !
+
+sizeInBytes
+         "Private - Answer the default size in bytes."
+    ^26! !
+
+
+!WinMdiCreateStruct methods !
+  
+y
+
+    ^self shortAtOffset:12!
+
+szTitle: aString
+
+    pszTitle:=WinAddress copyToNonSmalltalkMemory: aString asAsciiZ.
+    self uLongAtOffset: 4 put: pszTitle asInteger.!
+   
+cx: anInteger
+
+    ^self shortAtOffset:14  put: anInteger!
+
+free
+
+    pszClass unlockAndFree.
+    pszTitle unlockAndFree.!
+   
+szClass
+
+    |winaddress|
+    winaddress:=WinAddress new.
+    winaddress uLongAtOffset: 0 put: (self uLongAtOffset: 0).
+    ^String fromAddress: winaddress.!
+  
+style
+
+    ^self uLongAtOffset:18!
+
+cy
+
+    ^self shortAtOffset:16!
+   
+cy: anInteger
+
+    ^self shortAtOffset:16  put: anInteger!
+
+x: anInteger
+
+    ^self shortAtOffset:10  put: anInteger!
+ 
+lParam: anInteger
+
+    ^self uLongAtOffset:22 put: anInteger!
+ 
+szTitle
+
+    |winaddress|
+    winaddress:=WinAddress new.
+    winaddress uLongAtOffset: 0 put: (self uLongAtOffset: 4).
+    ^String fromAddress: winaddress.!
+  
+x
+
+    ^self shortAtOffset:10!
+
+cx
+
+    ^self shortAtOffset:14!
+   
+hOwner
+
+    ^self uShortAtOffset:8!
+   
+y: anInteger
+
+    ^self shortAtOffset:12  put: anInteger!
+ 
+lParam
+
+    ^self uLongAtOffset:22!
+   
+szClass: aString
+
+    pszClass:=WinAddress copyToNonSmalltalkMemory: aString asAsciiZ.
+    self uLongAtOffset: 0 put: pszClass asInteger.!
+   
+hOwner: anInteger
+
+    ^self uShortAtOffset:8  put: anInteger!
+
+style: anInteger
+
+    ^self uLongAtOffset:18  put: anInteger! !
+
+
+!NotificationManager class methods !
+ 
+transcriptClass
+        "Private - Answer the Transcript class"
+    ^MDITranscript! !
+
+
+!NotificationManager methods !
+ 
+mdiInitialize
+    "Private - Initialize the MDI classes."
+
+    WinEvents  at: WmMdiactivate put:#wmMdiactivate:with:.
+
+    MDISystem system.!
+   
+translateMDISysAccel: winMsgNS
+        "Private - Translate MDI accelarator keys."
+
+    | aWindow hWnd hWndString  answer|
+
+
+    hWndString := ((ByteArray new: 2)
+        replaceFrom:1
+        to: 2
+        with: winMsgNS
+        startingAt: 1).
+    hWnd := ((hWndString at: 2) * 256)
+                    + (hWndString at: 1).
+
+    "Is hWnd a Smalltalk window"
+
+    (aWindow := Notifier findRealWindow: hWnd)  notNil ifTrue: [
+        aWindow mainWindow isMDIChild ifTrue:[aWindow:=aWindow mainWindow parent].
+            answer:=UserLibrary
+                                translateMDISysAccel: aWindow  asParameter
+                                msg:  winMsgNS asParameter.
+            ^answer].
+
+    ^false! !
+
+
+!MenuWindow methods !
+  
+addMDIMenu: aMenu
+        "Private - Add aMenu to the receiver. The owner is an MDIChild."
+
+    |tempMenu h old|
+    handle = NullHandle ifFalse:[
+        old :=  Process enableInterrupts: false].
+    menus notEmpty
+        ifTrue:[
+            tempMenu:=self owner mdiMenuWindow menus.
+            menus removeAll: tempMenu.
+            menus add: aMenu;
+            addAll: tempMenu]
+        ifFalse:[menus add: aMenu].
+    handle = NullHandle ifFalse:[
+            h:=self handle.
+            self buildPopupWindow isNil ifTrue:[^self].
+            self owner setDocumentMenu.
+            UserLibrary destroyMenu: h.
+            Process enableInterrupts: old].!
+   
+destroyMDIMenu: aMenu
+        "Private - Destroy an MDI menu from the receiver."
+    |h old|
+    (menus includes: aMenu) ifFalse:[^self].
+    handle = NullHandle ifFalse:[
+        old :=  Process enableInterrupts: false].
+    menus remove: aMenu ifAbsent: [^self].
+    handle = NullHandle ifTrue: [^self].
+    h:=self handle.
+    self buildPopupWindow isNil ifTrue:[^self].
+    self owner setDocumentMenu.
+    UserLibrary destroyMenu:h.
+    Process enableInterrupts: old.! !
+
+
+!MDIMenu methods !
+  
+buildItem: i menu: menuNumber menuBar: menuBar
+        "Private - Build the i'th item in the menu indexed by
+         the menuNumber of the menuBar."
+    | a item |
+    item := (items at: i).
+    item selector notNil ifTrue:[item id: (menuNumber * 256 + i)].
+    (item submenu notNil)
+        ifTrue:  [item submenu buildWindow: menuBar].
+    accel size >= i ifTrue: [
+        (accel at: i) notNil ifTrue: [
+            a := accel at: i.
+            menuBar accelTable at: a put: (menuNumber * 256 + i)]].
+    window insertItem: item label: item contents.!
+
+isMDIMenu
+        "Answer true if receiver is an instance of class
+         MDIMenu, else answer false."
+        "added by SNI"
+    ^true! !
+
+
+!MDIChild class methods !
+ 
+supportedEvents
+        "Answer the Set of events that MDIChilds can notify
+         their owners about."
+    ^super supportedEvents
+        add: #toggleKey;
+        yourself!
+
+defMDIChildProcAddress
+        "Private - Answer the address of the defMDIChildProc API."
+
+    ^DefMDIChildProcAddress!
+   
+startUp
+        "Private - Initialize the receiver's class variables."
+
+    DefMDIChildProcAddress:=KernelLibrary  getProcAddress:UserLibrary asParameter procName:'DefMDIChildProc' asParameter.
+    DefMDIChildProcAddress:=(WinAddress fromString:DefMDIChildProcAddress) asInteger.! !
+
+
+!MDIChild methods !
+  
+defMDIChildProc
+        "Private - Change the default Windows procedure of the receiver
+         to use the DefMDIChildProc."
+    handle defMDIChildProc:self.!
+   
+openFile
+        "Private - User selected Open... from the File menu."
+    | dialog file |
+    dialog := FileDialog new.
+    dialog addSmalltalkFileFilters;
+             openFile.
+
+    file := dialog file.
+    file isNil ifTrue: [^self].
+    file := File pathNameReadOnly: file.
+    dialog fileIn
+        ifTrue: [
+            CursorManager execute change.
+            file fileIn.
+            CursorManager normal change]
+        ifFalse: [TextWindow new  frame:self frame;
+            sendInputEvent: #openOnFile: with: file].
+    file close!
+   
+setDocumentMenu
+        "Private - set the receiver's menu as the frame's menubar."
+
+    self menuWindow menus isEmpty ifTrue:[^self setInitMenu].
+    self frame setDocumentMenu: self.!
+
+initMdiWindowSize
+        "Private-Answer the default size of a document."
+    |rect extent origin|
+
+    rect:=self frame mdiClient rectangle.
+
+    "if framingBlock notNil, use it for initial rectangle."
+    framingBlock notNil  ifTrue: [
+        ^framingBlock value: rect
+    ] ifFalse: [
+        extent := (rect width * 24 // 25) @ (rect height * 24 // 25).
+        extent := extent - ((self frame mdiChildren size - 1) * ( 8 @ 8)).
+        origin :=(self frame mdiChildren size - 1) * (8 @ 8).
+        ^origin extent: extent
+    ].!
+ 
+helpManager
+        "Private - Answer the receiver's help manager
+        If none, answer the receiver's frame help manager."
+    |hm|
+
+    hm := self propertyAt: #helpManager.
+    hm notNil ifTrue:[^hm].
+    ^self frame propertyAt: #helpManager!
+
+showMaximizedWindow
+        "Private - Show the receiver window with maximized size."
+
+    self frame mdiMaximize:self.
+    self resize: (self rectangle)!
+  
+outOfMemory
+        "Private - Low resource situation."
+
+    self menuWindow handle=NullHandle ifFalse:[self menuWindow close;destroy].
+    super outOfMemory.!
+  
+frame
+    "Answer the receiver's frame."
+
+    ^frame!
+ 
+showIconicWindow
+        "Private - Show the receiver window as an icon."
+    self frame mdiIsMaximized ifTrue:[self showWindow.^self].
+    super showIconicWindow.!
+ 
+menuWindow:aMenuWindow
+        "Private - set the receiver's menuWindow."
+
+    ^menuWindow:=aMenuWindow!
+  
+isMDIChild
+        "Answer true if receiver is an instance of class
+         MDIChild, else answer false."
+    ^true!
+
+openClassBrowser
+        "Private - The user selected Browse Classes from
+         the File menu."
+    ClassHierarchyBrowser new frame:self frame;openOn: Smalltalk rootClasses.!
+
+frame: aFrame
+    "Set the receiver's frame to aFrame."
+
+    frame:=aFrame.!
+  
+deactivate
+        "Private - The receiver was deactivated."
+
+    self isHandleOk ifFalse: [^self]. "already closed"
+    super deactivate.
+    self frame childDeactivate.!
+
+updateClient
+        "Private- Update the MDI client."
+
+        self parent noRedraw:false.
+        self parent invalidateRect:nil.
+        self parent updateWindow.!
+  
+disableSystemMenuItemClose
+        "Disable the receiver's system menu item close."
+
+    self systemMenuItemClose:false!
+  
+initialize
+        "Private - Initialize the receiver."
+
+    super initialize.
+    self systemMenuItemClose:true.!
+  
+frameRectangle
+        "Answer the receiver's frame area
+         as a rectangle."
+
+    ^super frameRectangle mapToWindow:self parent.!
+ 
+closeView
+        "Private - Close the receiver and all its children."
+
+    |answer active max|
+
+    self isHandleOk ifFalse: [^self]. "already closed"
+
+    answer:=super closeView.
+    answer isNil ifTrue:[
+        ^nil].
+
+    self frame childClose.
+    self frame renumber:self.
+    active:=self frame mdiGetActive.
+    active isNil ifTrue:[self setInitMenu].
+
+    ^answer!
+ 
+winClass
+    "Private- answer the receiver's window class."
+    "Same class used for all documents."
+    | className wndClass lptr answer|
+    className := 'SmalltalkV',self class name.
+    wndClass := WinWindowClass new.
+    answer:=UserLibrary getClassInfo: WIN hInstanceExe
+        className: className asParameter
+        wndClass: wndClass asParameter.
+    answer ifTrue:[^className].
+    UserLibrary getClassInfo: WIN hInstanceExe
+        className: 'VWIN' asParameter
+        wndClass: wndClass asParameter.
+    wndClass style: (CsVredraw | CsHredraw).
+    wndClass hIcon:0;
+        className: (lptr := WinAddress
+            copyToNonSmalltalkMemory: className asAsciiZ) asParameter.
+    UserLibrary registerClass: wndClass asParameter.
+    lptr unlock; free.
+   ^className!
+ 
+validate
+        "Private - Create or recreate the window for the receiver."
+    |old answer|
+
+    self parent isHandleOk ifFalse:[^nil].
+    old :=  Process enableInterrupts: false. "do not want to receive messages in MDIClient while in buildWindow"
+    answer := super validate.
+    answer notNil
+        ifTrue:[
+            self frame mdiActivate:self.
+            self updateWindow].
+    Process enableInterrupts: old.
+    answer isNil ifTrue:[^nil].
+
+    self systemMenuItemClose ifFalse:[self  disableSysMenu:6].
+    MDISystem mdiSelected:true.!
+ 
+openIn: aRectangle
+        "Private - Open the receiver in aRectangle."
+
+    self frame isNil & MDISystem isActive ifTrue:[
+        self frame:MDISystem frame].
+    self buildIcon.
+    self frame addMdipane: self.
+    self initSize: (self initSize).
+    self buildMenuBar.
+    children do: [:subpane | subpane open].
+    ^self validate!
+  
+label:aString
+        "Set the receiver's label without the prefix."
+
+    ^self labelWithoutPrefix:aString!
+   
+destroy
+        "Private - destroy the receiver."
+
+    self frame removeMdipane: self.
+    self frame mdiDestroy: self.
+    self frame avoidDestroyCurrentMenu:self.
+    self menuWindow destroy.
+    MDISystem mdiSelected:true.!
+
+openDiskBrowser
+        "Private - The user selected Browse Disk from
+         the File menu."
+    DiskBrowser new frame:self frame;open!
+
+buildMenuBar
+        "Private - Create the menus that make up the menu bar."
+
+    |textPane eachMenu hasSmalltalkMenuBar |
+
+    (self hasSmalltalkMenuBar and:[self menuWindow menus isEmpty]) ifTrue: [
+        self menuWindow:self frame makeInitMdiMenu .
+        self menuWindow menus isEmpty
+            ifTrue:[
+                    self menuWindow addMenu:(self fileMenu) owner:self]].
+
+    self hasSmalltalkMenuBar ifTrue:[
+        textPane := self searchForDefaultTextPane.
+        textPane notNil ifTrue: [
+            self menuWindow addMenu: TextPane editMenu owner: textPane.
+            Smalltalk isRunTime ifFalse:[
+                self menuWindow addMenu: TextPane smalltalkMenu owner: textPane]
+            ].
+
+        children do: [ :subpane |
+            eachMenu := subpane menu.
+            eachMenu notNil ifTrue: [
+                self menuWindow addMenu: eachMenu.
+                ]].
+    ].
+
+    self event:#menuBuilt.
+
+    self mdiMenuWindow:self frame makeMdiMenu.
+    self mdiMenuWindow menus do:[:m| self menuWindow addMenu: m].
+    self mdiMenuWindow menus do:[:m|
+            eachMenu:=self frame  menuWindow menuTitled:m title.
+            eachMenu notNil ifTrue:[m copyAttributesFrom:eachMenu]].
+
+    self hasSmalltalkMenuBar ifTrue: [
+        (self owner respondsTo: #saveAs) ifFalse: [
+            (eachMenu := self menuWindow menuTitled: '&File') notNil
+                ifTrue: [eachMenu disableItem: #saveAs]].
+    ].
+
+    self menuWindow parent: self frame.
+    self menuWindow owner:self.
+    self menuWindow systemMenu owner:self.
+
+    "We add the system menus only for mapping the frame system menu items.
+    There is no Smalltalk system menus in the MDI documents though."
+
+    self frame hasSmalltalkMenuBar ifTrue: [
+        self menuWindow systemMenu
+            insertItem: '&Zoom Text    Alt+Z'
+            selector: #zoom
+            accelKey: $z
+            accelBits: AfAlt
+            after: 5.
+        self menuWindow systemMenu
+            insertItem: 'Fonts...'
+            selector: #setFonts
+            accelKey: nil
+            accelBits: nil
+            after: 6.
+    ].!
+
+defWindowProc:msg with:wordInteger with: longInteger
+        "Private - MDIChild default procedure."
+
+    ^WinLong fromBytes:(UserLibrary defMDIChildProc: self handle
+                        msg: msg
+                        wparam: wordInteger
+                        lparam: longInteger)!
+  
+systemMenuItemClose
+        "Private - Answer false if the receiver's system menu item
+        close is disabled, else answer true."
+    ^self propertyAt: #systemMenuItemClose!
+  
+mdiMenuWindow
+    "Private - Answer the receiver's mdiMenuWndow."
+    ^mdiMenuWindow!
+  
+wmMdiactivate: wordInteger with: longInteger
+        "Private - Process the mdiactivate window message."
+    "triggers the active and deactivate message."
+    |deactivated|
+    wordInteger > 0 ifTrue:[self setDocumentMenu.self sendInputEvent:#activate]
+                              ifFalse:[self sendInputEvent:#deactivate].
+
+    wordInteger > 0 ifTrue:[MDISystem mdiSelected:false].
+    deactivated:=Notifier findWindow:longInteger // 65536.
+    deactivated isNil ifTrue:[^self].
+    deactivated minimized ifTrue:[MDISystem mdiSelected:true].!
+   
+buildWindow
+        "Private - Create the document for the receiver."
+        "see Microsoft online Q70080 Creating a Hidden MDI Child Window."
+
+    |mdiCreate answer max winaddress m|
+    max:=self frame mdiIsMaximized.
+    NewWindow notNil ifTrue:[^nil].
+    self frame isActive ifFalse:[
+        self frame makeActive.
+        self frame updateWindow].
+    self parent noRedraw:true.
+
+    style isNil ifTrue: [style := self defaultFrameStyle].
+    mdiCreate:=WinMdiCreateStruct new.
+    mdiCreate szTitle:self label.
+    mdiCreate szClass: self winClass.
+    mdiCreate hOwner: self dsHandle.
+    mdiCreate x:rectangle origin x.
+    mdiCreate y:rectangle origin y.
+    mdiCreate cx:rectangle width.
+    mdiCreate cy:rectangle height.
+    mdiCreate style:style.
+    mdiCreate lParam:NullHandle.
+    winaddress:=WinAddress copyToNonSmalltalkMemory: mdiCreate asParameter.
+    NewWindow:=self.
+    answer:=WinStructure fromBytes:
+    (UserLibrary sendMessage:self parent asParameter
+                        msg:WmMdicreate
+                        wparam:0
+                        lparam:winaddress asParameter).
+    NewWindow:=nil.
+    mdiCreate free.
+    winaddress unlockAndFree.
+    handle:=WindowHandle fromInteger:(answer uShortAtOffset:0).
+    handle=NullHandle ifTrue:[self panicWmMdiCreate.^nil].
+    self frame renumber:self.
+    "Set the size of the frame window."
+    rectangle := self rectangle.
+
+    m := UserLibrary
+            getSystemMenu: self asParameter
+            revert: 0.
+    self propertyAt: #sysMenu put: m.
+
+    self activeTextPane: self searchForDefaultTextPane.
+    self hideWindow.
+    self updateClient.
+    WinInfo isWindows30 ifTrue:[
+        max ifTrue:[self frame mdiMaximize:self]].!
+  
+systemMenuItemClose:aBoolean
+        "Private - disable the receiver's system menu item
+        close if aBoolean is false."
+    self propertyAt: #systemMenuItemClose put:aBoolean.!
+ 
+activate
+        "Private - The receiver was activated."
+
+    self isHandleOk ifFalse: [^self]. "already closed"
+    super activate.
+    self frame childActivate.!
+
+mdiMenuWindow:aMenuWindow
+    "Private - Set the receiver's mdiMenuWndow."
+    mdiMenuWindow:=aMenuWindow!
+ 
+mdiSelected
+        "Private - Answer if the receiver is already selected."
+
+    ^MDISystem mdiSelected!
+  
+isActive
+        "Private - Answer true if the receiver's
+         is the currently active document."
+
+    ^self frame mdiGetActive==self!
+  
+setInitMenu
+        "Private - set the initMenu as the frame's menubar."
+
+    self frame setInitMenu!
+ 
+wmCreate: wordInteger with: longInteger
+        "Private - Process WM_CREATE messsage.
+        Create menu and subpanes."
+
+    NewWindow:=nil.
+
+    self menuWindow buildPopupWindow isNil ifTrue:[^-1].
+    self initGraphics.
+    self defMDIChildProc.
+    self receiveMessages.
+
+    "Create the subpanes."
+    children do: [ :subpane |
+        (subpane buildWindow: self) isNil ifTrue: [self outOfMemory.^-1]].
+
+    ^nil!
+  
+openWorkspace
+        "Private - The user selected New Workspace from
+         the File menu."
+    TextWindow new
+        frame:self frame;
+        label: 'Workspace';
+        openOn: ''.!
+  
+contextForItem:anInteger
+        "Private - Handle the system menu when the Child document
+        is maximized."
+    (anInteger between:100 and:150) ifTrue:[
+        ^Association key: 'MDIMenu' value: self owner].
+    ^super contextForItem:anInteger.!
+
+initSize
+        "Private - Answer the initial size of the receiver."
+    | size |
+    self frame isNil ifTrue:[^nil].
+    size := (owner respondsTo: #initMdiWindowSize)
+                ifTrue: [owner initMdiWindowSize]
+                ifFalse: [self initMdiWindowSize].
+    ^((size isKindOf: Rectangle)
+            ifTrue: [size]
+            ifFalse: [
+                (size isKindOf: Point)
+                    ifTrue: [self boxOfSize: size]
+                    ifFalse: [0 @ 0 extent: 100@100]]).!
+
+mdiSelected:aBoolean
+        "Private - Set the receiver is already selected."
+
+    MDISystem mdiSelected:aBoolean!
+   
+accel: aChar  afBits: theAfBits
+
+    "Private - Allows a window to intercept character input
+     before it is processed either by the menu or the child window.  Returning
+     true will cause the character input to be ignored from here on."
+
+    |accelTable index|
+    aChar=NumLockKey ifTrue:[self frame event:#toggleKey].
+    aChar=InsertKey ifTrue:[self frame event:#toggleKey].
+    aChar=CapitalKey ifTrue:[self frame event:#toggleKey].
+    (aChar=$Z asciiValue and:[theAfBits = AfAlt]) ifTrue:[self zoom.^true].
+    ^super accel: aChar  afBits: theAfBits!
+
+panicWmMdiCreate
+
+        "Private - Low resource situation- couldn't create an MDI child."
+
+    self updateClient.
+
+    Terminal bell;bell;bell.
+    self frame removeMdipane:self.!
+ 
+defaultFrameStyle
+        "Private - Answer the default frame style for the receiver."
+
+    ^WsMaximizebox |
+        WsMinimizebox |
+        WsThickframe |
+        WsSysmenu |
+        WsCaption |
+        WsChild |
+        WsClipsiblings |
+        WsBorder!
+  
+hideWindow
+        "Private - Make the window and all its children invisible."
+
+    self frame mdiIsMaximized ifTrue: [
+        self parent noRedraw: true].
+
+    ^super hideWindow!
+  
+statusPane
+        "Answer the receiver's statusPane."
+
+    self frame isNil ifTrue:[^MDISystem frame statusPane].
+    ^self frame statusPane! !
+
+
+!ViewManager methods !
+ 
+disableSystemMenuItemClose
+    "Disable the receiver's mainView system menu item close."
+    views size < 1 ifTrue: [
+        self addView: (
+            self topPaneClass new
+                owner: self)].
+    ^(views at: 1)  disableSystemMenuItemClose!
+ 
+frame
+        "Answer the receiver's frame if any."
+
+    self mainView  isMDIChild ifFalse:[^nil].
+    ^self mainView frame!
+ 
+frame: aWindow
+    "Set the receiver's frame to aWindow."
+    views size < 1 ifTrue: [
+        self addView: (
+            MDIChild new
+                owner: self)].
+    (views at: 1) frame: aWindow!
+   
+topPaneClass
+        "Private - Answer the default top pane class."
+    Smalltalk isRunTime ifFalse:[
+        MDISystem isActive ifTrue:[^MDIChild]].
+    ^TopPane! !
+
+
+!MDITranscript class methods !
+   
+initializeTranscript
+        "Private - Create the system transcript window."
+    | mgr|
+    MDISystem isActive ifTrue:[^MDISystem new open].
+    ^self new open! !
+
+
+!MDITranscript methods !
+   
+opened:aPane
+        "Private - The Transcript has been opened."
+    MDISystem display.!
+   
+initMdiWindowSize
+        "Private - Answer the receiver's size when it is an MDI document."
+    |rect|
+    rect:=self frame mdiClient rectangle.
+    ^0 @ 0 extent: (rect width * 4  // 5) @ (rect height * 3 // 5)!
+
+addMenuItem: aPane
+        "Private - Add items to the system menu in Transcript."
+
+    super addMenuItem:aPane.
+        (self menuWindow menuTitled: '&File')
+            appendSeparator.
+        MDISystem isActive ifTrue:[
+        (self menuWindow menuTitled: '&File')
+            appendItem: 'Quit &MDI	Alt+M' selector:
+                (Message new receiver: MDISystem;
+                    selector: #deactivate) accelKey: $m accelBits: AfAlt | AfChar].
+        MDISystem isActive ifFalse:[
+        (self menuWindow menuTitled: '&File')
+            appendItem: 'Switch to &MDI	Alt+M' selector:
+                (Message new receiver: MDISystem;
+                    selector: #activate) accelKey: $m accelBits: AfAlt | AfChar ].!
+
+open
+        "Private - Create the system transcript window."
+    | mgr|
+    mgr := self.
+    mgr
+        label: 'Transcript';
+        model: mgr;
+        icon: (Icon fromModule: Icon defaultDLLFileName id:'Transcript');
+        statusText:WindowLabelPrefix,' ',Smalltalk version.
+    mgr mainView
+        when: #menuBuilt perform: #addMenuItem:;
+        when: #validated perform: #changeSysMenu:;
+        when: #close perform: #close:;
+        when: #opened perform: #opened:.
+     MDISystem isActive ifTrue:[mgr disableSystemMenuItemClose].
+    Transcript := mgr.
+    mgr
+        addSubpane:
+            (TextPane new
+                model: '';
+                yourself);
+         openIn: ((1 @ 5 corner: 40 @ 19)
+            scaleBy: (SysFont width @ SysFontHeight)).!
+   
+changeSysMenu: aPane
+        "Private - Change the system menu."
+    MDISystem isActive ifFalse:[^super changeSysMenu:aPane].! !
+
+
+!MDIViewManager methods !
+   
+mdiTile
+        "Tile the MDI documents."
+
+    self frame mdiTile!
+
+frame:aTopPane
+        "Set the receiver's frame and answer aTopPane."
+
+    mdiFrame:=aTopPane.
+    ^aTopPane!
+   
+mdiCloseAll
+        "Close all MDI documents which are not minimized."
+
+    self frame mdiCloseAll.!
+  
+activeTextPane
+        "Answer the active textPane of the active MDI document."
+    |activeTextPane|
+    activeTextPane:=self frame mdiGetActive.
+    activeTextPane isNil ifTrue:[^nil].
+    activeTextPane:=activeTextPane activeTextPane.
+    ^activeTextPane!
+  
+mdiCascade
+        "Cascade the MDI documents."
+    self frame mdiCascade!
+ 
+close
+        "Close all the views."
+    views do: [:v | v isMDIChild ifFalse: [v closeView]]!
+
+frame
+        "Answer the receiver's frame."
+    ^mdiFrame!
+
+mdiNewWindow
+        "Create a new TextWindow MDI document
+        from the active TextPane."
+
+    self frame activeTextPane notNil ifTrue:[
+        TextWindow new frame:self frame;  label: 'Workspace';
+        openOn:self frame activeTextPane contents].!
+
+mdiArrange
+        "Arrange the MDI documents."
+    self frame mdiArrange! !
+
+
+!MDISystem class methods !
+   
+addExtraTool: aTool
+        "Add aTool to the ExtraTools class variable.
+         At MDI activation the tools in this class array are added
+         to the MDISystem toolPane. "
+
+    ExtraTools isNil ifTrue:[ ExtraTools := Array new].
+    ExtraTools := ExtraTools asOrderedCollection.
+    (ExtraTools includes: aTool) ifFalse:[
+        ExtraTools add: aTool].
+    ExtraTools := ExtraTools asArray.!
+ 
+display:aBoolean
+        "Private - set the receiver's Mdidisplay to aBoolean."
+    Mdidisplay:=aBoolean!
+  
+optionTitle
+        "Private - Answer the option menu title.
+        If you modify this method, change the reference
+        in HelpMDISystem."
+
+    ^'Se&ttings'!
+ 
+statusPaneHelp:aKey
+        "Private - Answer the  hint text used by
+        the StatusPane for the help support."
+
+    ^HelpMDISystem at:aKey ifAbsent:[^super statusPaneHelp:aKey].!
+   
+version
+        "Answer the MDI version number as a string."
+    ^'1.0'!
+  
+removeAllExtraTools
+        "Reinitialize the ExtraTools class variable."
+
+    ExtraTools := nil!
+ 
+optionMenu
+        "Private - Answer the receiver's option menu."
+    ^Menu new
+        appendItem: '&StatusPane' selector:#toggleStatusPane;
+        appendItem: '&ToolPane' selector:#toggleToolPane;
+        appendItem: 'Quit &MDI	Alt+M' selector:(Message new receiver: MDISystem;
+                    selector: #deactivate) accelKey: $m accelBits: AfAlt | AfChar;
+        title: self optionTitle.!
+ 
+mdiSelected:aBoolean
+        "Private - set the receiver's MdiSelected to a boolean."
+    MdiSelected:=aBoolean!
+   
+display
+        "Private - display message up on the switch between MDI mode
+        and non MDI mode."
+    Mdidisplay ifFalse:[^self].
+    Transcript notNil ifTrue:[
+        Transcript mainView activeTextPane contents: TranscriptText].
+    MDISystem display:false.
+    ^Mdidisplay!
+
+system
+        "Private - Initialize MDISystem class variables."
+
+    Mdiactive:=false.
+    Mdidisplay:=false.
+    MdiSelected:=false.!
+ 
+activate
+        "Switch to MDI mode."
+
+    Mdiactive:=true.
+    Transcript notNil ifTrue:[
+        TranscriptText := Transcript mainView activeTextPane contents].
+    Notifier reinitialize.
+    Mdidisplay:=true.!
+ 
+mdiMenu
+        "Private - Answer the standard MDI Window menu."
+    ^MDIMenu new
+        appendItem: '&New Window' selector:#mdiNewWindow accelKey:$n accelBits:AfControl;
+        appendItem: '&Cascade	Shift+F5' selector: #mdiCascade accelKey: VkF5 accelBits: AfVirtualkey|AfShift ;
+        appendItem: '&Tile	Shift+F4' selector: #mdiTile accelKey: VkF4 accelBits: AfVirtualkey|AfShift ;
+        appendItem: 'Arrange &Icons' selector: #mdiArrange;
+        appendItem: 'Close &All' selector: #mdiCloseAll;
+        title: '&Window'.!
+  
+removeExtraTool: aTool
+        "Remove aTool from the ExtraTools class variable.
+         At MDI activation the tools in this class array are added
+         to the MDISystem toolPane."
+
+    ExtraTools isNil ifTrue:[ ^ self].
+    ExtraTools := ExtraTools asOrderedCollection.
+    ExtraTools remove: aTool ifAbsent:[].
+    ExtraTools := ExtraTools asArray.
+    ExtraTools isEmpty ifTrue:[ ExtraTools := nil].!
+   
+frame
+        "Private - answer the MDI Frame Transcript Window."
+    ^MdiFrame!
+   
+mdiSelected
+        "Private - answer true if an MDI document is already active, else answer false."
+    ^MdiSelected!
+ 
+deactivate
+        "Switch to non MDI mode."
+
+    Mdiactive:=false.
+    Mdidisplay:=true.
+    Transcript notNil ifTrue:[
+        TranscriptText := Transcript mainView activeTextPane contents].
+    Notifier reinitialize.!
+  
+isActive
+        "Private - Answer true if the MDI mode is active, else answer false."
+    ^Mdiactive! !
+
+
+!MDISystem methods !
+ 
+toggleKey:aPane
+        "Private - Update the StatusPane to display the state
+        of the toggle keys. The normal modes, such as Insert or
+        non-Caps-lock mode, are indicated in the status bar by the absence
+        of the indicator for the opposite mode. This is compliant
+        with the Microsoft user Interface Style Guide for Windows 3.1."
+
+
+    (aPane statusPane statusBoxAt: #caps) show: (Notifier isKeyToggled: VkCapital).
+
+    (aPane statusPane statusBoxAt: #num) show: (Notifier isKeyToggled: VkNumlock).
+
+    (aPane statusPane statusBoxAt: #ovr) show: (Notifier isKeyToggled: VkInsert).!
+
+open
+        "Private - Create the MDISystem frame window."
+
+    MDISystem isActive ifFalse:[
+        self error:'The MDI Mode is not activated'].
+    MDISystem frame notNil ifTrue:[
+        self error:'You are already in the MDI mode'].
+
+    CursorManager execute change.
+    self
+        addView: (MdiFrame:=
+            MDIFrame new
+                owner: self;
+                when: #close perform: #close:;
+                when: #validated perform: #changeSysMenu:;
+                when: #timer perform:#timer:;
+                when: #toggleKey perform:#toggleKey:;
+                when: #mdiMenuBuilt perform: #mdiMenu:;
+                when: #childActivate perform:#childActivate:;
+                icon: (Icon fromModule: Icon defaultDLLFileName id:'Transcript');
+                labelWithoutPrefix: WindowLabelPrefix;
+                framingBlock: [:box | box scaleBy: 1/2]).
+    self
+        addSubpane:(
+            StatusPane new
+                owner:self;
+                when:#getContents perform: #statusPane:).
+
+    self
+        addSubpane:(
+            ToolPane new
+                owner:self;
+                when:#getContents perform:#toolPane:).
+    self openIn: ((1 @ 2 corner: 90 @ 27)
+            scaleBy: (SysFont width @ SysFontHeight)).
+
+    self toggleMenu: self class optionTitle item:#toggleToolPane.
+    self toggleMenu: self class optionTitle item:#toggleStatusPane.
+    MDITranscript new open.!
+ 
+printIt
+        "Private - The user has clicked the printIt tool."
+    |activeTextPane|
+    activeTextPane:=self activeTextPane.
+    activeTextPane isNil ifTrue:[^self].
+    activeTextPane printIt!
+   
+inspectIt
+        "Private - The user has clicked the inspectIt tool."
+    |activeTextPane|
+    activeTextPane:=self activeTextPane.
+    activeTextPane isNil ifTrue:[^self].
+    activeTextPane inspectIt!
+ 
+toggleMenu: menuName item: itemName
+        "Private - Toggle the selected menu item."
+
+    | theMenu aBoolean|
+
+    theMenu := self frame menuWindow menuTitled: menuName.
+    (aBoolean:=theMenu isChecked:itemName)
+        ifTrue: [self frame uncheckItem:itemName forAllMDIChildMenus:menuName]
+        ifFalse: [self frame checkItem:itemName forAllMDIChildMenus:menuName].
+
+    ^aBoolean!
+   
+toolPane:aPane
+        "Private - Set the toolPane contents."
+
+    |aToolCollection aTool|
+
+    aToolCollection:=OrderedCollection new.
+
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'create'.
+    aTool selector:(Message new receiver:self mainView mainWindow; selector:#openWorkspace);space:6.
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'open'.
+    aTool selector:(Message new receiver:self mainView mainWindow; selector:#openFile).
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'filein'.
+    aTool selector:(Message new receiver:self mainView mainWindow; selector:#install).
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'save'.
+    aTool selector:(Message new receiver:self mainView mainWindow; selector:#accept).
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'print'.
+    aTool selector:(Message new receiver:self mainView mainWindow; selector:#print).
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'saveimage'.
+    aTool selector:(Message new receiver:self mainView mainWindow; selector:#saveImage).
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'cut'.
+    aTool selector:#cutSelection;owner:self;space:11.
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'copy'.
+    aTool selector:#copySelection;owner:self.
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'paste'.
+    aTool selector:#pasteSelection;owner:self.
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'showit'.
+    aTool selector:#printIt;owner:self;space:11.
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'doit'.
+    aTool selector:#doIt;owner:self.
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'inspectit'.
+    aTool selector:#inspectIt;owner:self.
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'fileit'.
+    aTool selector:#fileItIn;owner:self.
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'global'.
+    aTool selector:#globalReferences;owner:self.
+    aToolCollection add:aTool.
+
+    aTool:=Tool fromModule:self resourceDLLFile id:'classhierarchybrowsertool'.
+    aTool selector:
+        (Message new receiver:self mainView mainWindow;selector:#openClassBrowser);
+        space:11.
+    aToolCollection add:aTool.
+
+    ExtraTools notNil ifTrue:[
+        ExtraTools do:[:aTool | aToolCollection add: aTool]].
+
+    aPane contents: aToolCollection.!
+ 
+pasteSelection
+        "Private - The user has clicked the paste tool."
+    |activeTextPane|
+    activeTextPane:=self activeTextPane.
+    activeTextPane isNil ifTrue:[^self].
+    activeTextPane pasteSelection!
+   
+toggleStatusPane
+        "Private - Show/Hide the StatusPane."
+
+        self toggleMenu: self class optionTitle item:#toggleStatusPane.
+        self statusPane show.
+        self mdiArrange.!
+ 
+copySelection
+        "Private - The user has clicked the copy tool."
+    |activeTextPane|
+    activeTextPane:=self activeTextPane.
+    activeTextPane isNil ifTrue:[^self].
+    activeTextPane copySelection!
+  
+timer:aTopPane
+        "Private - Update the time in the StatusPane."
+
+    (aTopPane statusPane statusBoxAt: #time) contents:Time now.!
+   
+statusPaneHelp:aKey
+    "Private - Answer the hint text used by
+    the StatusPane for the help support."
+
+    ^HelpMDISystem at:aKey ifAbsent:[^super statusPaneHelp:aKey].!
+
+doIt
+        "Private - The user has clicked the doIt tool."
+    |activeTextPane|
+    activeTextPane:=self activeTextPane.
+    activeTextPane isNil ifTrue:[^self].
+    activeTextPane doIt!
+
+mdiMenu:anMDIFrame
+        "Private - Create the MDI menus."
+
+    anMDIFrame mdiMenuWindow addMenu:self class optionMenu owner:self.
+    anMDIFrame mdiMenuWindow addMenu:self class mdiMenu owner:self.!
+
+globalReferences
+        "Private - Prompt the user to enter a string
+        Find the global references to that symbol."
+
+    |referenced|
+
+    self activeTextPane notNil ifTrue:[
+        referenced:=self activeTextPane selectedItem].
+
+    referenced:=Prompter promptWithBlanks:'Find Global References' default:referenced.
+    referenced isNil ifTrue:[^self].
+    referenced size = 0 ifTrue:[^self].
+    Smalltalk sendersOf:(Smalltalk associationAt:referenced asSymbol).!
+ 
+statusPane:aStatusPane
+        "Private - Set the StatusPane contents."
+    | statusBoxes |
+    statusBoxes := OrderedCollection new
+                                    add: ( StatusBox new
+                                        space: aStatusPane font width;
+                                        name: #status);
+                                    add: ( StatusBox new
+                                        space: aStatusPane font width;
+                                        width: (aStatusPane font stringWidth: Time now printString);
+                                        name: #time);
+                                    add: ( StatusBox new
+                                        space: aStatusPane font width;
+                                        width: (aStatusPane font stringWidth: 'CAPS');
+                                        contents: 'CAPS';
+                                        name: #caps);
+                                    add: ( StatusBox new
+                                        space: aStatusPane font width;
+                                        width: (aStatusPane font stringWidth: 'NUM');
+                                        contents: 'NUM';
+                                        name: #num);
+                                    add: ( StatusBox new
+                                        space: aStatusPane font width;
+                                        width: (aStatusPane font stringWidth: 'OVR');
+                                        contents: 'OVR';
+                                        name: #ovr);
+                                    yourself.
+
+    aStatusPane contents: statusBoxes.
+    (self statusPane statusBoxAt: #status) contents: 'Busy'.!
+  
+exitClose: aPane
+        "Private - Stop the timer."
+
+    Time stopTimer: 99 forWindow: aPane.!
+   
+fileItIn
+        "Private - The user has clicked the fileItIn tool."
+
+    |activeTextPane|
+    activeTextPane:=self activeTextPane.
+    activeTextPane isNil ifTrue:[^self].
+    activeTextPane fileItIn!
+  
+close
+        "Private - Close the receiver."
+
+    MdiFrame := nil.
+    ^super close!
+
+close: aPane
+        "Private - Close the receiver."
+    | answer|
+    Transcript notNil ifTrue: [
+        Transcript close:aPane.
+        ^self]
+    ifFalse: [self exitClose:aPane.self close].!
+
+childActivate:aPane
+        "Private - An MDI document has been activated.
+        Update the StatusPane."
+
+    |text|
+    self frame isNil ifTrue:[^self].
+    text:=self frame mdiGetActive statusText.
+    text isNil
+        ifTrue:[(self statusPane statusBoxAt: #status) contents: self frame mdiGetActive label]
+        ifFalse:[(self statusPane statusBoxAt: #status) contents: text]!
+   
+changeSysMenu: aPane
+        "Private - Change the system menu."
+
+    "The following code changes the Close item in the
+      sysmenu to say Exit Smalltalk/V..."
+
+    self mainView modifySysMenu:'Exit Smalltalk/V...    Alt+F4' position:8.
+    Time startTimer: 99 period: 1000 forWindow: self mainView.
+    self  toggleKey:self mainView.!
+   
+toggleToolPane
+        "Private - Show/Hide the ToolPane."
+
+        self toggleMenu: self class optionTitle item:#toggleToolPane.
+        self toolPane show.
+        self mdiArrange.!
+ 
+frame
+        "Answer the MDISystem frame."
+
+    ^MdiFrame!
+   
+cutSelection
+        "Private - The user has clicked the cut tool"
+    |activeTextPane|
+    activeTextPane:=self activeTextPane.
+    activeTextPane isNil ifTrue:[^self].
+    activeTextPane cutSelection!
+ 
+resourceDLLFile
+        "Private - Answer the DLL filename for resources."
+    ^Icon defaultDLLFileName! !
+
+
+!UserDLL methods !
+ 
+defFrameProc: aWindowHandle mdiClient: aClientHandle msg: msgInteger wparam: wordInteger lparam: longInteger
+
+    <api: DefFrameProc ushort ushort ushort ushort ulong ulong>
+    ^self invalidArgument!
+ 
+defMDIChildProc: aWindowHandle msg: msgInteger wparam: wordInteger lparam: longInteger
+
+    <api: DefMDIChildProc ushort ushort ushort ulong ulong>
+    ^self invalidArgument!
+   
+translateMDISysAccel: hWnd  msg:aWinAddr
+    <api: TranslateMDISysAccel ushort ulong boolean>
+    ^self invalidArgument! !
+
+
+!NotificationManager methods !
+
+closeAllWindows
+        "Private - Close all windows including Transcript."
+    |oldWindows|
+    Transcript notNil ifTrue: [Transcript clearTextModified].
+    Transcript := nil.
+"we copy the collection because we will remove the elements
+during the iteration"
+    oldWindows := windows copy.
+    oldWindows do: [:w |
+        (w isKindOf: ApplicationWindow)
+            ifTrue: [
+                w clearTextModified.
+                w close]].
+    self cleanUpAllMessages! !
+

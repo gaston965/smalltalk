@@ -1,0 +1,37 @@
+The list below shows the files used to create 
+dialog only DLL (vwdlgs.dll) used in Smalltalk.
+(Microsoft C 6.0 and Windows SDK is required to
+make a resource only DLL).
+
+    vwdlgs         - make file for vwdlgs.dll
+    vwdlgs.c      - c file for vwdlgs.dll that contains WEP
+    vwdlgs.def   - definition file for vwdlgs.dll 
+                            (Used by the Linker)
+    vwdlgs.rc    - resource file for vwdlgs.dll 
+                            (Used by Resource Compiler)
+    vwdlgs.dlg   - dialog file for vwdlgs.dll 
+                            (Used by Dialog Editor)
+
+To create your own dialog only DLL, rename the 
+vwdlgs.*  to a new name  (Don't just add a new dialog
+template to vwdlgs.dll).  Remember to change 
+references to your new file name in vwdlgs. and 
+vwdlgs.rc files.  Also remember to change the 
+"LIBRARY" statement in vwdlgs.def to reflect
+the new library name.
+
+To add dialog templates either manually edit your
+.dlg file or use the dialog editor.   Make sure to delete 
+unneeded dialog templates  (the ones that came with
+the original vwdlgs.dlg).
+
+To open a dialog box from Smalltalk apply the 
+following method to an instance of Dialog Box.
+
+    self fromDLLFile: 'your.dll' templateName: 'YourDialogTemplate'.
+
+Make sure your DLL is in your path and don't forget to 
+put the '.dll' extension.
+
+Look at NewSubclassDialog class for example.
+

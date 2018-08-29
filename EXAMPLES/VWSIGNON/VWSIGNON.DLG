@@ -1,0 +1,15 @@
+STARTUP DIALOG LOADONCALL MOVEABLE DISCARDABLE 4, 6, 135, 116
+STYLE WS_DLGFRAME | WS_VISIBLE | WS_POPUP
+BEGIN
+    CONTROL "A Smalltalk/V Windows, Application", 100, "static", SS_CENTER | WS_CHILD, 0, 10, 135, 9
+    CONTROL "Smalltalk/V Windows, Release", 101, "static", SS_RIGHT | WS_CHILD, 8, 28, 103, 8
+    CONTROL "1.2", 106, "static", SS_LEFT | WS_CHILD, 112, 28, 17, 9
+    CONTROL "(C) Copyright Digitalk Inc. 1992", 102, "static", SS_CENTER | WS_CHILD, 0, 41, 135, 8
+    CONTROL "All rights reserved.", 103, "static", SS_CENTER | WS_CHILD, 0, 51, 135, 8
+    CONTROL "Smalltalk/V is a registered trademark", 104, "static", SS_CENTER | WS_CHILD, 0, 68, 135, 11
+    CONTROL "of Digitalk Inc.", 105, "static", SS_CENTER | WS_CHILD, 0, 78, 135, 8
+    CONTROL "Balloon", 107, "static", SS_ICON | WS_CHILD, 58, 93, 21, 18
+END
+
+
+

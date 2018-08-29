@@ -1,0 +1,481 @@
+<HTML>
+<HEAD>
+<TITLE>Untitled</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z">
+</HEAD>
+<BODY BGCOLOR="#ffffff" TEXT="#000000" LINK="#0000ff" VLINK="#00ffff">
+<H1><CENTER><A NAME="top"><FONT SIZE=6 COLOR=#0000FF>Multiple
+Document Interface (MDI)</FONT></A></CENTER></H1>
+<HR>
+<P>
+<FONT SIZE=2>This document describes how to use the MDI classes
+for Smalltalk Express. MDI is a user interface standard for presenting
+and manipulating multiple documents within a single application.
+The MDI functionality is defined and implemented in Windows 3.x.
+For more information about MDI, please refer to the Microsoft
+documentation. The Smalltalk Express MDI classes fully support
+MDI capabilities as defined by Microsoft.</FONT>
+<P>
+<FONT SIZE=2>MDI (along with StatusPane and ToolPane) can be installed
+by filing in &quot;mdi.st&quot; in &quot;extras\mdi&quot; subdirectory.
+</FONT>
+<P>
+<FONT SIZE=2>For an example, look in the extras\mdi\mdidemo directory.
+Two examples are provided: SysEdit and MDIDemo.</FONT>
+<P>
+<FONT SIZE=2>Smalltalk Express will also run in MDI mode as well
+as in its standard non-MDI configuration.  To change to MDI mode,
+select the File menu and the MDI Mode menu item.  For more information,
+see the section &quot;<A HREF="#important" >Important</A>&quot;
+at the bottom of this page.</FONT>
+<H2>Programming Interface</H2>
+<HR>
+<P>
+<FONT SIZE=2>New classes that have been introduced are:</FONT>
+<P>
+<FONT SIZE=2>MDIChild</FONT>
+<P>
+<FONT SIZE=2>MDIClient</FONT>
+<P>
+<FONT SIZE=2>MDIFrame</FONT>
+<P>
+<FONT SIZE=2>MDIMenu</FONT>
+<P>
+<FONT SIZE=2>MDITranscript</FONT>
+<P>
+<FONT SIZE=2>MDISystem</FONT>
+<P>
+<FONT SIZE=2>MDIViewManager</FONT>
+<H2>Developing an MDI application</H2>
+<HR>
+<P>
+<FONT SIZE=2>An MDI application must first create an MDIFrame
+Window. The MDIFrame window is the main window of your application.
+ It encapsulates all the documents of your application (MDIChild).
+ Both MDIFrame and MDIChild classes are subclasses of TopPane.
+Their protocol is fully compatible with their superclass TopPane.</FONT>
+<P>
+<FONT SIZE=2>An MDI application class should be under MDIViewManager,
+which is itself a subclass of ViewManager.<BR>
+</FONT>
+<P>
+<FONT SIZE=2>The MDI classes use the ViewManager Model (event-driven,
+multiple views on the same model, clear separation between the
+GUI and the application). Please refer to the Smalltalk documentation
+for more information about ViewManager. </FONT>
+<H2>Create an MDIFrame window</H2>
+<HR>
+<P>
+<FONT SIZE=2>The creation of an MDIFrame window is usually accomplished
+by sending the message &quot;open&quot; to a new instance of the
+MDIViewManager subclass. The window opening method initializes
+the label for the MDIFrame window and registers events such as:</FONT>
+<P>
+<FONT SIZE=2>#mdiMenuBuilt</FONT>
+<P>
+<FONT SIZE=2>#menuBuilt</FONT>
+<P>
+<FONT SIZE=2>The MDIClient subpane (MDIClient subpane is the client
+window of the MDIFrame window) is automatically created by the
+MDIFrame class and shouldn't be created by the MDIViewManager
+subclass. </FONT>
+<H2>Create an MDIChild</H2>
+<HR>
+<P>
+<FONT SIZE=2>Since MDIChild window is created in the same way
+as TopPane window, all existing ViewManager subclasses can be
+used in an MDI application without modifying their code. MDIChild
+replaces the functionality of TopPane for an MDI application.
+<BR>
+</FONT>
+<P>
+<FONT SIZE=2>The following is an example code that creates an
+MDIChild window. </FONT>
+<P>
+<FONT SIZE=2>self addView:(MDIChild new frame:self frame;</FONT>
+<P>
+<FONT SIZE=2>owner:self;</FONT>
+<P>
+<FONT SIZE=2>label:'Example Child 1').<BR>
+</FONT>
+<P>
+<FONT SIZE=2>The only major difference between the creation of
+MDIChild and TopPane window is that the &quot;frame&quot; must
+be specified for the MDIChild window.</FONT>
+<H2>MDIChild class</H2>
+<HR>
+<P>
+<FONT SIZE=2>MDIChild class is responsible for creating MDI documents
+and manage its subpanes. It responds to the system MDI messages
+and allows applications to set event hooks.</FONT>
+<H3>MDIChild Instance methods:</H3>
+<HR>
+<P>
+<FONT SIZE=2>close</FONT>
+<P>
+<FONT SIZE=2>&quot;Close the receiver and all its children.&quot;</FONT>
+<P>
+<FONT SIZE=2>disableSystemMenuItemClose</FONT>
+<P>
+<FONT SIZE=2>&quot;Disable the receiver's 'close' system menu
+item.&quot;</FONT>
+<P>
+<FONT SIZE=2>frame</FONT>
+<P>
+<FONT SIZE=2>&quot;Answer the receiver's frame.&quot;</FONT>
+<P>
+<FONT SIZE=2>frame:aFrame</FONT>
+<P>
+<FONT SIZE=2>&quot;Set the receiver's frame to aFrame.&quot;</FONT>
+<P>
+<FONT SIZE=2>frameRectangle</FONT>
+<P>
+<FONT SIZE=2>&quot;Answer the receiver's frame area</FONT>
+<P>
+<FONT SIZE=2>as a rectangle.&quot;</FONT>
+<P>
+<FONT SIZE=2>isMDIChild</FONT>
+<P>
+<FONT SIZE=2>&quot;Answer true if receiver is an instance of class</FONT>
+<P>
+<FONT SIZE=2>MDIChild, else answer false.&quot;</FONT>
+<P>
+<FONT SIZE=2>label:aString</FONT>
+<P>
+<FONT SIZE=2>&quot;Set the receiver's label without the Smallalk/V
+prefix to aString&quot;<BR>
+</FONT>
+<H3>MDIChild Class methods:</H3>
+<HR>
+<P>
+<FONT SIZE=2>supportedEvents</FONT>
+<P>
+<FONT SIZE=2>&quot;Answer the Set of events that MDIChild instances
+can notify their owners about.&quot;</FONT>
+<H3>MDIChild Supported events:</H3>
+<HR>
+<P>
+<FONT SIZE=2>#toggleKey</FONT>
+<P>
+<FONT SIZE=2>Notify the owner that one of the toggle keys (NumLockKey,</FONT>
+<P>
+<FONT SIZE=2>InsertKey, CapitalKey) has been pressed.</FONT>
+<H2>MDIFrame class</H2>
+<HR>
+<P>
+<FONT SIZE=2>MDIFrame class is responsible for creating MDI frame
+window and managing its subpanes. It responds to the system MDI
+messages and allows applications to set event hooks. Typical subpanes
+of an MDI frame window are MDIClient, StatusPane and ToolPane.
+The MDIFrame class creates the MDIClient subpane.</FONT>
+<H3>MDIFrame instance methods:</H3>
+<HR>
+<P>
+<B><FONT SIZE=2>activeTextPane</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Answer the subpane of the active MDIChild that
+has the typing focus.&quot;</FONT>
+<P>
+<FONT SIZE=2>checkItem:itemName forAllMDIChildMenus:menuName</FONT>
+<P>
+<FONT SIZE=2>&quot;Check the itemName of the menuName.</FONT>
+<P>
+<FONT SIZE=2>This menu item will be checked for all MDI documents&quot;</FONT>
+<P>
+<B><FONT SIZE=2>close</FONT></B>
+<P>
+<FONT SIZE=2>&quot;The receiver is being closed Answer nil if
+one of the receiver's documents has not been closed&quot;</FONT>
+<P>
+<B><FONT SIZE=2>disableItem:itemName forAllMDIChildMenus:menuName</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Disable the itemName of the menuName. This
+menu item will be disabled for all MDI documents&quot;</FONT>
+<P>
+<B><FONT SIZE=2>enableItem:itemName forAllMDIChildMenus:menuName</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Enable the itemName of the menuName. This menu
+item will be enabled for all MDI documents&quot;</FONT>
+<P>
+<B><FONT SIZE=2>isMDIFrame</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Answer true if receiver is an instance of class
+MDIFrame, else answer false.&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiArrange</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Arrange the MDI documents&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiCascade</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Cascade the MDI documents&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiChildren</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Answer a collection of the currently opened
+MDI documents&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiCloseAll</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Close all the MDI documents which are not minimized&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiGetActive</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Answer the MDI active document if any, else
+answer nil&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiMenuWindow</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Answer the MDI menu window. It contains the
+menus at the right side of the menu bar, after the menus specific
+to the MDI document&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiTile</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Tile the MDI documents&quot;</FONT>
+<P>
+<B><FONT SIZE=2>uncheckItem:itemName forAllMDIChildMenus:menuName</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Uncheck the itemName of the menuName. This
+menu item will be unchecked for all the MDI documents&quot;</FONT>
+<H3>MDIFrame class methods:</H3>
+<HR>
+<P>
+<B><FONT SIZE=2>supportedEvents</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Answer the Set of events that MDIFrames can
+notify their owners about.&quot;</FONT>
+<H3>MDIFrame Supported events:</H3>
+<HR>
+<P>
+<FONT SIZE=2>#<B>mdiMenuBuilt</B></FONT>
+<P>
+<FONT SIZE=2>Notify the owner that it can create menus. These
+menus are common to all the MDI documents and come after the menus
+specific to each documents.</FONT>
+<P>
+<FONT SIZE=2>#<B>toggleKey</B></FONT>
+<P>
+<FONT SIZE=2>Notify the owner that one of the toggle keys (NumLockKey,
+InsertKey, CapitalKey) has been pressed.</FONT>
+<P>
+<FONT SIZE=2>#<B>childActivate</B></FONT>
+<P>
+<FONT SIZE=2>Notify the owner that an MDI document has been activated.</FONT>
+<P>
+<B><FONT SIZE=2>#childDeactivate</FONT></B>
+<P>
+<FONT SIZE=2>Notify the owner that an MDI document has been deactivated.</FONT>
+<P>
+<B><FONT SIZE=2>#childClose</FONT></B>
+<P>
+<FONT SIZE=2>Notify the owner that an MDI document has been closed.
+Remark: When the user closes the last MDI document, the owner
+will not receive a childDeactivate event. The owner will only
+receive the childClose event.</FONT>
+<H3>MDIViewManager class</H3>
+<HR>
+<P>
+<FONT SIZE=2>The owner of an MDIFrame class should be an MDIViewManager
+class. An MDIViewManager subclass is primarily responsible for
+</FONT>
+<UL>
+<LI>creating the MDIFrame
+<LI>creating the MDIFrame subpane (ToolBar, StatusBar, if any).
+<LI>defining menus common to all MDI documents.
+<LI>performing the standard MDI functions to organize the MDI
+workspace such as Tile, Cascade and Closeall.
+<LI>remembering the current state (refer to the TopPane documentation).
+</UL>
+<H3>MDIViewManager instance methods:</H3>
+<HR>
+<P>
+<B><FONT SIZE=2>activeTextPane</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Answer the active textPane of the active MDI
+document&quot;</FONT>
+<P>
+<B><FONT SIZE=2>frame</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Answer the receiver's frame&quot;</FONT>
+<P>
+<B><FONT SIZE=2>frame</FONT></B><FONT SIZE=2>:</FONT>
+<P>
+<FONT SIZE=2>&quot;Set the receiver's frame&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiArrange</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Arrange the MDI documents&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiCascade</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Cascade the MDI documents&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiCloseall</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Close all MDI documents which are not minimized&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiNewWindow</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Create a new TextWindow MDI document from the
+active TextPane&quot;</FONT>
+<P>
+<B><FONT SIZE=2>mdiTile</FONT></B>
+<P>
+<FONT SIZE=2>&quot;Tile the MDI documents&quot;</FONT>
+<H2>MDIMenu class</H2>
+<HR>
+<P>
+<FONT SIZE=2>This class is used to create the standard MDI &quot;Window&quot;
+menu for arranging the MDI workspace. Its protocol is fully compatible
+with its superclass Menu. This class should be used only to create
+the MDI &quot;Window&quot; menu and only for that purpose.</FONT>
+<H4>Define the menus for MDIFrames</H4>
+<P>
+<FONT SIZE=2>The menus of an MDIFrame window are created using</FONT>
+<P>
+<FONT SIZE=2>two events:</FONT>
+<P>
+<FONT SIZE=2>#menuBuilt</FONT>
+<P>
+<FONT SIZE=2>#mdiMenuBuilt</FONT>
+<P>
+<FONT SIZE=2>The menus created upon the receptions of these events
+will be common to all the MDI documents.</FONT>
+<P>
+<FONT SIZE=2>The #menuBuilt event is used to create the menus
+which are on the left side of the menu bar. If the owner responds
+to that event, the MDI frame will not get the standard default
+Smalltalk file menu.</FONT>
+<P>
+<FONT SIZE=2>The #mdiMenuBuilt is used to create the menus which
+are on the right side of the menu bar. At least, the frame owner
+has to create the standard MDI &quot;Window&quot; menu which is
+used to manage the MDI workspace.</FONT>
+<P>
+<FONT SIZE=2>Example:</FONT>
+<P>
+<FONT SIZE=2>MDIDemo&gt;&gt;open</FONT>
+<P>
+<FONT SIZE=2>self addView:(</FONT>
+<P>
+<FONT SIZE=2>self frame:(MDIFrame new</FONT>
+<P>
+<FONT SIZE=2>owner:self;</FONT>
+<P>
+<FONT SIZE=2>when: #menuBuilt perform: #menu:;</FONT>
+<P>
+<FONT SIZE=2>when: #mdiMenuBuilt perform:#mdiMenu:;</FONT>
+<P>
+<FONT SIZE=2>labelWithoutPrefix:'MDI Demo')).<BR>
+</FONT>
+<P>
+<FONT SIZE=2>MDIDemo&gt;&gt;menu:anMDIFrame</FONT>
+<P>
+<FONT SIZE=2>&quot;Private - Build the file menu&quot;</FONT>
+<P>
+<FONT SIZE=2>anMDIFrame menuWindow addMenu: self fileMenu owner:self.
+<BR>
+</FONT>
+<P>
+<FONT SIZE=2>MDIDemo&gt;&gt;mdiMenu:anMDIFrame</FONT>
+<P>
+<FONT SIZE=2>&quot;Private - Build the standard MDI Window menu&quot;
+<BR>
+</FONT>
+<P>
+<FONT SIZE=2>anMDIFrame mdiMenuWindow addMenu:self class mdiMenu
+owner:self.<BR>
+</FONT>
+<P>
+<FONT SIZE=2>MDIDemo&gt;&gt;fileMenu</FONT>
+<P>
+<FONT SIZE=2>&quot;Private - Answer the receiver's fileMenu&quot;</FONT>
+<P>
+<FONT SIZE=2>^Menu new</FONT>
+<P>
+<FONT SIZE=2>appendItem: '&amp;Green document' selector: #doc1
+;</FONT>
+<P>
+<FONT SIZE=2>appendItem: '&amp;Yellow document' selector: #doc2;</FONT>
+<P>
+<FONT SIZE=2>appendSeparator ;</FONT>
+<P>
+<FONT SIZE=2>appendItem: '&amp;Exit' selector: #exit ;</FONT>
+<P>
+<FONT SIZE=2>title: '&amp;Demo'.<BR>
+</FONT>
+<P>
+<FONT SIZE=2>MDIDemo class&gt;&gt;mdiMenu</FONT>
+<P>
+<FONT SIZE=2>^MDIMenu new</FONT>
+<P>
+<FONT SIZE=2>appendItem: '&amp;New Window' selector:#mdiNewWindow
+accelKey:$n accelBits:AfControl;</FONT>
+<P>
+<FONT SIZE=2>appendItem: '&amp;Cascade Shift+F5' selector: #mdiCascade
+accelKey: VkF5 accelBits: </FONT>
+<P>
+<FONT SIZE=2>AfVirtualkey|AfShift ;</FONT>
+<P>
+<FONT SIZE=2>appendItem: '&amp;Tile Shift+F4' selector: #mdiTile
+accelKey: VkF4 accelBits: AfVirtualkey|AfShift ;</FONT>
+<P>
+<FONT SIZE=2>appendItem: 'Arrange &amp;Icons' selector: #mdiArrange;</FONT>
+<P>
+<FONT SIZE=2>appendItem: 'Close &amp;All' selector: #mdiCloseall;</FONT>
+<P>
+<FONT SIZE=2>title: '&amp;Window'.</FONT>
+<H2><A NAME="important">Important</A>:</H2>
+<HR>
+<P>
+<FONT SIZE=2>For the standard MDI &quot;Window&quot; menu, it
+is necessary to use the MDIMenu class instead of the normal Menu
+class to create a menu object. The protocol of the MDIMenu class
+is fully compatible with its superclass Menu.</FONT>
+<P>
+<FONT SIZE=2>MDISystem and MDITranscript classes</FONT>
+<P>
+<FONT SIZE=2>MDISystem and MDITranscript classes are used to encapsulate
+the Smalltalk/V development tools in an MDIFrame window. The implementation
+of MDISystem class demonstrates that all existing ViewManager
+subclasses can be used in an MDI application without modifying
+their code.</FONT>
+<P>
+<FONT SIZE=2>The user can switch back and forth between the MDI
+mode and non MDI mode through the &quot;Switch to MDI&quot; and
+&quot;Quit MDI&quot;options in the Transcript File menu.</FONT>
+<P>
+<FONT SIZE=2>The user can also switch to an MDI mode by evaluating
+the following expression: </FONT>
+<P>
+<FONT SIZE=2>MDISystem activate<BR>
+</FONT>
+<P>
+<FONT SIZE=2>Note: Switching to MDI will close all currently open
+windows. You will not be prompted to save edited TextPanes. The
+Transcript will be re-opened in MDI with the original text intact.
+</FONT>
+<P>
+<FONT SIZE=2>The user can swich to non MDI mode by evaluating
+the following expression:</FONT>
+<P>
+<FONT SIZE=2>MDISystem deactivate<BR>
+</FONT>
+<P>
+<FONT SIZE=2>Note: Switching to non-MDI mode will not restore
+the image to the state it was in before starting MDI. <BR>
+</FONT>
+<P>
+<FONT SIZE=2>Only applications using the ViewManager compatibility
+with ApplicationWindow will be encapsulated in the MDIFrame window.</FONT>
+<P>
+<FONT SIZE=2>If you don't want your application to be an MDI document,
+you can overwrite ViewManager&gt;&gt;topPaneClass in your subclass
+to always answer TopPane. </FONT>
+<HR>
+<P>
+<A HREF="#top" >[top]</A><A HREF="index.htm" >[index]</A>
+</BODY>
+</HTML>

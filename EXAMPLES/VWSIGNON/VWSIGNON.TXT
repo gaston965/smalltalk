@@ -1,0 +1,27 @@
+The list below shows the files needed to modify
+vwsignon.dll, a signon dialog for Smalltalk.
+(Microsoft C 6.0 and Windows SDK is required)
+
+    vwsignon       - make file for vwsignon.dll
+    vwsignon.c     - c file for vwsignon.dll that contains WEP
+    vwsignon.def   - definition file for vwsignon.dll 
+                            (Used by the Linker)
+    vwsignon.rc    - resource file for vwsignon.dll 
+                            (Used by Resource Compiler)
+    vwsignon.dlg   - dialog file for vwsignon.dll 
+                            (Used by Dialog Editor)
+
+The Smalltalk sign-on screen is painted by vwsignon.dll, 
+when you run 'v.exe'.  You can change this DLL to customize
+sign-on screen for your application.  This DLL can be either 
+empty (no sign-on screen) or 
+supports two functions: 
+ 
+     OpenSignOn (WORD wVersion, HANDLE hInstance) 
+and 
+     CloseSignOn (void) 
+ 
+When OpenSignOn is called, the current Smalltalk version 
+number is passed as a parameter.  You should paint the screen 
+or bring up a dialog box.  When CloseSignOn is called, you 
+should erase the screen or close the dialog box. 

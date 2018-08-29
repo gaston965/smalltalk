@@ -1,0 +1,105 @@
+"make sure classes needed by this package exist"
+#( )
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+
+"Smalltalk Express v2.0.4 Obsolete Methods
+
+    Description:
+
+        This package removes methods from the image that have been obsoleted by
+        the v2.0.4 upgrade process.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/7/97
+"
+
+| dict class |
+(dict := IdentityDictionary new)
+    at: #ControlPane
+        put: #(frameStyle);
+    at: #MDIClient
+        put: #(frameStyle);
+    at: #AnimationPane
+        put: #(frameStyle);
+    at: #GroupPane
+        put: #(frameStyle);
+    at: #CompositePane
+        put: #(basicStyle frameStyle);
+    at: #ToolPane
+        put: #(frameStyle);
+    at: #StatusPane
+        put: #(frameStyle);
+    at: #SubPane
+        put: #(addStyle: frameStyle);
+    at:  #DialogTopPane
+        put: #(cachedBuildItems);
+    at: #ViewManager
+        put: #(dialogTemplate dialogTemplate:);
+    at: #Window
+        put: #(dialogTemplate dialogTemplate:).
+dict associationsDo: [ :assoc |
+    class := Smalltalk at: assoc key ifAbsent: [ nil ].
+    class notNil ifTrue: [
+        assoc value do: [ :selector |
+            class removeSelector: selector ]]].!
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.0.4 Obsolete Methods'.
+package makeCurrent;
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'OBSMTH.204';
+    comments:
+'"Smalltalk Express v2.0.4 Obsolete Methods
+
+    Description:
+
+        This package removes methods from the image that have been obsoleted by
+        the v2.0.4 upgrade process.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/7/97
+"
+
+| dict class |
+(dict := IdentityDictionary new)
+    at: #ControlPane
+        put: #(frameStyle);
+    at: #MDIClient
+        put: #(frameStyle);
+    at: #AnimationPane
+        put: #(frameStyle);
+    at: #GroupPane
+        put: #(frameStyle);
+    at: #CompositePane
+        put: #(basicStyle frameStyle);
+    at: #ToolPane
+        put: #(frameStyle);
+    at: #StatusPane
+        put: #(frameStyle);
+    at: #SubPane
+        put: #(addStyle: frameStyle);
+    at:  #DialogTopPane
+        put: #(cachedBuildItems);
+    at: #ViewManager
+        put: #(dialogTemplate dialogTemplate:);
+    at: #Window
+        put: #(dialogTemplate dialogTemplate:).
+dict associationsDo: [ :assoc |
+    class := Smalltalk at: assoc key ifAbsent: [ nil ].
+    class notNil ifTrue: [
+        assoc value do: [ :selector |
+            class removeSelector: selector ]]].';
+    fileTime: ( Time fromSeconds: 78203 )
+          on: ( Date fromDays: 35131 );
+    takeCurrent;
+    yourself !

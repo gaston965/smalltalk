@@ -1,0 +1,6 @@
+ "Be sure to install the file:  frmttden.cls 
+   this file is in the examples\dialogs directory "
+
+Scott := FormDemo new open
+Scott := Formdemo new demo1
+Scott := FormDemo new demo2

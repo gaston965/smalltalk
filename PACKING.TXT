@@ -1,0 +1,404 @@
+Packing list for Smalltalk Express
+
+After installation, files are organized on your hard disk as follows:
+
+Your chosen Smalltalk Express directory: (C:\STEXPRES is the default):
+
+    readme.txt    - contains important information about the contents of
+                            Smalltalk Express files and some details about 
+                            the software not covered in the handbook.  
+    packing.txt   - this file
+    v.exe         - initial image pre-configured with WindowBuilder Pro
+    vw.exe        - run this to start Smalltalk development
+    vwincls.hlp   - Smalltalk Express encyclopedia of classes
+    vwbas20.dll   - code for Smalltalk Express base classes
+    vwdev20.dll   - code for Smalltalk Express development classes
+    vwsrc20.dll   - Smalltalk Express Smalltalk source code
+    sources.sml   - additional Smalltalk source used for Smalltalk Express
+    vwdlgs20.dll  - dialog box resources used by Smalltalk/V
+    vwvm20.dll    - Smalltalk Express virtual machine.
+    vwsignon.dll  - Smalltalk Express's sign-on dialog box
+    vwfloat.dll   - floating point primitive methods when no math chip
+    vwabort.dll   - the abort procedure for PostScript printing
+    vwicons.dll   - icons and bitmaps used by Smalltalk Express
+    vwhelp.dll    - help manager hook proc used by Smalltalk Express
+    commdlg.dll   - Microsoft's common dialogs used by Smalltalk Express
+                            If you have Windows 3.1, you may delete commdlg.dll
+                            from your Smalltalk/V directory.
+
+
+tutorial subdirectory:
+
+The following tutorial files are to be accessed with the Disk Browser
+while reading the Tutorial and Programming Handbook.  The number in
+the file name identifies the chapter in the book where the tutorial
+is presented.
+
+    chapter.2  - Smalltalk Express environment
+    chapter.3  - objects and messages
+    chapter.4  - control structures
+    chapter.5  - classes and methods
+    chapter.6  - inheritance
+    chapter.7  - streams and collections
+    chapter.8  - debugging
+    chapter.9  - graphics
+    chapter.10 - windows
+    chapter.11 - object-oriented development
+    chapter.12 - application development: case study
+
+The following are used as part of the tutorial.  The number in the file
+name usually identifies a book chapter where the source code is used.
+
+    animal6.st    - first look at the animal hierarchy
+    animal7.st    - animals with pattern matching
+    animal10.st   - animals in a window
+    class10.st    - animal class definitions
+    class12.1in   - sales window first part
+    class12.2in   - sales window second part
+    class12.3in   - sales window third part
+    comevent.cls  - sales comm class definition (chapter 12)
+    comevnts.in   - sales comm object creation (chapter 12)
+    dog1.bmp      - bitmaps for the dog pictures
+    dog2.bmp      - bitmaps for the dog pictures
+    dog3.bmp      - bitmaps for the dog pictures
+    dog4.bmp      - bitmaps for the dog pictures
+    habitat7.st   - a habitat for animals
+    network7.st   - a network of nodes
+    network9.st   - a network of nodes with graphics
+    nodes7.st     - the network nodes
+    nodes9.st     - the network nodes with graphics
+    striplf.pc    - line feed example file
+    window1.st    - first window example (chapter 10)
+    window2.st    - second window example (chapter 10)
+    window3.st    - third window example (chapter 10)
+    window4.st    - fourth window example (chapter 10)
+    window5.st    - fifth window example (chapter 10)
+    wrdindx8.st   - class WordIndex, to learn about the debugger
+
+
+docs subdirectory:
+
+    apic.htm        - examples of C API calls with C calling convention
+    callback.htm    - Callback documentation
+    helpmgr.htm     - HelpManager documentation
+    icon.htm        - Icon class documentation
+    mdi.htm         - MDI documentation
+    nlsdbcs.htm     - NLS/DBCS documentation
+    objfiler.htm    - ObjectFiler documentation
+    property.htm    - Window property documentation
+    remstruc.htm    - Remote WinStructure documentation
+    selfdef.htm     - SelfDefinedStructure documentation
+    stack.htm       - Tips on debugging Smalltalk with CodeView
+    statuspn.htm    - StatusPane documentation
+    toolpane.htm    - ToolPane documentation
+    userint.htm     - UserInterrupts documentation
+
+
+extras subdirectory:
+
+Extras subdirectory contains the following subdirectories.
+
+extras\mdi subdirectory:
+
+Contains support for MDI, ToolPane and StatusPane.
+
+    mdi.st         - installation for MDI, ToolPane and StatusPane
+    mdi.vc         - MDI class definitons.
+    mdi.vm         - MDI method definitions.
+    ref.bmp        - sample ToolPane bitmap.  
+    toolpane.vc    - ToolPane and StatusPane class definitions.
+    toolpane.vm    - ToolPane and StatusPane method definitions.
+
+extras\mdi\mdidemo subdirectory:
+
+Contains MDI, ToolPane and StatusPane examples.
+
+    mdidemo.cls    - MDI demo code
+    mdidemo.h      - header file for help compiler
+    mdidemo.hlp    - help file
+    mdidemo.hpj    - help project file
+    mdidemo.rtf    - source of help file (RichTextFormat)
+    mdidemo.st     - MDI demo and SysEdit installation
+    sysedit.cls    - SysEdit code
+    vwhelp.h       - header file that identifies system menu items. (used by mdidemo.hpj) 
+    vwhelp.rtf     - source of help file for system menu items. (used by mdidemo.hpj)
+
+extras\nlsdbcs subdirectory:
+
+Contains support for NLS/DBCS.
+
+    bytarext.st             - code for DBCS support of ByteArray class
+    charactr.st             - code for NLS support of Character class
+    charext.st              - code for DBCS support of Character class
+    dateext.st              - code for NLS supports of Date class
+    dateini.mth            - code for  language specific formatting of Date class
+    dblbytin.cls           - code for DoubleByteStringInspector class
+    dblbytst.cls           - code for DoubleByteString class
+    dblbytsy.cls          - code for DoubleByteSymbol class
+    filstext.st               - code for DBCS support of FileStream class
+    inichnge.st            - code to monitor Control Panel change
+    langfmt.st              - code for language specific formatting
+    mxdflstr.cls           - code for DBCS support of MixedFileStream class
+    nlsapis.st              - code for NLS support of system Kernel & User APIs
+    nlsdbcs.st             - Installation for NLS/DBCS
+    ntcllttl.mth             - code for NationalLanguageSupport class
+    ntnllext.st              - code for DBCS support of NationalLanguageSupport class
+    ntnllngg.cls           - code for NationalLanguageSupport class
+    nwwincon.st          - new WinConstants for date format          
+    onflstrm.mth          - code for DBCS enablement of mixed file stream
+    rplbyts.st               - code for DBCS support of replaceBytesFrom:to:with:startingAt: method
+    streqfix.st              - code for character & string enabling
+    string.st                 - code for character & string enabling
+    strngext.st             - code for DBCS support of String class
+    symbext.st            - code for DBCS support of Symbol class
+    vwvmdll.cls           -  code for virtual-machine NLS support
+    vwvmdll.st             - code for virtual-machine DBCS support
+    winadext.st            - code for DBCS support of WinAddress class
+
+
+extras\vwmsgs subdirectory:
+
+Contains the DLL that externalizes Vitual Machine error messages.
+
+    vwmsgs                  - make file
+    vwmsgs.c               - C source file
+    vwmsgs.def            - definition file
+    vwmsgs.h               - header file
+    vwmsgs.rc              - resource script file
+    vwmsgs.txt             - documentation 
+
+
+extras\objfiler subdirectory:
+
+Contains the ObjectFiler.
+
+    lrgiddct.cls        - LargeIdentityDictionary code
+    objctflr.cls         - ObjectFiler code
+    objctldd.cls       - ObjectLoadDialog code
+    vwobflr.mth       - Misc. code for ObjectFiler
+    vwobjflr.st         - ObjectFiler installation
+
+
+extras\clscomp subdirectory:
+
+Contains the ClassComparisonTool and ClassDumper.
+
+    clscomp.cls      - ClassComparisonTool code
+    clscomp.st        - ClassComparisonTool installation
+    dialogs.cls        - Dialog code used by ClassComparisonTool
+    dumper.cls        - ClassDumper code
+    dumper.st          - ClassDumper installation
+    clscomp.txt       - ClassComparisonTool documentation
+    dumper.txt        - ClassDumper documentation
+
+
+extras\clssinst subdirectory:
+
+Contains Class Instance Variable support.
+
+    clssinst.st      - Class Instance Variablecode
+    clssinst.txt     - Class Instance Variable documentation
+
+
+extras\sdsinspc subdirectory:
+
+Contains the SelfDefinedStructureInspector.
+
+    sdsinspc.st     - SelfDefinedStructureInspector code
+
+
+examples subdirectory:
+
+Examples subdirectory contains the following subdirectories.
+
+examples\dialogs subdirectory:
+
+Contains dialog box examples and "file-inable" FormattedEntryField
+and FormattedStaticText classes.
+
+    frmttden.txt     - formatted edit field documentation
+    frmttden.cls    - formatted edit field source code
+    frmttdst.txt      - formatted static text documentation
+    frmttdst.cls     - formatted static text source code
+    incometx.st    - income tax installation code
+    incometx.txt   - income tax documenation
+    incometx.cls  - income tax source code
+    txflngdl.cls     - tax filing dialog source code (used by income tax)
+    txincmdl.cls   - tax income dialog source code (used by income tax)
+    txlbldlg.cls     - tax label dialog source code	(used by income tax)
+    vhclslsd.txt    - vehicle sales dialog documentation
+    vhclslsd.st     - vehicle sales dialog installation code
+    vhclslsd.cls   - vehicle sales dialog source code
+    turtldlg.txt      - turtle dialog documentation
+    turtldlg.st       - turtle dialog installation code
+    turtldlg.cls     - turtle dialog source code
+    contrldm.txt   - control demo documentation and source code
+
+
+examples\iconedit subdirectory:
+
+Contains the Smalltalk icon editor.  This icon editor greatly simplifies
+the task of changing the Smalltalk application icon.
+
+    exefile.cls     - ExeFile class code
+    icondilg.cls   - IconDialog class code
+    iconedit.st     - IconEdit installation
+    iconedtr.cls   - IconEdit code
+    iconst.txt       - defines SelfDefinedStructures used by icon editor
+    iconedit.txt    - documentation
+    resource.cls  - Resource class code
+
+
+examples\vwdlgs subdirectory:
+
+Contains sample resource-only DLL source code.  vwdlgs.dll is the
+actual resource-only (dialog-only) DLL used by Smalltalk Express.
+
+    libentry.obj        - DLL entry routine object file
+    vwdlgs20           - make file (use MS C 6.0 nmk)
+    vwdlgs20.c        - C source file
+    vwdlgs20.def     - definition file
+    vwdlgs20.dlg     - dialog source file
+    vwdlgs20.rc       - resource compiler source
+    vwdlgs20.txt      - documentation
+
+
+examples\vwsignon subdirectory:
+
+Contains the source code for signon.dll.  This source code can
+be modified to produce a custom signon screen.
+
+    vwsignon.txt     - documentation
+    vwsignon.         - make file (use MS C 6.0 nmk)
+    vwsignon.c       - C source file
+    vwsignon.h       - header file
+    vwsignon.dlg    - dialog source file
+    vwsignon.rc      - resource compiler source file
+    vwsignon.def    - definition file
+    libentry.obj       - DLL entry routine object file
+    balloon.ico       - balloon icon displayed in signon dialog
+
+
+examples\dashbord subdirectory:
+
+This is a control panel of dials and gauges that are interrelated such
+that when one dial/gauge is changed with the mouse, the others are
+changed according to their predefined interrelationships.  This uses DDE
+to connect to Microsoft Excel.  Files in the "dashbord" directory are:
+
+    dashbord.txt    - documentation and installation info
+    cntrlapp.cls     - control apparatus source code
+    dashbord.cls   - dashboard source code
+    dashbord.st     - dashboard installation code
+    dash.doc         - Microsoft Word document for demo dashboard DDE
+    dash.xls          - Microsoft Excel document for demo DDE
+
+
+examples\dde subdirectory:
+
+This is for Dynamic Data Exchange documentation and examples.
+
+    dde.txt             - description of DDE example
+    vwindde.doc    - Microsoft Word document to install Smalltalk expression evaluator
+    ddetstcl.cls      - DDE example client source code
+    ddetstsr.cls     - DDE example server source code
+
+
+examples\polygon subdirectory:
+
+This demo shows ViewManager managing multiple windows.
+
+    polygon.txt      - description for installing polygon demo
+    plygnsnd.cls   - polygon sound view
+    polygnvw.cls   - polygon ViewManager
+
+
+examples\prim subdirectory:
+
+The following files are used in constructing primitives written in C
+to be accessed from Smalltalk.  The C source code for the vwfloat.dll
+is included as an example of user-defined primitives.
+
+    fixdptrs.h          - C variables for fixed object pointers
+    objects.h          - C structs defining object formats
+    userprim.txt     - more information about user primitives
+    userprim.mac  - C macros for object access
+    vwfloat.c          - C source for floating point emulation
+    vwfloat.def       - definition file for constructing DLL
+    vwfloat             - vwfloat.dll make file
+    libentry.asm    - Windows Dynamic Link Library entry routine
+
+
+examples\fredrwng subdirectory:
+
+Drawing editors - there are two complete window applications, a freehand
+drawing paint program and a low-level bit editor.  Files are:
+
+    fredrwng.txt    - documentation and installation information
+    biteditr.cls      - bit editor source code
+    fredrwng.cls   - free drawing source code
+    fredrwpn.cls   - FreeDrawingPane class
+    fredrwng.st    - free drawing installation code
+
+
+examples\puzzle15 subdirectory:
+
+A simple game which uses HelpManager,GraphPanes and outline fonts.
+The files are:
+
+    helpmap.h       - header file for help compiler  
+    puzzle15.cls    - Puzzle15 code   
+    puzzle15.h       - header file for string resource     
+    puzzle15.hlp    - help file    
+    puzzle15.hpj    - help project file    
+    puzzle15.rc      - active externalized string resource script file  (US English)  
+    puzzle15.rtf      - source of help file (RichTextFormat)    
+    puzzle15.st      - installation     
+    puzzle15.txt     - documentation   
+    puzzle15.us     - US English version of the externalized string resource script file    
+    pzzl15cl.cls     - Puzzle15Colors code    
+    vwhelp.h          - header file that identifies system menu items. (used by puzzle15.hpj)       
+    vwhelp.rtf         - source of help file for system menu items. (used by puzzle15.hpj)
+     
+
+examples\vwint subdirectory:
+
+This example demonstates the use of UserInterrupts.
+
+    libentry.obj         - DLL entry routine object file
+    tstintrr.cls           - Code for TestInterruptDLL class
+    tstintrr.mth          - Code for Process class support of TestInterruptDLL class
+    vwint                   - make file (use MS C 6.0 nmk)
+    vwint.c                - C source file of the user interrupt
+    vwint.def             - definition file
+    vwint.st               - installation
+
+
+vbackup subdirectory:
+
+    change.log          - initial empty CHANGE.LOG file for use with Smalltalk Express
+    sources.sml         - additional Smalltalk source used for Smalltalk Express
+    v.exe               - initial image pre-configured with WindowBuilder Pro
+
+
+vbackup\clean subdirectory:
+
+    change.log          - initial empty CHANGE.LOG file for use with Smalltalk Express
+    v.exe               - initial empty image for creating runtime applications
+
+
+wbpro subdirectory:
+
+    bitmaps.bdt         - sample bitmaps for use with WBPro applications
+    bitmgr.ico          - icon for bitmap manager window
+    compex.st           - sample CompositePanes
+    filefndr.st         - WBPro sample app
+    mdipatch.st         - WBPro MDI support files
+    readmewb.txt        - WBPro readme file
+    runtime.st          - WBPro runtime file
+    scrap.sbk           - WBPro scrapbook file
+    scrap.xga           - WBPro scrapbook file (large size)
+    wb.ico              - icon for WBPro
+    wbbmp.dct           - development bitmaps used with WBPro
+    wbiconed.st         - WBPro icon editor
+    wbpro.st            - WBPro development files (file this in to load WBPro)

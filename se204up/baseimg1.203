@@ -1,0 +1,3807 @@
+"make sure classes needed by this package exist"
+#( 
+    ApplicationWindow Array Bitmap ByteArray CallBack Character 
+    CheckBox ClassReader Collection ComboBox Compiler Context 
+    CursorManager DDEClient Debugger DialogBox DialogTopPane 
+    Dictionary Directory DrawnButton DynamicLinkLibrary File 
+    FileHandle FileStream Float Font GDIDLL GraphicsMedium GraphicsTool 
+    GraphPane GroupBox HomeContext Icon IdentityDictionary IndexedCollection 
+    Integer KernelDLL ListBox Menu Message MultipleSelectListBox 
+    NationalLanguageSupport NotificationManager Number Object 
+    OrderedCollection Pattern Pen Point Printer Process ProcessScheduler 
+    RadioButton RecordingPen Rectangle Screen ScrollBar Set SortedCollection 
+    StaticBox StaticGraphic StaticText Stream String StringModel 
+    SubPane Symbol SystemDictionary TextPane TextSelection TextTool 
+    ThreeStateButton Toggle TopPane UserDLL ViewManager WinAddress 
+    Window WindowHandle WinHandle WinInfo WinLogicalObject WinLong 
+    WinMessage WinPoint WinRectangle WinStructure WinTextMetrics 
+    WriteStream 
+)
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+
+"Base Image Fixes for Smalltalk Express v2.0, Package #1
+
+    Description:
+
+        This package corrects several base image issues in Smalltalk Express v2.0 and
+        updates the image to v2.03. This package is a superset of the fixes that Digitalk
+        provided in their Smalltalk/V v2.02 patch upgrade.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+
+    Details and Original Digitalk Problem Report #'s:
+
+        *  Groundwork laid for 256-color bitmap support by the addition of the WinLogPalette and
+            WinLogicalPalette classes. WinLogPalette represents a logical color palette structure
+            (LOGPALETTE) which contains an array of color entries for the palette. WinLogicalPalette
+            represents a Window GDI color palette object. An instance of WinLogicalPalette contains
+            a handle to the color palette. Multiple bitmaps may share the same WinLogicalPalette if
+            their color table is the same.
+
+        *  Modified WinLogicalObject>>createObject to correct a fundamental bug in Smalltalk Express
+            where attempting to delete GDI objects that are still selected into a DC corrupts the GDI subsystem.
+
+        * Corrected #objectDeepCopy and #objectShallowCopy to use #basicNew instead of #new.
+
+        * Corrected SortedCollection>>deepCopy to properly copy the sort block.
+
+        *  Several classes and methods were added for compatibility with VST.
+
+        *  PR#355  FunctionKeys do not work correctly in V Win.
+
+        *  PR#561  Smalltalk/vwin crashes when it reached the maximum filehandle it can get.
+
+        *  PR#1013 MDI and popup menu.
+
+        *  PR#1045 Problems with cursors on TextPane.
+
+        *  PR#1102 Print job in PrintManager window should show the name of the job
+            not 'Smalltalk/V'.
+
+        *  PR#1144 nextPut: to an empty TextPane causes walkback because textHolder
+            is nil.
+
+        *  PR#1174 DDEClient singleExecute/singlePoke don't wait for data.
+
+        *  PR#1203 Problem with function key in Smalltalk/VWIN.
+
+        *  PR#1204 Font>>fixedWidth problem.
+
+        *  PR#1206 DialogBox>>wmHelp:with: does not work with ComboBoxes.
+
+        *  PR#1208 SystemDictionary>>signOnDLL fails with sharing violation if
+            SHARE.EXE is loaded.
+
+        *  PR#1212 NotificationManager>>removeEvents:for: fails to remove all
+            events.
+
+        *  PR#1221 User dynamic link library (dll) is not freed when Smalltalk exits.
+
+        *  PR#1227 Printing to postcript driver causes UAE
+
+        *  PR#1250 MultiSelectListBox>>getSelection uses wrong Array type.
+
+        *  PR#1258 SubPane>>wmKillFocus misspells #loosingFocus.
+
+        *  PR#1267 can't assign graphic to StaticGraphic.
+
+        *  PR#1274 Bug in Font>>bold:
+
+        *  PR#1280 DialogBox methods truncate signed return values.
+
+        *  PR#1283 VWIN runtimes fail under WIN/OS of OS/2 2.0
+
+        *  PR#1290 VWIN TextPanes don't work in WindowDialog.
+
+        *  PR#1295 VWIN SubPane hierarchy is missing some public methods present in VPM.
+
+        *  PR#1296 VWIN lacks Menu>>disableAll, Menu>>enableAll methods.
+
+        *  PR#1297 VWIN lacks Window>>enableRedraw, Window>>disableRedraw methods.
+
+        *  PR#1298 VWIN lacks Pattern>>matchBackward:index: method.
+
+        *  PR#1299 VWIN lacks isApplicationWindow, isMemberOf: methods.
+
+        *  PR#1300 VWIN StaticGraphic class only handles icons; VPM also handles bitmaps.
+
+        *  PR#1301 Screen>>rectangleFromUser can answer bogus rectangles in VWIN.
+
+        *  PR#1303 Creating a window with WsPopup style fails in VWIN 2.0
+
+        *  PR#1306 VWFLOAT.DLL not freed on PCs w/ mathchips.
+
+        *  PR#1307 ListBox in Smalltalk/VWIN can display only 5439 items.
+
+        *  PR#1320 Adding a GraphPane to a GroupPane makes the GraphPane's scrollbars dissappear.
+
+        *  PR#1384 storeOn: problems with Files or WinStructures that redefine #size.
+
+        *  PR#1735 Intermittent GPF during Callbacks.
+
+        *  PR#1756 Can't save changed variable values in Debugger.
+"
+
+
+"Add required Windows constants."
+WinConstants
+    at: 'MdisAllchildstyles' put: 1;
+    at: 'RdwInvalidate' put: 16r0001;
+    at: 'RdwInternalpaint' put: 16r0002;
+    at: 'RdwErase' put: 16r0004;
+    at: 'RdwValidate' put: 16r0008;
+    at: 'RdwNointernalpaint' put: 16r0010;
+    at: 'RdwNoerase' put: 16r0020;
+    at: 'RdwNochildren' put: 16r0040;
+    at: 'RdwAllchildren' put: 16r0080;
+    at: 'RdwUpdatenow' put: 16r0100;
+    at: 'RdwErasenow' put: 16r0200;
+    at: 'RdwFrame' put: 16r0400;
+    at: 'RdwNoframe' put: 16r0800;
+    yourself.
+
+"Add OS error codes to the system"
+(Smalltalk
+    at: #OSErrorDescriptions
+    ifAbsent: [ Smalltalk at: #OSErrorDescriptions put: Dictionary new ])
+        at: -5 put: 'Spooler Out of Memory';
+        at: -4 put: 'Spooler Out of Disk';
+        at: -1 put: 'General Error';
+        at: 2 put: 'File Not Found';
+        at: 3 put: 'Path Not Found';
+        at: 4 put: 'Too Many Open Files';
+        at: 5 put: 'Access Denied';
+        at: 6 put: 'Invalid Handle';
+        at: 7 put: 'Arena Trashed';
+        at: 8 put: 'Not Enough Memory';
+        at: 14 put: 'Out of Memory';
+        yourself.!
+Set subclass: #IdentitySet
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''
+    !
+
+
+WinStructure subclass: #WinStructArray
+  instanceVariableNames: 
+    'collection '
+  classVariableNames: ''
+  poolDictionaries: ''
+ !
+
+
+WinStructure subclass: #WinWindowPlacement
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''
+  !
+
+
+WinStructure subclass: #WinLogPalette
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''
+   !
+
+
+WinStructure subclass: #WinDrawItemStruct
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: 
+    'WinConstants '
+    !
+
+
+WinLogicalObject subclass: #WinLogicalPalette
+  instanceVariableNames: 
+    'logPalette '
+  classVariableNames: 
+    'PaletteDictionary MaxPalettes '
+  poolDictionaries: 
+    'WinConstants '
+   !
+
+
+GraphicsMedium subclass: #StoredPicture
+  instanceVariableNames: 
+    'hMetaFile apmHeader '
+  classVariableNames: ''
+  poolDictionaries: 
+    'WinConstants '
+    !
+
+
+
+!IdentitySet class methods ! !
+
+
+!IdentitySet methods !
+ 
+findElementIndex: anObject
+        "Private - Answer the index position of anObject in the
+         receiver or the first empty element position."
+
+    | index indexedObject lastIndex |
+    lastIndex := contents size.
+    index := (anObject basicHash) \\ lastIndex + 1.
+    [ (indexedObject := contents at: index) == anObject ]
+        whileFalse: [
+            (indexedObject == nil)
+                ifTrue: [^index].
+            (index := index + 1) > lastIndex
+                ifTrue: [ "index wraparound"
+                    index := 1]].
+    ^index! !
+
+
+!StoredPicture class methods !
+  
+readMetaFileHeader: aFileStream
+        "Private - Read the metafile header from aFileStream.
+          Answer a WinStructure."
+    | header |
+    header := WinStructure new: 18.
+    aFileStream getBytesFor: header contents.
+    ^header!
+ 
+readPlaceableHeader: aFileStream
+        "Private - Read the placeable file header from aFileStream.
+          Answer a WinStructure."
+    | header |
+    header := WinStructure new: 22.
+    aFileStream getBytesFor: header contents.
+    ^header! !
+
+!StoredPicture methods !
+
+isStoredPicture
+        "Answer whether the receiver is an instance of
+        StoredPicture or one of its subclasses."
+    ^true!
+   
+load: aFileName
+        "Load a metafile from aFileName."
+    | file key bits mfHeader hMem |
+    file := File pathName: aFileName.
+    key := file nextULong.
+    key = 16r9AC6CDD7
+        ifTrue: [           "Aldus Placeable Metafile (APM) format"
+            apmHeader := StoredPicture readPlaceableHeader: file.
+            file position: 22.              "position to read metafile header"
+           mfHeader := StoredPicture readMetaFileHeader: file.
+            file position: 22.              "position to read metafile header"
+           "allocate memory for the metafile."
+            bits := ByteArray new: (mfHeader uLongAtOffset: 6) * 2.
+            file getBytesFor: bits.
+            file close.
+            hMem := WinAddress memoryHandleFrom: bits.
+            KernelLibrary globalLock: hMem.
+            hMetaFile := GDILibrary setMetaFileBits:  hMem.
+            KernelLibrary globalUnlock: hMem]
+        ifFalse: [          "standard metafile format"
+            file close.
+            hMetaFile := GDILibrary getMetaFile: aFileName asParameter].
+    hMetaFile = 0
+        ifTrue: [^self error: 'Load metafile error']!
+  
+play: aGraphicsTool
+        "Display the receiver through aGraphicsTool."
+    | rect |
+    apmHeader == nil ifFalse: [
+        rect := (apmHeader uShortAtOffset: 8) @ (apmHeader uShortAtOffset: 10)
+            rightBottom: (apmHeader uShortAtOffset: 12) @ (apmHeader uShortAtOffset: 14).
+        aGraphicsTool setMapMode: MmAnisotropic.
+        aGraphicsTool setWindowOrg: rect leftTop;
+            setWindowExt: rect extent.
+        "The following can be changed to scale and translate
+          the picture accordingly."
+        aGraphicsTool setViewportOrg: 0 @ 0.
+        aGraphicsTool setViewportExt: aGraphicsTool extent].
+    (GDILibrary
+        playMetaFile: aGraphicsTool handle
+        with: hMetaFile) = 0
+            ifTrue: [^self error: 'play metafile error']! !
+
+!WinDrawItemStruct class methods !
+  
+sizeInBytes
+         "Private - Answer the default size in bytes."
+    ^26! !
+
+!WinDrawItemStruct methods !
+ 
+itemActionDrawEntireItem
+        " Answer whether this is a request to draw the
+        entire item, with selection and focus. "
+    ^(self itemAction & OdaDrawentire) = OdaDrawentire!
+ 
+itemActionFocus
+        " Answer whether the item action is focus. "
+    ^(self itemAction & OdaFocus) = OdaFocus!
+
+itemActionSelect
+        " Answer whether the item action is select. "
+    ^(self itemAction & OdaSelect) = OdaSelect!
+
+itemHasFocus
+        "Answer whether the item has the input focus."
+    ^(self itemState & OdsFocus) = OdsFocus!
+  
+itemIsDisabled
+        " Answer whether the item is disabled. "
+    ^(self itemState & OdsDisabled) = OdsDisabled!
+
+itemIsSelected
+        " Answer whether the item is selected. "
+    ^(self itemState & OdsSelected) = OdsSelected! !
+
+!WinLogicalPalette class methods !
+
+anchorDictionary
+        "Private - Answer the dictionary holding all
+         instances of the receiver class."
+    ^PaletteDictionary!
+ 
+fromStruct: aWinLogPalette
+        "Private - Answer a new logical palette."
+    ^self new
+        fromStruct: aWinLogPalette!
+   
+fromWinLogPalette: aWinLogPalette
+        "Answer a logical palette created from aWinLogPalette
+                 structure."
+    ^self anchorDictionary
+        at: aWinLogPalette
+        ifAbsent: [
+            self fromStruct: aWinLogPalette]!
+  
+initialize
+        "Private - Initialize class variables.
+                 WinLogicalPalette initialize."
+    PaletteDictionary := Dictionary new.
+    MaxPalettes := 16.
+    self stockObject: DefaultPalette.
+    self allInstancesPrim do: [:each | each initHandle].!
+ 
+stockObject: constant
+        "Private - Answer a windows logical object
+         with attributes in anArray."
+    | aHandle struc |
+    aHandle := GDILibrary getStockObject: constant.
+    struc := self winStruct.
+    "GDILibrary
+        getObject: aHandle
+        count: struc size
+        lpObject: struc asParameter."
+    ^(self new
+        stockObject: constant;
+        fromStruct: struc)!
+  
+threshold
+        "Private - Answer max number of brushes causing
+         cleanup."
+    ^MaxPalettes!
+   
+winStruct
+        "Private - Answer Windows structure for receiver."
+    ^WinLogPalette new! !
+
+
+!WinLogicalPalette methods !
+  
+attributeArray
+        "Private - Answer attributes as an array."
+        ^logPalette!
+
+fromStruct: struc
+        "Private - Answer an instance with attributes
+         specified in anArray."
+    logPalette := struc.
+    self createObject!
+ 
+getHandle
+        "Private - Answer handle after creating
+         the windows object."
+    | aHandle aBrushStruct |
+    stockObject notNil
+        ifTrue: [^GraphicsTool getStockObject: stockObject].
+    (aHandle :=
+        GDILibrary createPalette: logPalette asParameter)
+                = 0
+                    ifTrue: [self error: 'Create palette failed']
+                    ifFalse: [^aHandle]! !
+
+
+!WinLogPalette class methods !
+   
+fromRgbColor: aByteArray
+    " Answer an instance of the receiver with its
+        entries copied from aByteArray ."
+    ^self fromRgbColor: aByteArray entries: (aByteArray size) // 4.!
+
+fromRgbColor: anArrayOfRgbQuads entries: anInteger
+    " Answer an instance of the receiver with at most anInteger
+    of its  entries copied from aByteArray .  Note that while a
+    palette entry is stored as Red-Green-Blue, the RGBquad
+    data is actually stored as Blue-Green-Red.
+    Look at the structure definitions for PALETTEENTRY and RGBQUAD
+    in windows.h."
+    | logPalette aByteArray count|
+    count := anArrayOfRgbQuads size.
+    aByteArray  := ByteArray new: count.
+    0 to: ( (count // 4) - 1 )  do:[ :i |
+      aByteArray at: (i * 4 + 1) put: (anArrayOfRgbQuads at: (i * 4 + 3)).
+      aByteArray at: (i * 4 + 2) put: (anArrayOfRgbQuads at: (i * 4 + 2)).
+      aByteArray at: (i * 4 + 3) put: (anArrayOfRgbQuads at: (i * 4 + 1)).
+      aByteArray at: (i * 4 + 4) put: 0. ].
+
+   anInteger < ( aByteArray size  / 4 )
+    ifTrue: [
+        logPalette := self new: ( 4 + ( anInteger * 4 ) ).
+        logPalette uShortAtOffset: 0 put: 16r300.
+        logPalette  uShortAtOffset: 2 put: anInteger.
+        logPalette contents replaceFrom: 5 to: ( 4 + ( anInteger * 4 ) )
+                                        with: aByteArray startingAt: 1]
+    ifFalse: [
+        logPalette := self new: ( 4 + ( aByteArray size ) ).
+        logPalette uShortAtOffset: 0 put: 16r300.
+        logPalette  uShortAtOffset: 2 put:  ( ( aByteArray size) /4 ).
+        logPalette bytesAtOffset: 4 put: aByteArray].
+
+        ^logPalette!
+ 
+sizeInBytes
+         "Private - Answer the default size in bytes."
+    ^1028! !
+
+
+!WinLogPalette methods !
+ 
+= aWinLogPalette
+                "Answer true if the contents of the receiver are equal
+                 to the contents of aWinLogPalette."
+        ^(self contents = aWinLogPalette contents)!
+ 
+hash
+        "Answer the size of the receiver as its hash value."
+        ^contents hash! !
+
+
+!WinStructArray class methods !
+  
+fromCollection: aCollection
+        "Answer a new instance of the receiver
+         which contains copies of all the structures
+         in aCollection."
+    ^self new
+        collection: aCollection! !
+
+
+!WinStructArray methods !
+  
+asParameter
+        "Answer the receiver in a form suitable for passing
+         to an API call: copy the contained structures
+         into the contents instance variable."
+    | size byteArray offset |
+    size := collection inject: 0 into: [ :bytes :item |
+        bytes + item contents size ].
+    byteArray := ByteArray new: size.
+    offset := 1.
+    collection do: [ :item |
+        byteArray
+            replaceFrom: offset
+            to: offset + item contents size - 1
+            with: item contents
+            startingAt: 1.
+        offset := offset + item contents size ].
+    contents := byteArray.
+    ^contents!
+  
+collection
+    ^collection!
+
+collection: aCollection
+        "Private - set the collection of structures
+         that the receiver contains to aCollection."
+    collection := aCollection! !
+
+
+!WinWindowPlacement class methods !
+   
+inspectorFields
+        "Answer the names of the fields contained in this kind of definition."
+    ^self inspectorClass fields: #(
+        length
+        flags
+        showCmd
+        ptMinPosition
+        ptMaxPosition
+        rcNormalPosition
+    )!
+
+new
+
+    ^super new initialize!
+   
+sizeInBytes
+         "Private - Answer the default size in bytes."
+    ^22! !
+
+
+!WinWindowPlacement methods !
+  
+flags
+    ^self uShortAtOffset: 2!
+ 
+initialize
+    self uShortAtOffset: 0 put: self contents size!
+ 
+length
+    ^self uShortAtOffset: 0!
+
+printOn: aStream
+    "Append the ASCII representation
+    of the receiver to aStream."
+
+    super printOn: aStream.
+    aStream
+        nextPut: $( ;
+        nextPutAll: 'show('; print: self showCmd; nextPut: $);
+        nextPutAll: ' normal('; print: self rcNormalPosition; nextPut: $);
+        nextPut: $).!
+  
+ptMaxPosition
+    ^WinPoint usingBytes: ( self bytesAtOffset: 10 count: WinPoint sizeInBytes )!
+
+ptMinPosition
+    ^WinPoint usingBytes: ( self bytesAtOffset: 6 count: WinPoint sizeInBytes )!
+ 
+rcNormalPosition
+    ^WinRectangle usingBytes: ( self bytesAtOffset: 14 count: WinRectangle sizeInBytes )!
+ 
+showCmd
+    ^self uShortAtOffset: 4! !
+
+
+!ApplicationWindow methods !
+   
+childrenAffectingClientArea
+    "Private - Answer the children that reduces
+    the amount of visible client area in the receiver"
+
+    ^self propertyAt: #childrenAffectingClientArea
+        ifAbsent: [ OrderedCollection new ]!
+
+childrenAffectingClientArea: anOrderedCollection
+    "Private - Set the children that reduces
+    the amount of visible client area in the receiver"
+
+    ^self propertyAt: #childrenAffectingClientArea
+        put: anOrderedCollection!
+ 
+isApplicationWindow
+        "Answer true if receiver is a kind of ApplicationWindow."
+    ^true!
+  
+ownerDrawPen
+        "Private - answer the pen to be used for drawing
+        owner drawn items.  When drawing owner drawn
+        menu items, use the menu window's pen."
+    ^menuWindow pen!
+ 
+remove: anObject interestIn: aFacet
+        "Remove anObject as a dependent of aFacet in the receiver.
+         anObject."
+    | list |
+    list := dependents at: aFacet ifAbsent: [ ^nil ].
+    list remove: anObject ifAbsent: [ nil ].
+    list isEmpty ifTrue: [ dependents removeKey: aFacet ]!
+ 
+resizeRectangleFor: aRectangle
+        "Private - Answer the rectangle to
+        use to resize the receiver to aRectangle."
+
+    ^aRectangle!
+  
+subPaneWithFocus
+        "Answer the SubPane of the receiver that last had the focus"
+
+    ^self
+        propertyAt: #focusWindow
+        ifAbsentPut: [ self searchForDefaultTextPane ]!
+  
+subPaneWithFocus: aSubPane
+        "Private - remember the SubPane of the receiver
+         that last had the focus"
+
+    self propertyAt: #focusWindow put: aSubPane!
+  
+validateBuild
+        "Private - Create or recreate the window for the receiver
+        without showing it."
+    | rect |
+    CursorManager execute change.
+    self buildWindow isNil ifTrue:[CursorManager normal change.^nil].
+    rect := 0@0 extent: rectangle extent.
+    rectangle := 0 @ 0 extent: 0@ 0.
+    self resize: rect.
+    children do: [:subpane | subpane sendInputEvent: #validate]. "wmCreate:with: may not have returned yet"
+    collapsed isNil ifTrue: [collapsed := 0].
+    CursorManager normal change.!
+  
+wmQuerydragicon: wordInteger with:longInteger
+    "Private - Answer the icon handle"
+    | icon |
+    ( icon := self icon ) isNil
+    	ifTrue: [ ^nil ].
+    ^icon handle!
+ 
+wmSize: wordInteger with: longInteger
+        "Private - Process the window resizing message."
+    | extent |
+    "do nothing if being minimized"
+    wordInteger = Sizeiconic ifTrue: [ ^nil ].
+    extent := ( ( WinPoint new:4 ) uLongAtOffset: 0 put: longInteger ) asPoint.
+    ( extent x = 0 or: [ extent y = 0 ] )
+        ifFalse: [ self resize: ( 0 @ 0 extent: extent ) ].
+    ^nil! !
+
+!ByteArray methods !
+  
+dumpOn: aStream base: radix
+        "Dump the receiver's bytes onto aStream using
+        the given radix."
+
+    ^self dumpOn: aStream base: radix bytes: 1!
+
+dumpOn: aStream base: radix bytes: oneTwoFour
+        "Dump the receiver's bytes onto aStream using
+        the given radix, and oneTwoFour specifying the number
+        of bytes per chunk."
+    | fieldWidth string lineLength columnIndex byte asciiStream byteValues |
+    byteValues :=  #( 1 256 65536 16777216 ).
+    lineLength := 16.
+    fieldWidth := ( ( ( 2 raisedToInteger: oneTwoFour * 8 ) - 1 ) radix: radix showRadix: false ) size.
+    columnIndex := 0.
+    1 to: self size by: oneTwoFour do: [ :byteIndex |
+        byte := 0.
+        1 to: oneTwoFour do: [:i |
+            byteIndex + i - 1 > self size ifFalse: [
+                byte := byte + ( ( self at: byteIndex + i - 1 ) * ( byteValues at: i ) ) ] ].
+        byteIndex - 1 \\ lineLength = 0 ifTrue: [
+            asciiStream := String new asStream.
+            string := byteIndex  - 1 printPaddedWith: $0 to: 4 base: 16.
+            aStream nextPutAll: '<16r', string, '>  ' ].
+        string := byte printPaddedWith: $0 to: fieldWidth base: radix.
+        aStream nextPutAll: string, ' '.
+        byteIndex \\ 4 = 0 ifTrue: [ aStream nextPutAll: ' ' ].
+        1 to: oneTwoFour do: [:i |
+            byteIndex + i - 1 > self size ifFalse: [
+                byte := self at: byteIndex + i - 1.
+                asciiStream nextPut: ( byte < 32 ifTrue: [ $. ] ifFalse: [ byte asCharacter ] ) ] ].
+        byteIndex + oneTwoFour - 1 \\ lineLength = 0 ifTrue: [
+            aStream nextPutAll: ' ', asciiStream contents; cr ] ].
+
+    self size \\ lineLength = 0 ifFalse: [
+        self size + 1 to: ( self size + lineLength truncateTo: lineLength ) do: [ :byteIndex |
+            aStream nextPutAll: ( ( String new: fieldWidth + 1 ) atAllPut: $ ).
+            byteIndex \\ 4 = 0 ifTrue: [ aStream nextPutAll: ' ' ] ].
+        aStream nextPutAll: ' ', asciiStream contents ]!
+   
+dumpString
+        "Dump the receiver's bytes in hex."
+
+    ^self dumpStringBase: 16!
+
+dumpStringBase: radix
+        "Answer a String which contains a dump of the receiver's bytes
+        in the given radix."
+
+    ^self dumpStringBase: radix bytes: 1!
+
+dumpStringBase: radix bytes: oneTwoFour
+        "Answer a String which contains a dump of the receiver's bytes
+        in the given radix, where oneTwoFour specifies the number
+        of bytes per chunk."
+    | aStream |
+    aStream := String new asStream.
+    self dumpOn: aStream base: radix bytes: oneTwoFour.
+    ^aStream contents! !
+
+!CallBack class methods !
+  
+exit
+        "Private - Clean up CallBAck class."
+   " KernelLibrary freeSelector: LpDataCallBackEntry // 65536.        "!
+
+startUp
+        "Private - Initialize the class variables."
+    | hCodeCallBackEntry  |
+
+    LpfnSTCallBack :=
+       WinAddress fromString: (KernelLibrary
+                  getProcAddress: WIN hInstanceDLL
+                  procName: 'STCallBackProc' asParameter).
+    CallBackTable := Array new: self maxNumCallBack.
+    LpCodeCallBackEntry := WinAddress integerFrom:
+                           (VWVMLibrary getObjectAddress: VmCallbackentry).
+
+    hCodeCallBackEntry := WinAddress loWordFrom:
+                (KernelLibrary globalHandle: LpCodeCallBackEntry //65536 ).
+    hCodeCallBackEntry := KernelLibrary
+                              globalReAlloc: hCodeCallBackEntry
+                              bytes: self maxNumCallBack * self slotSize
+                              flag: 0.
+    LpCodeCallBackEntry := hCodeCallBackEntry * 65536! !
+
+!CallBack methods !
+   
+registerMessage: aSTMessage parameterTypes: aParameterTypeArray
+returnType: aReturnType callingConvention: aCCType
+    "Private - Answer an instance of CallBack object for stMessage of
+     ccType calling convention."
+  | emptySlot argsSize highByte lowByte highWord lowWord aCCInteger aCallbackAddress lpfnProc newDataSelector|
+
+    (emptySlot := self class findEmptySlot) <= 0 ifTrue:[
+        self error:'Exceeded maximum CallBack objects'.
+        ^nil].
+
+    slotNumber := emptySlot.
+    stMessage := aSTMessage.
+    typeArray := aParameterTypeArray.
+    ccType :=  aCCType.
+    aCCInteger := CallingConventions at: aCCType.
+    CallBackTable at: emptySlot put: self.
+    argsSize := self argsSize.
+
+    "Currently, returnType is not needed.  Currently, CallBack object
+        returns a double word to the caller.  The caller can then choose
+        to either assume the return type is a word or double word."
+    returnType := aReturnType.
+
+    "new code "
+    newDataSelector := KernelLibrary
+                       allocSelector: LpCodeCallBackEntry // 65536.
+    newDataSelector := KernelLibrary
+                       prestoChangoSelector: LpCodeCallBackEntry // 65536
+                       destinationSelector: newDataSelector.
+    LpDataCallBackEntry := newDataSelector * 65536.
+    "end new code "
+
+    aCallbackAddress := WinAddress fromInteger:
+           (LpDataCallBackEntry + ((slotNumber - 1) * self class slotSize)).
+
+    lowByte := SmalltalkSystemWindow handle asInteger \\ 256.
+    highByte := SmalltalkSystemWindow handle asInteger // 256.
+    aCallbackAddress at: 1 put: 16r68.          "SmalltalkSystemWindow handle"
+    aCallbackAddress at: 2 put: lowByte.
+    aCallbackAddress at: 3 put: highByte.
+
+    lowByte := emptySlot \\ 256.
+    highByte := emptySlot // 256.
+    aCallbackAddress at: 4 put: 16r68.          "Push Slot #"
+    aCallbackAddress at: 5 put: lowByte.
+    aCallbackAddress at: 6 put: highByte.
+
+    lowByte := aCCInteger \\ 256.
+    highByte := aCCInteger // 256.
+    aCallbackAddress at: 7 put: 16r68.          "Push Calling convention"
+    aCallbackAddress at: 8 put: lowByte.
+    aCallbackAddress at: 9 put: highByte.
+
+    lowByte := argsSize \\ 256.
+    highByte := argsSize // 256.
+    aCallbackAddress at: 10 put: 16r68.          "Push size of arguement"
+    aCallbackAddress at: 11 put: lowByte.
+    aCallbackAddress at: 12 put: highByte.
+
+    highWord := LpfnSTCallBack highHalf.
+    lowWord := LpfnSTCallBack lowHalf.
+    highByte := lowWord // 256.
+    lowByte := lowWord \\ 256.
+    aCallbackAddress at: 13 put: 16rEA.          "Jump to STCallBack"
+    aCallbackAddress at: 14 put: lowByte.
+    aCallbackAddress at: 15 put: highByte.
+    highByte := highWord // 256.
+    lowByte := highWord \\ 256.
+    aCallbackAddress at: 16 put: lowByte.
+    aCallbackAddress at: 17 put: highByte.
+    KernelLibrary freeSelector: newDataSelector.
+
+    lpfnProc := WinAddress fromInteger:
+             (LpCodeCallBackEntry + ((slotNumber - 1) * self class slotSize)).
+    lpfnInstanceProc :=
+            WinAddress fromString:(
+                KernelLibrary
+                    makeProcInstance: lpfnProc asParameter
+                    withInstance: WIN hInstanceExe).
+
+    ^self! !
+
+!CheckBox class methods !
+  
+auto
+        "Create an instance of an auto check box."
+    ^self new autoCheckBox; yourself!
+ 
+nonAuto
+        "Create an instance of a non-auto check box."
+    ^self new checkBox; yourself! !
+
+!ClassReader methods !
+   
+fileOut: aFileName
+        "Write the source for the class (including the class definition,
+         instance methods, and class methods) in chunk file format
+         to aFileName."
+
+    | aFileStream aMetaClass |
+    class isNil ifTrue: [^self].
+    aFileName isNil ifTrue: [^self].
+    CursorManager execute change.
+    aFileStream := File newFile: aFileName.
+    aFileStream lineDelimiter: Cr.
+    class fileOutOn: aFileStream.
+    aFileStream nextChunkPut: ''.
+    aMetaClass := class class.
+    aMetaClass instanceVariableString = ''
+        ifFalse: [
+            aFileStream cr; cr.
+            aMetaClass fileOutOn: aFileStream.
+            aFileStream nextChunkPut: ''].
+    (ClassReader forClass: class class) fileOutOn: aFileStream.
+    self fileOutOn: aFileStream.
+    aFileStream close.
+    CursorManager normal change! !
+
+!Collection methods !
+  
+removeAll
+        "Answer aCollection.  Remove all the elements
+         contained in the receiver collection."
+
+    self shallowCopy do: [ :element | self remove: element].! !
+
+!ComboBox class methods !
+   
+dropDown
+        "Answer an instance of a drop down combobox."
+    ^self new dropDown; yourself!
+  
+dropDownList
+        "Answer an instance of a dropdown list combobox."
+    ^self new dropDownList; yourself!
+  
+simple
+        "Answer an instance of a simple combobox."
+    ^self new simpleList; yourself! !
+
+!Context methods !
+ 
+evaluate
+        "Answer the result of evaluating the receiver."
+
+    ^self value!
+   
+evaluateFor: anObject
+        "Evaluate the receiver, passing anObject as the evaluation argument."
+    ^self evaluateWithArguments: ( Array with: anObject )!
+
+evaluateWithArguments: argumentArray
+        "Evaluate the receiver with the elements of the <argumentArray>
+        as the argument values. Error Conditions: If the number of
+        arguments required by the receiver is different from the size
+        of the argument array, send the message #invalidArgumentCount:
+        to the receiver with the number of arguments provided as the
+        argument."
+    | arraySize |
+    arraySize := argumentArray size.
+    arraySize = 0 ifTrue: [ ^self value ].
+    arraySize = 1 ifTrue: [ ^self value: (argumentArray at: 1) ].
+    arraySize = 2 ifTrue: [ ^self value: (argumentArray at: 1) value: (argumentArray at: 2) ].
+    ^self invalidArgumentCount: arraySize!
+  
+evaluateWithoutInterrupts
+        "Disable interrupts, evaluate the receiver, enable interrupts, and
+        answer the result of the evaluation."
+    | int value |
+    int := Process enableInterrupts: false.
+    value := self value.
+    Process enableInterrupts: int.
+    ^value!
+ 
+invalidArgumentCount: argCount
+        "Private - display an error message indicating that the
+         receiver does not support the given number of arguments."
+    ^self error: self class printString,
+        ' expected ', self numberOfArguments printString,
+                ' arguments instead of ', argCount printString!
+   
+numberOfArguments
+        "Answer the argument count for the receiver."
+    ^blockArgumentCount!
+  
+receiver
+        "Answer the receiver of the message that created the receiver."
+    ^self homeContext receiver!
+  
+validateNumberOfArguments: anInteger
+        "Private - indicate an error if anInteger is an inappropriate
+         number of arguments for the receiver."
+    anInteger ~= self numberOfArguments
+        ifTrue: [ self invalidArgumentCount: anInteger ].!
+   
+value
+        "Answer the result of evaluating the no argument
+         block described by the receiver."
+    <primitive: 79>
+    self validateNumberOfArguments: 0.
+    ^self value!
+  
+value: anObject
+        "Answer the result of evaluating the one argument
+         block described by the receiver."
+    <primitive: 80>
+    self validateNumberOfArguments: 1.
+    ^self value: anObject!
+ 
+value: arg1 value: arg2
+        "Answer the result of evaluating the two argument
+         block described by the receiver."
+    <primitive: 81>
+    self validateNumberOfArguments: 2.
+    self primitiveFailed! !
+
+!CursorManager methods !
+
+displayAt: aPoint with: aPen
+        "Display the receiver through aPen at the given location."
+
+    UserLibrary
+        drawIcon: aPen handle
+        x: aPoint x
+        y: aPoint y
+        hIcon: self handle.!
+  
+isCursor
+        "Answer true if receiver is a kind of CursorManager."
+    ^true! !
+
+!DDEClient class methods !
+ 
+singleExecute: application topic: topic commandString: aCommandString
+        "Make a single Dynamic Data Exchange request and answer the
+         result as a String.  This initiates a conversation, sends
+         the request, waits for the response, and terminates the
+         conversation.  Answer true if successful, otherwise false."
+    | dde result |
+    ( dde := self newClient: nil application: application topic: topic ) isNil
+        ifTrue: [ ^false ].
+    result := dde executeCommand: aCommandString.
+    dde terminate.
+    ^result!
+
+singlePoke: application topic: topic item: item data: data
+        "Send a single DDE execute.  This initiates a
+         conversation, sends the command, and terminates
+         the conversation.  Answer true if successful, otherwise false"
+    | dde result |
+    ( dde := self newClient: nil application: application topic: topic ) isNil
+        ifTrue: [ ^false ].
+    result := dde pokeItem: item object: data.
+    dde terminate.
+    ^result! !
+
+!Debugger methods !
+
+accept: textPane
+    "Private - Compile and evaluate the code in textPane.
+     Replace the selected temporary variable with
+     the result of the evaluation."
+    | result context aString tempIndex |
+    aString := textPane contents.
+    result := Compiler
+        evaluate: aString
+        in: object class
+        to: object
+        notifying: textPane
+        ifFail: [^textPane modified: true].
+    Smalltalk logEvaluate: aString.
+    instIndex = 1
+        ifTrue: [^textPane modified: false].
+    process tempAt: walkbackIndex
+        number: instList size - instIndex + 1 put: result.
+    self changed: #instance:.
+    textPane modified: false! !
+
+!DialogBox methods !
+
+add: aString toComboBox: itemId
+        "Add aString at anInteger to the combo box whose
+         id is itemId.  anInteger is either the zero-based
+         index of the new item or a constant beginning
+         with 'Lit' from the WinConstants pool dictionary."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: CbAddstring
+        wparam: 0
+        lparamStruct: aString asParameter)) asInteger!
+   
+add: aString toComboBox: itemId at: anInteger
+        "Add aString at anInteger to the combo box whose
+         id is itemId.  anInteger is either the zero-based
+         index of the new item or a constant beginning
+         with 'Lit' from the WinConstants pool dictionary."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: CbInsertstring
+        wparam: anInteger
+        lparamStruct: aString asParameter)) asInteger!
+  
+add: aString toListBox: itemId
+        "Add aString at anInteger to the list box whose
+         id is itemId.  anInteger is either the zero-based
+         index of the new item or a constant beginning
+         with 'Lit' from the WinConstants pool dictionary."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: LbAddstring
+        wparam: 0
+        lparamStruct: aString asParameter)) asInteger!
+ 
+add: aString toListBox: itemId at: anInteger
+        "Add aString at anInteger to the list box whose
+         id is itemId.  anInteger is either the zero-based
+         index of the new item or a constant beginning
+         with 'Lit' from the WinConstants pool dictionary."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: LbInsertstring
+        wparam: anInteger
+        lparamStruct: aString asParameter)) asInteger!
+
+deleteAllItemsInComboBox: itemId
+        "Delete all the items in the combo box whose id is itemId."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: CbResetcontent
+        wparam: 0
+        lparam: 0)) asInteger!
+ 
+deleteAllItemsInListBox: itemId
+        "Delete all the items in the list box whose id is itemId."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: LbResetcontent
+        wparam: 0
+        lparam: 0)) asInteger!
+   
+hideItem: itemId
+        "Hide the item whose id is itemId."
+    ^UserLibrary showWindow: (UserLibrary getDlgItem: handle item: itemId)
+        command: SwHide!
+ 
+queryButton: itemId
+        "Answer a boolean indicating the 'checked' state of
+         the button whose id is itemId."
+    ^(UserLibrary
+        isDlgButtonChecked: handle
+        buttonID: itemId) = 1!
+   
+querySelectionInComboBox: itemId
+        "Answer the selected item in the combo box whose
+         id is itemId."
+    ^ (WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: CbGetcursel
+        wparam: 0
+        lparam: 0)) asInteger!
+ 
+querySelectionInListBox: itemId
+        "Answer the selected item in the list box whose
+         id is itemId."
+    ^ (WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: LbGetcursel
+        wparam: 0
+        lparam: 0)) asInteger!
+   
+queryText: text inComboBox: itemId startingAt: startingAt
+        "Find the index of text in combo box itemId starting.
+          at index startingAt.  Index is 0 relative."
+    ^(WinLong fromBytes: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: CbFindstring
+        wparam: startingAt
+        lparamStruct: text asParameter)) asInteger!
+
+queryText: text inListBox: itemId startingAt: startingAt
+         "Find the index of text in list box itemId starting at.
+          index startingAt.  Index is 0 relative."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: LbFindstring
+        wparam: startingAt
+        lparamStruct: text asParameter)) asInteger!
+
+queryValue: itemNumber inComboBox: itemId
+        "Get the value of itemNumber in the combo box
+         whose id is itemId."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg:CbGetitemdata
+        wparam: itemNumber
+        lparam: 0)) asInteger!
+
+queryValue: itemNumber inListBox: itemId
+        "Get the value of itemNumber in the list box
+         whose id is itemId."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: LbGetitemdata
+        wparam: itemNumber
+        lparam: 0)) asInteger!
+ 
+select: itemNumber inComboBox: itemId
+        "Select itemNumber in the combo box whose id
+            is itemId."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: CbSetcursel
+        wparam: itemNumber
+        lparam: 0)) asInteger!
+
+select: itemNumber inListBox: itemId
+        "Select itemNumber in the list box whose id is itemId."
+   ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: LbSetcursel
+        wparam: itemNumber
+        lparam: 0)) asInteger!
+
+setButton: itemId value: aBoolean
+        "Set the 'checked' state of a radio button or check box
+         to aBoolean."
+    ^UserLibrary
+        checkDlgButton: handle
+        item: itemId
+        checkIt: aBoolean asParameter!
+  
+setItemText: itemId string: aString
+        "Set the text of the item whose id is itemId to aString."
+    ^UserLibrary
+        setDlgItemText: handle
+        item: itemId
+        text: aString asParameter!
+  
+setSelectEdit: itemId startingAt: startingPos endingAt: endingPos
+        "Select all characters in the edit field identified by itemId
+        that are within the staringPos and endingPos"
+   ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: EmSetsel
+        wparam: 0
+        lparam: startingPos | (endingPos bitShift: 16))) asInteger!
+ 
+setTextLimit: itemId to: anInt
+        "Set the text limit for the item whose id is itemId
+         to anInt."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: EmLimittext
+        wparam: anInt
+        lparam: 0)) asInteger!
+ 
+setValue: anInteger forItem: itemNumber inComboBox: itemId
+        "Set the value of itemNumber to anInteger in the combo box
+         whose id is itemId."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: CbSetitemdata
+        wparam: itemNumber
+        lparam: anInteger)) asInteger!
+ 
+setValue: anInteger forItem: itemNumber inListBox: itemId
+        "Set the value of itemNumber to anInteger in the list box
+         whose id is itemId."
+    ^(WinLong fromString: (UserLibrary
+        sendDlgItemMessage: handle
+        item: itemId
+        msg: LbSetitemdata
+        wparam: itemNumber
+        lparam: anInteger)) asInteger!
+   
+wmHelp: wordInteger with: longInteger
+        "Private - Process the Smalltalk help message."
+    | focusWindow id name cParent |
+    self helpManager isNil ifTrue: [ ^nil ].
+    focusWindow := longInteger \\ 65536.
+
+        "get the id of the control; if not a child of the dialog
+         (e.g. the entry field in a ComboBox), get its parent"
+    ( cParent := UserLibrary getParent: focusWindow ) ~= handle asInteger
+        ifTrue: [ focusWindow := cParent ].
+    id := UserLibrary getWindowWord: focusWindow index: GwwId.
+
+    wordInteger = MsgfMenu
+        ifTrue:[ ^super wmHelp: wordInteger with: longInteger ].
+    wordInteger = MsgfDialogbox ifTrue: [
+        name := self itemIds at: id ifAbsent: [ nil ].
+        self helpManager displayHelp: name ]! !
+
+!DialogTopPane methods !
+ 
+isDialogTopPane
+        "Answer whether the receiver is a kind of DialogTopPane."
+    ^true! !
+
+!Dictionary methods !
+   
+addAll: aCollection
+        "Add each element of aCollection to the receiver,
+        returning the collection of elements that were added."
+    aCollection isDictionary
+        ifTrue: [ aCollection associationsDo: [ :a | self add: a ] ]
+        ifFalse: [ aCollection do: [ :o | self add: o ] ].
+    ^aCollection!
+   
+isDictionary
+        "Answer true if receiver is an instance of class
+         Dictionary or one of its subclasses, else answer false."
+    ^true!
+   
+removeAll
+        "Answer aCollection.  Remove all the elements
+         contained in the receiver collection."
+
+    contents atAllPut: nil.
+    elementCount := 0.! !
+
+!DrawnButton methods !
+   
+disable
+        "Disable the receiver control; if the control isn't build yet, save
+         the state for disabling when built"
+    self isHandleOk ifFalse: [self propertyAt: #disabled put: true].
+    ^super disable!
+   
+enable
+        "Disable the receiver control; if the control isn't build yet, save
+         the state for disabling when built"
+    self isHandleOk ifFalse: [self propertyAt: #disabled put: nil].
+    ^super enable!
+  
+validate
+        "Private - Show window contents."
+    (self propertyAt: #disabled) notNil
+        ifTrue: [self disable].
+    self showWindow! !
+
+!DynamicLinkLibrary methods !
+  
+close
+        "Private - Free the DLL"
+    KernelLibrary freeLibrary: self.
+    self class clearCachedAddresses! !
+
+!File class methods !
+  
+findFileName: fileName
+        "Answer the full path of the file named fileName,
+        located on the path, or nil if not found."
+
+    | searchDirs nameArray buf actualDir |
+    "Directories are searched in this order:
+        1. The current directory
+        2. The Windows directory
+        3. The Windows System directory"
+    searchDirs := OrderedCollection new.
+    searchDirs add: Disk.
+    buf := String new: 160.
+    (KernelLibrary getWindowsDirectory: buf length: 160) > 0 ifTrue: [
+        searchDirs add: (Directory pathName: buf trimNullTerminator) ].
+    buf := String new: 160.
+    (KernelLibrary getSystemDirectory: buf length: 160) > 0 ifTrue: [
+        searchDirs add: (Directory pathName: buf trimNullTerminator) ].
+
+    searchDirs do: [ :dir |
+        nameArray := self splitPath: fileName in: dir.
+        (actualDir := Directory new)
+            drive: (nameArray at: 1);
+            pathName: (nameArray at: 2).
+        (actualDir validFile: (nameArray at: 3)) ifTrue: [
+            ^File new
+                setName: (nameArray at: 3) setDirectory: actualDir;
+                pathName ]].
+    ^nil!
+  
+pathNameReadOnly: aString
+        "Answer a read only FileStream with path name aString."
+    ^self pathNameReadOnly: aString in: Disk!
+   
+pathNameReadOnly: aString in: aDirectory
+        "Answer a read only FileStream for the file named aString
+         in aDirectory."
+
+    | anArray |
+    anArray := self splitPath: aString in: aDirectory.
+    ^(Directory new
+        drive: (anArray at: 1);
+        pathName: (anArray at: 2))
+            fileReadOnly: (anArray at: 3)! !
+
+!FileHandle class methods !
+ 
+setLimit: anInteger
+        "Set the maximum number of open file handles
+         allowed by the OS for this process; this has no
+         effect under NT."
+
+    KernelLibrary setHandleCount: anInteger.
+    "MaxHandles := anInteger"! !
+
+!FileStream methods !
+  
+asByteFileStreamCopy
+        "Answer a copy of the receiver as a byte-oriented (single byte) FileStream."
+    ^self copy! !
+
+!Font methods !
+
+bold: aValue
+        "set the bold boolean of the font to aValue."
+    aValue notNil ifTrue: [
+        aValue
+            ifTrue: [ logFont lfWeight: 700 ]      "700 is bold"
+            ifFalse: [ logFont lfWeight: 400 ] ].   "400 is normal"
+    changed := true!
+   
+fixedWidth
+        "Answer true if the font is of fixed
+         width, else answer false."
+     ^( textMetrics tmPitchAndFamily & 16r01 ) =  0  "Fixed pitch = 0"! !
+
+!GDIDLL methods !
+   
+getDIBits: hdc hBitmap: hBitmap startScan: anInt1 scans: anInt2 bitsStruct: aByteArray bitsInfo: bitmapInfo wUsage: int3
+    <api: GetDIBits ushort ushort ushort ushort struct struct ushort short>
+    ^self invalidArgument!
+   
+setDIBits: hdc hBitmap: hBitmap startScan: anInt1 scans: anInt2 bitsStruct: aByteArray bitsInfo: bitmapInfo wUsage: int3
+    <api: SetDIBits ushort ushort ushort ushort struct struct ushort short>
+    ^self invalidArgument!
+   
+setDIBitsToDevice: hdc destX: anInt1 destY: anInt2 width: anInt3 height: anInt4 srcX: anInt5 srcY: anInt6
+startScan: anInt7 scans: anInt8 bitsExternal: aByteArray bitsInfo: bitmapInfo wUsage: int3
+    <api: SetDIBitsToDevice ulong long long ulong ulong long long ulong ulong ulong struct ulong long>
+    ^self invalidArgument!
+   
+setDIBitsToDevice: hdc destX: anInt1 destY: anInt2 width: anInt3 height: anInt4 srcX: anInt5 srcY: anInt6
+startScan: anInt7 scans: anInt8 bitsStruct: aByteArray bitsInfo: bitmapInfo wUsage: int3
+    <api: SetDIBitsToDevice ulong long long ulong ulong long long ulong ulong struct struct ulong long>
+    ^self invalidArgument!
+
+setStretchBltMode: hDC mode: anInt
+    <api: SetStretchBltMode  ulong ulong long>
+    ^self invalidArgument!
+  
+stretchDIBits: hDC xDest: anInt1 yDest: anInt2 cxDest: anInt3 cyDest: anInt4 xSrc: anInt5 ySrc: anInt6 cxSrc: anInt7 cySrc: anInt8 bits: bits bmi: bmi colorUse: anInt9 rop:rop
+    <api: StretchDIBits ushort short short short short short short short short ulong struct ushort ulong short>
+    ^self invalidArgument!
+
+textOut: aDeviceContext x: anInteger1 y: anInteger2 textPtr: aStringZ length: anInteger3
+    <api: TextOut ushort short short ulong short boolean>
+    ^self invalidArgument!
+ 
+updateColors: hdc
+    <api: UpdateColors ushort short>
+    ^self invalidArgument! !
+
+!GraphicsMedium methods !
+  
+graphicsTool
+        "Answer the graphics tool associated with
+         the receiver."
+    ^graphicsTool!
+
+pen: aGraphicsTool
+        "Set the graphicsTool for the receiver to aGraphicsTool."
+    self graphicsTool: aGraphicsTool! !
+
+!GraphicsTool class methods !
+ 
+for: aDeviceContext medium: aGraphicsMedium
+        "Answer a new instance of the receiver
+         with aDeviceContext and associated with
+         aGraphicsMedium."
+    ^self forDC: aDeviceContext medium: aGraphicsMedium! !
+
+!GraphicsTool methods !
+
+isGraphicsTool
+        "Answer whether the receiver is an instance of
+        GraphicsTool or one of its subclasses."
+    ^true!
+ 
+releaseAllObjects
+        "Private - Deselect all objects and delete the
+         Pen and Brush objects."
+    self selectObject: (DefaultObjects at: 'Pen').
+    "logicalTool notNil ifTrue: [logicalTool initHandle]."
+    self selectObject: (DefaultObjects at: 'Brush').
+    self selectObject: (DefaultObjects at: 'Bitmap').
+    self selectObject: (DefaultObjects at: 'Font')!
+   
+setStretchBltMode: mode
+
+    GDILibrary setStretchBltMode: self handle mode: mode.! !
+
+!GraphPane methods !
+ 
+graphicsToolClass
+        "Private - Answer the graphics tool class used by the receiver."
+    ^RecordingPen!
+ 
+isGraphPane
+        "Answer whether the receiver is an instance of
+        GraphPane or one of its subclasses."
+    ^true! !
+
+!GroupBox methods !
+  
+isTransparent
+        "Private - answer whether the receiver's background
+        should be painted with the same background color
+        as its parent pane."
+    ^true! !
+
+!HomeContext methods !
+  
+isHomeContext
+        "Answer true if receiver is an instance of class
+        HomeContext or one of its subclasses, else answer
+        false."
+    ^true!
+ 
+receiver
+        "Answer the receiver of the message that created the receiver."
+    ^receiver! !
+
+!Icon methods !
+  
+createIcon
+    "Modified by OSI - Included Digitalk's changes"
+        "Private - Create a WINDOWS icon from the receiver."
+    | temp bitsPixel planes bitCount |
+    readOnly ifTrue:[ ^self ].
+    bitsPixel := GDILibrary getDeviceCaps: Display pen handle
+        index: Bitspixel.
+    planes := GDILibrary getDeviceCaps: Display deviceContext
+        index: Planes.
+    bitCount := bitsPixel * planes.
+    bitCount = xorMask bitCount
+        ifTrue: [temp := xorMask]
+        ifFalse: [                "create a bitmap compatible with the device."
+            temp := Bitmap width: xorMask width height: xorMask height planes: 1 bitCount: bitCount.
+            temp pen copyBitmap: xorMask
+                from: xorMask boundingBox
+                at: 0@ 0 ].
+
+    hIcon := UserLibrary createIcon: WIN hInstance
+        width: self extent x
+        height: self extent y
+        planes: temp planes
+        bitsPixel: temp bitCount
+        andBits: andMask getDDBits
+        xorBits: temp getDDBits.
+    hIcon = 0 ifTrue: [ ^self osError ].
+    IconHandleTable at: hIcon put: self.
+    bitCount = xorMask bitCount ifFalse: [ temp release ]!
+
+isIcon
+        "Answer whether the receiver is a kind of Icon."
+    ^true! !
+
+!IndexedCollection methods !
+  
+findFirst: aBlock ifAbsent: errorBlock
+        "Answer the index of the first element of the
+         receiver that causes aBlock to evaluate to true
+         (with that element as the argument).  If no such
+         element is found, evaluate the argument block."
+    | index size |
+    size := self size.
+    index := 1.
+    [index <= size]
+        whileTrue: [
+            (aBlock value: (self at: index) )
+                ifTrue: [^index].
+            index := index + 1].
+    ^errorBlock value!
+
+findLast: aBlock ifAbsent: notFoundBlock
+        "Answer the index of the last element of the
+         receiver that causes aBlock to evaluate to true
+         (with that element as the argument).  If no such
+         element is found, evaluate notFoundBlock."
+    | index size answer |
+    size := self size.
+    index := 1.
+    [index <= size]
+        whileTrue: [
+            (aBlock value: (self at: index) )
+                ifTrue: [answer := index].
+            index := index + 1].
+    ^answer isNil
+        ifTrue: [ notFoundBlock value ]
+        ifFalse: [ answer ]! !
+
+!Integer methods !
+  
+printOn: aStream base: anInteger
+        "Append the ASCII representation of
+         the receiver with radix b to aStream."
+    ^self printOn: aStream base: anInteger showRadix: true!
+ 
+printOn: aStream base: anInteger showRadix: aBoolean
+        "Append the ASCII representation of
+         the receiver with radix b to aStream;
+         if aBoolean is true, include the radix
+         prefix."
+    | aString tempStream n |
+    ( n := self ) negative
+        ifTrue: [
+            aStream nextPut: $-.
+            n := self negated ].
+    ( anInteger = 10 or: [ aBoolean not ] )
+        ifFalse: [ "print radix"
+            anInteger printOn: aStream base: 10 showRadix: false.
+            aStream nextPut: $r ].
+    aString := String new: 16.
+    tempStream := WriteStream on: aString.
+    [ anInteger <= n ]
+        whileTrue: [
+            tempStream nextPut: ( Character digitValue: n \\ anInteger ).
+            n := n // anInteger ].
+    aStream nextPut: ( Character digitValue: n ).
+    n := tempStream position.
+    aString := tempStream contents.
+    [ n = 0 ]
+        whileFalse: [
+            aStream nextPut: ( aString at: n ).
+            n := n - 1 ]!
+  
+printPaddedTo: anInteger
+        "Answer the string containing the ASCII
+         representation of the receiver padded
+         on the left with blanks to be at least
+         anInteger characters."
+    ^self printPaddedWith: $ to: anInteger base: 10!
+   
+printPaddedWith: aCharacter to: anInteger base: aRadix
+        "Answer the string containing the ASCII
+         representation of the receiver padded
+         on the left with aCharacter to be at least
+         anInteger characters."
+    | aStream padding digits|
+    aStream := WriteStream on: (String new: 10).
+    self printOn: aStream base: aRadix showRadix: false.
+    digits := aStream contents.
+    padding := anInteger - digits size.
+    padding > 0
+        ifTrue: [
+            padding := ((String new: padding)
+                atAllPut: aCharacter ;
+                yourself)]
+        ifFalse:[padding := ''].
+    ^padding, digits!
+  
+printStringRadix: radix
+        "Answer a string containing a textual description of the
+        receiver with the given <radix>."
+    | aStream |
+    aStream := WriteStream on: (String new: 16).
+    self printOn: aStream base: radix.
+    ^aStream contents!
+ 
+radix: anInteger showRadix: aBoolean
+        "Answer a string which is the ASCII representation
+         of the receiver with radix anInteger;
+         if aBoolean is true, include the radix prefix."
+    | aStream |
+    #addedByOriel.
+    #fromVWin32.
+    aStream := WriteStream on: (String new: 16).
+    self printOn: aStream base: anInteger showRadix: aBoolean.
+    ^aStream contents! !
+
+!KernelDLL methods !
+   
+getSystemDirectory: buffer length: anInteger
+     <api: GetSystemDirectory struct short ushort>
+     ^self invalidArgument!
+   
+getWindowsDirectory: aWinAddressOrString length: anInteger
+    aWinAddressOrString isString
+        ifTrue: [ ^self getWindowsDirectoryStruct: aWinAddressOrString length: anInteger ]
+        ifFalse: [ ^self getWindowsDirectoryAddr: aWinAddressOrString length: anInteger ].!
+   
+getWindowsDirectoryAddr: aWinAddress length: anInteger
+     <api: GetWindowsDirectory ulong short ushort>
+     ^self invalidArgument!
+ 
+getWindowsDirectoryStruct: buffer length: anInteger
+     <api: GetWindowsDirectory struct short ushort>
+     ^self invalidArgument!
+   
+readFile: handle
+        externalBuffer: externalBuffer
+        bytesToRead: anInteger
+        bytesRead: aWinLong
+        overlapped: overlapped
+    "Execute the WIN32 read file function where the data is to 
+    be copied to an externalBuffer "
+    <api: ReadFile ulong ulong ulong struct struct boolean>
+    ^self invalidArgument!
+   
+setHandleCount: anInteger
+    <api: SetHandleCount ushort ushort> 
+    ^self invalidArgument! !
+
+!ListBox class methods !
+   
+ownerDraw
+        "Answer an instance of the receiver where
+         the owner will be notified to draw each item."
+    ^self new ownerDrawFixed; yourself! !
+
+!ListBox methods !
+  
+insertItemInControl: aString
+        "Private - Insert a list item into the receiver."
+    | str addr result |
+    self isHandleOk ifFalse: [^self].
+    (aString isString)
+        ifTrue: [str := aString]
+        ifFalse: [str := aString printString].
+
+    addr := WinAddress copyToNonSmalltalkMemoryZ: str asParameter.
+    result := UserLibrary sendMessage: handle
+        msg: LbInsertstring
+        wparam: 65535
+        lparam: addr asParameter.
+    ( result := ( WinLong fromAddress: result ) asInteger ) < 0
+        ifTrue: [ ^self error: 'List contents exceed Windows limits' ].
+    addr free!
+ 
+itemHeight
+        "Answer the height of a list item."
+    | aFont |
+
+    height isNil ifTrue: [
+        aFont := self font notNil
+            ifTrue: [ self font ]
+            ifFalse: [
+                parent isDialogTopPane
+                    ifTrue: [ SysFont ]
+                    ifFalse: [ self defaultFont ] ].
+        height := aFont height ].
+    ^height!
+  
+itemHeight: anInteger
+        "Set the height of a list item; only has an effect
+        before the receiver window is opened."
+
+    height := anInteger!
+   
+printSelector
+        "Answer the selector which is sent to the items in list
+        to format for display in the control; default = #printString."
+
+    ^self propertyAt: #printSelector!
+ 
+printSelector: aSymbol
+        "Set the selector which is sent to the items in list
+        to format for display in the control; if none is set, non-String
+        objects are sent #printString."
+
+    ^self propertyAt: #printSelector put: aSymbol!
+   
+stringForItem: item
+        "Private - Answer a string for the given item (which may be
+        either a string or some other object which is converted to
+        a string using the current printSelector)."
+    | printSelector |
+    ^( printSelector := self printSelector ) isNil
+        ifTrue: [ item asString ]
+        ifFalse: [ printSelector evaluateFor: item ]! !
+
+!Menu methods !
+ 
+disableAll
+        "Disable all items for the receiver."
+    items do: [:mi |
+        mi isMenu ifTrue: [ mi disableAll ].
+        self disableItem: mi selector ]!
+ 
+enableAll
+        "Enable all items for the receiver."
+    items do: [:mi |
+        mi isMenu ifTrue: [ mi enableAll ].
+        self enableItem: mi selector ]!
+ 
+popUp
+        "Popup the receiver menu at the current mouse
+         location, wait for the user to make a selection,
+         and answer the selector of the selected item
+         or nil if the user selected nothing."
+    | aWindow |
+    aWindow := Notifier activeMainWindow.
+    aWindow isNil
+        ifTrue: [aWindow := 
+                Notifier windows detect: [:win | win isApplicationWindow]].
+    ^self popUpIn: aWindow! !
+
+!Message class methods !
+ 
+numberOfArgumentsFor: aSelector
+        "Answer the number of arguments required by a message whose
+        selector is <aSelector>, assuming <aSelector> is a legal
+        method selector."
+    aSelector first isLetter
+        ifTrue: [ ^aSelector occurrencesOf: $: ].
+   ( #(
+         = ~= == ~~ > >= < <=   " comparison operations "
+        + - *  / \\  //                    " arithmetic operations "
+       & |                                 " logical operations "
+       @ ,                                " miscellaneous "
+        ) includes: aSelector asSymbol)
+            ifTrue: [^1].
+    ^aSelector occurrencesOf: $:!
+ 
+receiver: receiver selector: selector arguments: argumentArray
+        "Answer an instance of the receiver representing a message
+        sent to the <receiver> with the given message <selector>
+        and the arguments in the <argumentArray>."
+    ^self new
+        receiver: receiver
+        selector: selector
+        arguments: argumentArray! !
+
+!Message methods !
+  
+collectArguments: evaluationArguments
+        "Private - answer the action arguments with which to evaluate
+        the receiver, collecting from the <evaluationArguments>
+        and the predefined arguments in the receiver. "
+    | predefinedArgs |
+    predefinedArgs := self arguments.
+    ^(evaluationArguments size = predefinedArgs size)
+        ifTrue: [evaluationArguments]
+        ifFalse:
+            [( predefinedArgs isNil
+                ifTrue: [ predefinedArgs := Array new: (self class numberOfArgumentsFor: selector) ]
+                ifFalse: [predefinedArgs copy] )
+                    replaceFrom: 1
+                    to: (evaluationArguments size min: predefinedArgs size)
+                    with: evaluationArguments
+                    startingAt: 1]!
+ 
+evaluate
+        "Answer the result of sending the message represented by the receiver."
+    ^self perform!
+   
+evaluateFor: anObject
+        "Evaluate the receiver, passing anObject as the evaluation argument."
+    ^self evaluateWithArguments: ( Array with: anObject )!
+
+evaluateWithArguments: anArray
+        "Answer the result of sending the message represented by
+        the receiver."
+    ^self receiver
+        perform: self selector
+        withArguments: (self collectArguments: anArray)! !
+
+!MultipleSelectListBox methods !
+
+getSelection
+        "Private - Answer the collection of selections."
+    | count struct |
+    self isHandleOk ifFalse: [ ^OrderedCollection new ].
+    count := ( WinStructure fromBytes:
+        ( UserLibrary
+            sendMessage: handle
+            msg: LbGetselcount
+            wparam: 0
+            lparam: 0 ) ) shortAtOffset: 0.
+    count = LbErr ifTrue: [ ^OrderedCollection new ].
+    struct := WinStructure new: count * 2.
+    count := ( WinStructure fromBytes:
+        ( UserLibrary
+            sendMessage: handle
+            msg: LbGetselitems
+            wparam: count
+            lparamStruct: struct asParameter ) ) shortAtOffset: 0.
+    value := OrderedCollection new: count.
+    1 to: count do: [ : i |
+        value add:
+            ( struct shortAtOffset: ( i - 1 ) * 2 ) + 1 ].
+    ^value!
+  
+selections
+        "Answer indices of the items selected."
+    value := self getSelection.
+    value isNil ifTrue: [ ^OrderedCollection new ].
+    ^value! !
+
+!NationalLanguageSupport class methods !
+
+current
+        "Answer the current single instance of the receiver class."
+
+    ^NationalLanguage!
+  
+current: aNationalLanguageSupport
+        "Private - set the current single instance of the receiver class."
+
+    NationalLanguage := aNationalLanguageSupport! !
+
+!NotificationManager methods !
+  
+initializeTranscript
+        "Private - create a new Transcript window."
+
+    self class transcriptClass initializeTranscript!
+   
+isAltKeyDown
+        "Answer whether the ALT key is down."
+    ^self isKeyDown: AltKey!
+   
+isButton1Down
+        "Answer whether the left mouse button is down."
+    ^self isKeyDown: VkLbutton!
+ 
+isButton2Down
+        "Answer whether the right mouse button is down."
+    ^self isKeyDown: VkRbutton!
+
+isControlKeyDown
+        "Answer whether the CTRL key is down."
+    ^self isKeyDown: ControlKey!
+  
+isEscapeKeyInput: aMessage
+        " Answer whether the event aMessage
+        is an ESC key input."
+    ^aMessage selector = #controlKeyInput:
+        and: [ ( aMessage arguments at: 1 ) asInteger = EscapeKey ]!
+
+isShiftKeyDown
+        "Answer whether the SHIFT key is down."
+    ^self isKeyDown: ShiftKey!
+ 
+peek: remove
+        "Private - peek in the message queue to see if
+         there is a waiting message; answer true if there
+         is, otherwise false.  If remove is true, remove the
+         next message from the queue and place it into
+         WinMsgNS, and answer true; otherwise, answer
+         false."
+    | answer |
+    answer := UserLibrary
+        peekMessage: WinMsgNS asParameter
+        hwnd: nil
+        min: 0
+        max: 0
+        remove: remove.
+    "Notifier setPeekCount: 0."
+    ^answer!
+ 
+translateAccelerator: winMsgNS
+        "Private -  Translates a system message into accelerator key stroke.
+         Answer true if it is an accelerator key stroke, else answer false."
+    | aWindow afBits aMenuWindow accelTable
+      index hWnd hWndString char childWindow|
+
+    char :=KeyboardLibrary
+        mapVirtualKey:
+            (((ByteArray new: 1)
+                replaceFrom:1
+                to: 1
+                with: winMsgNS
+                startingAt: 9) at: 1)
+        mapType: 1.
+    hWndString := ((ByteArray new: 2)
+        replaceFrom:1
+        to: 2
+        with: winMsgNS
+        startingAt: 1).
+    hWnd := ((hWndString at: 2) * 256)
+                    + (hWndString at: 1).
+
+    "Is hWnd a Smalltalk window"
+    (aWindow := Notifier findRealWindow: hWnd)  notNil ifTrue: [
+        childWindow := aWindow.
+        aWindow mainWindow isMDIChild | aWindow isMDIClient
+            ifTrue:[(self translateMDISysAccel:winMsgNS) ifTrue:[^true]].
+        aWindow := aWindow mainWindow.
+        (aMenuWindow := aWindow menuWindow) notNil ifTrue: [
+            afBits := 0.
+            (UserLibrary getKeyState: VkControl) < 0 ifTrue:
+                [afBits := afBits + AfControl].
+            (UserLibrary getKeyState: VkShift) < 0 ifTrue:
+                [afBits := afBits + AfShift].
+            (UserLibrary getKeyState: VkMenu) < 0 ifTrue:
+                [afBits := afBits + AfAlt].
+            "afBits = 0 ifTrue:
+                [afBits := nil]."
+
+            ((childWindow accel: char afBits: afBits) = true) ifTrue: [
+                ^true
+            ].
+            ((aWindow accel: char afBits: afBits) = true) ifTrue: [
+                ^true
+            ].
+
+            "If Control-Break then halt."
+            afBits = AfControl ifTrue: [
+                char = 145  ifTrue: [
+                    Process interrupt: 2.
+                    ^true]].
+
+            (accelTable := aMenuWindow accelTable) notNil ifTrue: [
+                (index := accelTable at:
+                              (Array with: char with: afBits) ifAbsent:[nil] )
+                    notNil ifTrue: [
+                         aMenuWindow sendInputEvent: #performMenuItem:
+                                               with: index.
+                         ^true]]]].
+    ^false! !
+
+!Number methods !
+
+asPoint
+        "Answer a Point containing the receiver as its x and y components."
+
+    ^self @ self! !
+
+!Object methods !
+
+displayAt: aPoint
+        "Display the receiver at aPoint with the Display pen."
+    self displayAt: aPoint with: Display pen!
+
+displayAt: aPoint with: aPen
+        "Display the receiver using aPen at the given
+         location; by default, use the printString of the
+         receiver for display."
+    aPen displayText: self printString at: aPoint!
+ 
+displayWith: aPen
+        "Display the receiver through aPen."
+    self displayAt: 0@0 with: aPen.!
+   
+evaluate
+        "Answer the result of evaluating the receiver, or the receiver itself if
+        it does not have any execution semantics."
+    ^self!
+  
+evaluateWithArguments: anArray
+        "Answer the result of evaluating the receiver, or the receiver itself if
+        it does not have any execution semantics."
+    ^self!
+
+isApplicationWindow
+        "Answer true if receiver is a kind of ApplicationWindow."
+    ^false!
+ 
+isCursor
+        "Answer true if receiver is a kind of CursorManager."
+    ^false!
+
+isDialogTopPane
+        "Answer whether the receiver is a kind of DialogTopPane."
+    ^false!
+ 
+isDictionary
+        "Answer true if receiver is an instance of class
+         Dictionary or one of its subclasses, else answer false."
+    ^false!
+  
+isGraphicsTool
+        "Answer whether the receiver is an instance of
+        GraphicsTool or one of its subclasses."
+    ^false!
+
+isGraphPane
+        "Answer whether the receiver is an instance of
+        GraphPane or one of its subclasses."
+    ^false!
+  
+isHomeContext
+        "Answer true if receiver is an instance of class
+        HomeContext or one of its subclasses, else answer
+        false."
+    ^false!
+
+isIcon
+        "Answer whether the receiver is a kind of Icon."
+    ^false!
+   
+isMemberOf: aClass
+        "Answer true if the receiver is an instance
+         of aClass, else answer false."
+    ^self class == aClass!
+
+isStoredPicture
+        "Answer whether the receiver is an instance of
+        StoredPicture or one of its subclasses."
+    ^false!
+  
+isWinHandle
+        "Answer whether the receiver is an instance of
+        WinHandle or one of its subclasses."
+    ^false!
+  
+objectDeepCopy
+        "Answer a copy of the receiver with shallow
+         copies of each instance variable."
+    | copy aClass instanceVars |
+    aClass := self class.
+    aClass isVariable
+        ifTrue: [
+            instanceVars := self basicSize.
+            copy := aClass basicNew: instanceVars]
+        ifFalse: [
+            instanceVars := 0.
+            copy := aClass basicNew].
+    aClass isPointers
+        ifTrue: [
+            1 to: instanceVars + aClass instSize do: [ :index |
+                copy instVarAt: index
+                    put: (self instVarAt: index) copy]]
+        ifFalse: [
+            1 to: instanceVars do: [ :index |
+                copy basicAt: index
+                    put: (self basicAt: index)]].
+    ^copy!
+   
+objectShallowCopy
+        "Answer a copy of the receiver which shares
+         the receiver instance variables."
+    | answer aClass size |
+    aClass := self class.
+    aClass isVariable
+        ifTrue: [
+            size := self basicSize.
+            answer := aClass basicNew: size]
+        ifFalse: [
+            size := 0.
+            answer := aClass basicNew].
+    aClass isPointers
+        ifTrue: [
+            1 to: size + aClass instSize do: [ :index |
+                answer instVarAt: index
+                    put: (self instVarAt: index)]]
+        ifFalse: [
+            1 to: size do: [ :index |
+                answer basicAt: index
+                    put: (self basicAt: index)]].
+    ^answer!
+  
+osError
+        "Create a walkback window describing an error condition
+        that was returned from the host operating system.  Ask
+        the operating system for the last error that occurred.
+
+        Since Smalltalk Express does not support GetLastError(), we use a
+        generic error code."
+
+    ^self osError: -1!
+   
+osError: anInteger
+        "Create a walkback window describing an error condition
+        that was returned from the host operating system, as
+        indicated by anInteger"
+
+    | msg |
+    msg := 'Operating System Error: ', ( self osErrorMessage: anInteger ).
+    ^"Error signal:" self error: msg!
+
+osErrorMessage: anInteger
+        "Private - answer a String which contains the given error number
+        and an appropriate error description."
+
+    | msg description |
+    msg := anInteger printString.
+    ( description := OSErrorDescriptions at: anInteger ifAbsent: [ nil ] ) notNil
+        ifTrue: [ msg := msg, ' ( ', description, ' )' ].
+    ^msg!
+  
+osNotification
+        "Create a notification for the informational warning indicated by
+        the host operating system.  Ask the host operating system for
+        the last error code.
+
+        Since Smalltalk Express does not support GetLastError(), we use a
+        generic error code."
+
+    ^self osNotification: -1!
+  
+osNotification: anInteger
+        "Create a notification for the informational warning #anInteger
+        raised by the last API call."
+
+    | msg |
+    msg := 'Operating System Notification: ', ( self osErrorMessage: anInteger ).
+    ^"Notification signal:" self error: msg!
+   
+osWarning
+        "Create a notification for the warning indicated by the host operating
+        system.  Ask the host operating system for the last error that occurred.
+
+        Since Smalltalk Express does not support GetLastError(), we use a
+        generic error code."
+
+    ^self osWarning: -1!
+  
+osWarning: anInteger
+        "Create a notification for the warning #anInteger raised by
+        the last API call."
+
+    | msg |
+    msg := 'Operating System Warning: ', ( self osErrorMessage: anInteger ).
+    ^"LoggedWarning signal:" self error: msg!
+  
+storeOn: aStream
+        "Append the ASCII representation of the
+         receiver to aStream from which the
+         receiver can be reinstantiated."
+    | aClass noneYet |
+    (RecursiveSet includes: self)
+        ifTrue: [
+            RecursiveSet := Set new.
+            ^self error:
+                'recursive storeOn: not allowed in Object'].
+    RecursiveSet add: self.
+    aClass := self class.
+    aStream
+        nextPutAll: '((';
+        nextPutAll: aClass name;
+        nextPutAll: ' basicNew'.
+    aClass isVariable
+        ifTrue: [
+            aStream nextPut: $:.
+            self basicSize printOn: aStream].
+    aStream nextPut: $).
+    noneYet := true.
+    1 to: aClass instSize + self basicSize do: [ :index |
+        noneYet
+            ifTrue: [noneYet := false].
+        aStream nextPutAll: 'instVarAt:'.
+        index printOn: aStream.
+        aStream nextPutAll: ' put:'.
+        (self instVarAt: index) storeOn: aStream.
+        aStream nextPut: $;].
+    noneYet
+        ifFalse: [aStream nextPutAll: 'yourself'].
+    aStream nextPut: $).
+    RecursiveSet remove: self ifAbsent: []! !
+
+!OrderedCollection methods !
+ 
+asOrderedCollection
+        "Answer an OrderedCollection containing
+         the elements of the receiver."
+
+    ^self! !
+
+!Pattern methods !
+ 
+match: aCollection index: anInteger
+        "Answer a Point representing the start and
+         stop of the subcollection within aCollection
+         that matches the receiver starting at index
+         position anInteger.  Answer nil if no match."
+    ^self match: aCollection index: anInteger
+        each: [:x | x]!
+
+match: aCollection index: anInteger each: aOneArgumentBlock
+        "Answer a Point representing the start and
+         stop of the subcollection within aCollection
+         that matches the receiver starting at index
+         position anInteger.  Evaluate aOneArgumentBlock
+         for each element of aCollection.  Answer nil if no match."
+    | firstChar index |
+    input size = 0 ifTrue: [^nil].
+    state := 1.
+    firstChar := input at: 1.
+    index := anInteger.
+    [true] whileTrue: [
+        index > aCollection size ifTrue: [^nil].
+        (aOneArgumentBlock value: (aCollection at: index)) = firstChar  ifTrue: [
+            state := state + 1.
+            [state > input size
+                ifTrue: [^index + 1 - input size @ index].
+             (index := index + 1) > aCollection size
+                ifTrue: [^nil].
+             (input at: state) = (aOneArgumentBlock value: (aCollection at: index))
+                ifTrue: [
+                    state := state + 1]
+                ifFalse: [
+                    state := (self failAt: state with:
+                        (aCollection at: index))].
+             state = 1]
+                whileFalse: []].
+        index := index + 1]!
+  
+matchBackward: aCollection index: anInteger
+        "Answer a Point representing the start and
+         stop of the subcollection within aCollection
+         that matches the receiver starting at index
+         position anInteger.  Answer nil if no match."
+    ^self matchBackward: aCollection index: anInteger
+        each: [:x | x]!
+
+matchBackward: aCollection index: anInteger each: aOneArgumentBlock
+        "Answer a Point representing the start and
+         stop of the subcollection within aCollection
+         that matches the receiver starting at index
+         position anInteger.  Evaluate aOneArgumentBlock
+         for each element of aCollection.  Answer nil if no match."
+    | lastChar index inputSize |
+    (inputSize := input size) = 0 ifTrue: [^nil].
+    state := inputSize.
+    lastChar := input at: inputSize.
+    index := anInteger.
+    [index > 0] whileTrue: [
+        (aOneArgumentBlock value: (aCollection at: index)) = lastChar ifTrue: [
+            state := state - 1.
+            [state < 1
+                ifTrue: [^index @ (index + inputSize - 1)].
+             (index := index - 1) < 1
+                ifTrue: [^nil].
+             (input at: state) = (aOneArgumentBlock value: (aCollection at: index))
+                ifTrue: [
+                    state := state - 1]
+                ifFalse: [
+                    state := inputSize].
+             state ~= inputSize]
+                whileTrue: []].
+        index := index - 1].
+    ^nil! !
+
+!Point methods !
+  
+asPoint
+        "Answer the receiver."
+    ^self!
+ 
+deviceToLogical: aPen
+        "Answer a new Point which is the receiver mapped from device
+         to logical units."
+
+    ^self dpToLp: aPen handle! !
+
+!Printer methods !
+  
+startPrintJob
+        "Start a print job.  Everything drawn between startPrintJob
+         and endPrintJob will become one entry in the print queue."
+    ^self startPrintJob: WindowLabelPrefix!
+
+startPrintJob: aString
+        "Start a print job, using aString as the job title; everything
+         drawn between startPrintJob and endPrintJob will become
+         one entry in the print queue."
+    abort := false.
+    self setAbortProc;
+        escape: Startdoc inputData: aString! !
+
+!Process class methods !
+  
+argumentOffset
+          "Private"
+          ^5! !
+
+!Process methods !
+  
+argAt: frameIndex number: argNumber 
+          "Private - Answer arg argNumber from 
+          stack frame at frameIndex." 
+          | context method argCount | 
+          method := self methodAt: frameIndex. 
+          argCount:= method argumentCount. 
+          (argNumber > argCount) 
+          ifTrue: [self error: 'argNumber too big: ' 
+          ,argNumber printString]. 
+          (context := self contextFor: frameIndex) isNil 
+          ifTrue: [ "access from stack" 
+          ^self frameAt: frameIndex 
+          offset: (Process argumentOffset + (argCount - argNumber))] 
+          ifFalse: [ "access from context" 
+          ^context at: ((argCount - argNumber + 1) + method 
+          tempCount)].!
+
+argAt: frameIndex number: argNumber put: value 
+          "Private - Answer arg argNumber from 
+          stack frame at frameIndex." 
+          | context method argCount | 
+          method := self methodAt: frameIndex. 
+          argCount:= method argumentCount. 
+          (argNumber > argCount) 
+          ifTrue: [self error: 'argNumber too big: ' 
+          ,argNumber printString]. 
+          (context := self contextFor: frameIndex) isNil 
+          ifTrue: [ "access from stack" 
+          ^self frameAt: frameIndex 
+          offset: (Process argumentOffset + (argCount - argNumber)) 
+          put: value] 
+          ifFalse: [ "access from context" 
+          ^context 
+          at: ((argCount - argNumber + 1) + method tempCount) 
+          put: value].!
+   
+numberOfArgsAt: aFrameIndex 
+          "Private - answer the number of arguments for the method at 
+          aFrameIndex" 
+          ^(self methodAt: aFrameIndex) argumentCount! !
+
+!ProcessScheduler methods !
+  
+backgroundPriority
+        "Answer the priority for background processing."
+
+    ^2!
+ 
+clearProcesses
+        "Private - discard all processes and make
+         the currentProcess the user interface
+         process."
+    | intState |
+    intState := Process enableInterrupts: false.
+    readyProcesses := nil.
+    readyProcesses := Array new: self topPriority.
+    1 to: self topPriority do: [ :index |
+        readyProcesses
+            at: index
+            put: OrderedCollection new ].
+    Process enableInterrupts: intState.!
+
+highPriority
+        "Answer the priority for a user process to be run
+         at a higher priority than the user interface process."
+
+    ^5!
+ 
+idleTaskPriority
+        "Answer the priority of the system idle task."
+
+    ^1!
+ 
+lowPriority
+        "Answer the priority for a user process to be run
+         when the user interface process is waiting."
+
+    ^3!
+
+realTimePriority
+        "Answer the priority for real time processing."
+
+    ^6! !
+
+!RadioButton class methods !
+  
+auto
+        "Create an instance of an auto radio button."
+    ^self new autoRadioButton; yourself!
+   
+nonAuto
+        "Create an instance of a non-auto radio button."
+    ^self new radioButton; yourself! !
+
+!Rectangle methods !
+   
+asRectangle
+        "Answer the receiver."
+    ^self!
+ 
+deviceToLogical: aPen
+        "Answer a new Rectangle which is the receiver mapped from device
+         to logical units."
+    ^self class
+        leftTop: ( leftTop deviceToLogical: aPen )
+        rightBottom: ( rightBottom deviceToLogical: aPen )!
+  
+mapFromWindow: fromWindow to: toWindow
+        "Answer a rectangle which is the receiver converted from
+         one window coordinate to another."
+    ^(self mapToScreen: fromWindow) mapToWindow: toWindow!
+   
+merge: aRectangle
+        "Answer a Rectangle representing the area in
+         which the receiver and aRectangle merged together."
+
+    aRectangle isNil
+        ifTrue: [ ^self ].
+    ^(leftTop leftMostAndHighest: aRectangle leftTop)
+        rightBottom: (rightBottom rightMostAndLowest: aRectangle rightBottom)! !
+
+!Screen methods !
+ 
+rectangleFromUser
+        "Answer a rectangle obtained from the user."
+    | point1 point2 origin corner rect aPoint |
+    Notifier activeMainWindow captureMouseInput.
+    CursorManager crossHair change.
+    graphicsTool setRop2: R2Notxorpen.
+    Notifier consumeInputUntil: [: event |
+        event selector = #button1Down:
+            ifTrue: [
+                graphicsTool place: (
+                    point1 := point2 := Cursor sense)].
+        event selector = #button1Move:
+            ifTrue: [
+                aPoint := Cursor sense.
+                point2  ~= aPoint
+                    ifTrue: [
+                        graphicsTool
+                            place: point1;
+                            box: point2;
+                            place: point1;
+                            box: aPoint.
+                        point2 := aPoint]].
+        event selector = #button1Up:].
+    graphicsTool place: point1;
+        box: point2.
+    graphicsTool setRop2: R2Copypen.
+    CursorManager normal change.
+    UserLibrary releaseCapture.
+    origin := (point1 x min: point2 x) @ (point1 y min: point2 y).
+    corner := (point1 x max: point2 x) @ (point1 y max: point2 y).
+    ^(origin corner: corner)! !
+
+!ScrollBar class methods !
+  
+horizontal
+        "Answer an instance of a horizontal scrollbar."
+    ^self new horizontal; yourself.!
+   
+vertical
+        "Answer an instance of a vertical scrollbar."
+    ^self new vertical; yourself! !
+
+!SortedCollection methods !
+ 
+asOrderedCollection
+        "Answer an OrderedCollection containing
+        the elements of the receiver.  Override the
+        implementation defined in the superclass
+        which optimizes by answering the receiver."
+
+    ^(OrderedCollection new: self size)
+        addAll: self;
+        yourself!
+   
+deepCopy
+        "Answer a copy of the receiver with shallow
+         copies of each element."
+
+    | answer |
+    answer := self species sortBlock: sortBlock.
+    self do: [ :element | answer add: element copy ].
+    ^answer! !
+
+!StaticBox class methods !
+   
+background
+        "Answer an instance of a static background rectangle."
+    ^self new whiteRect; yourself!
+  
+backgroundFrame
+        "Answer an instance of a static background frame."
+    ^self new whiteFrame; yourself!
+
+foreground
+        "Answer an instance of a static foreground rectangle."
+    ^self new blackRectangle; yourself!
+ 
+foregroundFrame
+        "Answer an instance of a static foreground frame."
+    ^self new blackFrame; yourself!
+
+halfTone
+        "Answer an instance of a static halftone rectangle."
+    ^self new grayRectangle; yourself!
+  
+halfToneFrame
+        "Answer an instance of a static halftone frame."
+    ^self new grayFrame; yourself! !
+
+!StaticGraphic class methods !
+ 
+bitmap
+        "Create a new StaticGraphic capable of holding a bitmap as its contents;
+         under Windows, there is no static bitmap style, so answer a disabled
+         DrawnButton"
+    ^DrawnButton new
+        disable!
+  
+bitmap: aBitmap
+        "Answer a new static bitmap control with the referenced bitmap."
+    ^self bitmap
+        contents: aBitmap!
+ 
+icon
+        "Answer an instance of StaticGraphic capable of holding an icon
+         as its contents; this is the default"
+    ^self new! !
+
+!StaticGraphic methods !
+ 
+contents
+        "Answer the value of the receiver"
+    ^value!
+   
+contents: anIcon
+        "Set the value of the receiver to anIcon"
+    anIcon notNil ifTrue: [
+        value := anIcon.
+        handle isValid ifTrue: [ self setIconHandle: anIcon handle ] ]!
+ 
+setIconHandle: anIconHandle
+        "Private - set the icon handle in the control window"
+    UserLibrary setWindowWord: handle index: 4 word: anIconHandle!
+  
+validate
+        "Private - create or recreate the pane"
+    super validate.
+    self contents: value! !
+
+!StaticText class methods !
+  
+centered
+        "Answer an instance of a centered static text control."
+    ^self new centered; yourself!
+
+leftJustified
+        "Answer an instance of a left justified static text control."
+    ^self new leftJustified; yourself!
+
+rightJustified
+        "Answer an instance of a right justified static text control."
+    ^self new rightJustified; yourself! !
+
+!StaticText methods !
+  
+isTransparent
+        "Private - answer whether the receiver's background
+        should be painted with the same background color
+        as its parent pane."
+    ^true! !
+
+!Stream class methods !
+ 
+crString
+        "Answer a carriage return / line feed string."
+    ^String with: Cr with: Lf! !
+
+!String methods !
+ 
+asArrayOfSubstringsSeparatedBy: aCharacter
+        "Answer an array of substrings from the
+        receiver.  The receiver is divided into
+        substrings by of one or more occurrences
+        of aCharacter."
+    | aStream answer |
+    answer := OrderedCollection new.
+    aStream := self asStream.
+    [ aStream atEnd ] whileFalse: [
+        answer add: ( aStream upTo: aCharacter ) ].
+    ^answer asArray!
+
+fileNameLessPath
+        "Answer the unqualified file name of
+        the receiver file name (file name and
+        extension without drive or directory path)."
+
+    ^((self reversed upTo: $\) upTo: $:) reversed!
+   
+replaceEscapeCharacters
+        "Replace any C-style escape sequences
+        with their literal character equivalents."
+    | inStream outStream char |
+    inStream := self asStream.
+    outStream := ( self species new ) asStream.
+    [ inStream atEnd ] whileFalse: [
+        ( char := inStream next ) == $\
+            ifTrue: [
+                char := inStream next.
+                char == $n
+                    ifTrue: [ outStream nextPut: Lf ].
+                char == $t
+                    ifTrue: [ outStream tab ].
+                char == $u
+                    ifTrue: [ outStream nextPut: $& ].
+            ]
+            ifFalse: [ outStream nextPut: char ] ].
+    ^outStream contents!
+
+zapCrs
+        "Answer a copy of the receiver with all the Cr characters
+         removed; Lf characters are unchanged."
+
+    ^self reject: [ :c | c == Cr ]! !
+
+!StringModel methods !
+   
+appendChar: aCharacter
+        "Append aCharacter to the end of the last
+         line and inform the text pane to update."
+    | origin |
+    lines isEmpty ifTrue: [lines add: String new].
+    origin := (extent x + 1) @ extent y.
+    aCharacter == Lf
+        ifTrue: [lines add: String new]
+        ifFalse:[
+    aCharacter == Tab
+        ifTrue: [lines at: lines size put: lines last,
+                                        (self tabStringAt: origin x)]
+    ifFalse: [
+        lines at: lines size put: (lines last copyWith: aCharacter)]].
+    extent := self extent.
+    lastChild update: (
+        TextSelection origin: origin corner: extent)! !
+
+!SubPane methods !
+ 
+fontAttribute: aFont
+        "Set the font attribute to aFont."
+    curFont := aFont!
+ 
+isTransparent
+        "Private - answer whether the receiver's background
+        should be painted with the same background color
+        as its parent pane."
+    ^false!
+ 
+subPaneWithFocus: aSubPane
+        "Private - pass the subpane with focus up to parent"
+    | mainWindow |
+    ( mainWindow := self mainWindow ) ~~ self
+        ifTrue: [ mainWindow subPaneWithFocus: aSubPane ]!
+ 
+wmKillfocus: wordInteger with: longInteger
+        "Private - Process the kill focus message."
+    super wmKillfocus: wordInteger with: longInteger.
+    self event: #losingFocus.
+    ^nil! !
+
+!Symbol methods !
+ 
+asParameter
+        "Answer the receiver in a form suitable for passing
+         as a parameter to a host procedure call."
+    ^self asString asParameter! !
+
+!SystemDictionary methods !
+  
+getGui
+        "Private - Answer true if the current environment has a GUI."
+
+    ^true!
+ 
+gui
+        "Private - answer the gui setting."
+
+    | gui |
+    gui := Smalltalk at: #SessionIsGUI ifAbsent: [ nil ].
+    gui isNil ifTrue: [ gui := self getGui ].
+    ^gui!
+
+gui: aBoolean
+        "Private - set the gui setting to aBoolean."
+
+    Smalltalk at: #SessionIsGUI put: aBoolean.!
+  
+isGui
+        "Answer whether the system is running with GUI support."
+
+    ^self gui "and: [ self guiLoaded ]"!
+ 
+signonDLL
+        "Answers the signon DLL's file name embedded in the
+         image.  When the Smalltalk runtime application
+         ( the image) is executed, the signon DLL specified in
+         aString will first be loaded before the application is started
+         up."
+
+    | aFile answer string |
+    aFile := File pathNameReadOnly: self imageName.
+    aFile atEnd
+        ifTrue: [ aFile close ]
+        ifFalse: [
+            aFile position: 16r1212.
+            ( aFile next = $S and: [ aFile next = $F ] )
+            ifTrue: [
+                answer := aFile upTo: ( Character value:0 ).
+                aFile close.
+                ^answer ]
+            ifFalse: [
+                aFile close.
+                ^self error:
+                    'Could not find signon file name signature characters' ] ]!
+
+version
+        "Answer the version number as a string"
+    ^'2.03'! !
+
+!TextPane methods !
+ 
+arrowKeyInput: anInt  withKeys: keyArray
+        "Private - Process an arrow (cursor movement) key."
+    | new farLeft |
+    anInt = RightKey ifTrue: [
+        selection corner x >= (self endOfLine: selection corner y)
+            ifTrue: [new := 0 @ (selection corner y + 1)]
+            ifFalse: [new := selection corner + (1 @ 0)]].
+    anInt = LeftKey ifTrue: [
+        ((selection origin x = 1) and: [selection origin y > 1])
+            ifTrue: [new := (self endOfLine: selection origin y - 1)
+                                          @ (selection origin y - 1)]
+            ifFalse: [(keyArray includes: ShiftKey)
+                ifTrue: [new := selection origin - (1 @ 0)]
+                ifFalse: [new := selection origin - (2 @ 0)]]].
+    anInt = UpKey ifTrue: [
+        new := selection origin.
+        new y = 1 ifTrue: [^self].
+        curFont fixedWidth
+            ifFalse: [
+                new := selection bitCoordinate: selection origin.
+                new := new leftAndUp: (0 @ curFont height).
+                new := (self stringCoordinate: new).
+                new := new - (1 @ 0)]
+            ifTrue: [new := new - (1 @ 1)]].
+    anInt = DownKey ifTrue: [
+        new := selection corner.
+        farLeft := new x = 0.
+        new y >= self totalLength ifTrue: [^self].
+        curFont fixedWidth
+            ifFalse: [
+                new := selection bitCoordinate: selection corner.
+                new := new rightAndDown: (0 @ curFont height).
+                new := (self stringCoordinate: new).
+                farLeft ifTrue: [new := new - (1 @ 0)]]
+            ifTrue: [new := new + (0 @ 1)]].
+    anInt = HomeKey ifTrue: [new := 0 @ selection corner y].
+    anInt = EndKey ifTrue: [
+        new := (self endOfLine: selection corner y) @ selection corner y].
+    (keyArray includes: ShiftKey)
+        ifTrue: [
+            selection selectTo: (new max: 0 @ 1).
+            self hideSelection]
+        ifFalse: [self selectAfter: (new max: 0 @ 1)].
+    self
+        makeSelectionVisible;
+        displayChanges;
+        showSelection.!
+   
+contents: aString
+        "Set the contents of the receiver to aString."
+    textHolder string: aString.
+    (self isHandleOk and: [self graphicsTool notNil and: [self graphicsTool privateHandle isNil]])
+        ifTrue:[self invalidateRect:nil erase:false].
+    ^aString! !
+
+!TextTool methods !
+   
+bell
+        "Beep the speaker"
+
+    UserLibrary messageBeep: -1.!
+   
+stringWidthOf: aString at: index
+        "Return the width of aString up to index
+         when written using the current font."
+    | answer str extString size |
+    index <= 0
+        ifTrue: [ ^0 ].
+    index >= aString size
+        ifTrue:   [ str := aString ]
+        ifFalse: [ str := aString copyFrom: 1 to: index ].
+    self font isNil
+        ifTrue: [  "if font not set yet, calculate based on default font"
+            extString := str asMixedString.
+            answer := WinAddress loWordFrom: (GDILibrary
+                getTextExtent: self handle
+                string: extString asParameter
+                size: extString size) ]
+        ifFalse: [ answer := self font stringWidth: str withDC: self handle ].
+    index > aString size ifTrue: [
+        answer := answer + (index - aString size * font spaceWidth)].
+    ^answer.! !
+
+!ThreeStateButton class methods !
+ 
+auto
+        "Create an instance of an auto three state button."
+    ^self new autoThreeState; yourself!
+  
+nonAuto
+        "Create an instance of a non-auto check box."
+    ^self new threeState; yourself! !
+
+!Toggle methods !
+  
+isTransparent
+        "Private - answer whether the receiver's background
+        should be painted with the same background color
+        as its parent pane."
+    ^true! !
+
+!TopPane methods !
+  
+deferredResizeRectangleFor: aRectangle
+        "Private - Answer the rectangle to
+        use to resize the receiver to aRectangle
+        when drawing is being delayed."
+
+    ^framingBlock value: aRectangle! !
+
+!UserDLL methods !
+   
+checkMenuItem: hMenu
+    item: uItem
+    flags: fuFlags
+
+    <api: CheckMenuItem ushort ushort ushort short>
+    ^self invalidArgument!
+
+enableMenuItem: hMenu
+    item: uItem
+    flags: fuFlags
+
+    <api: EnableMenuItem ushort ushort ushort short>
+    ^self invalidArgument!
+  
+enumWindows: callback lparam: lparam
+    <api: enumWindows ulong long boolean>
+    ^self invalidArgument!
+ 
+getMenuCheckMarkDimensions
+    <api: GetMenuCheckMarkDimensions ulong>
+    ^self invalidArgument!
+ 
+getWindowPlacement: aWindowHandle placement: aByteArray
+    <api: GetWindowPlacement ushort struct boolean>
+    ^self invalidArgument!
+
+redrawWindow: hwnd rectangle: rect region: hrgn redraw: flags
+    <api: RedrawWindow ushort struct ushort ushort boolean>
+    ^self invalidArgument! !
+
+!ViewManager methods !
+  
+removeView: aView 
+        "Remove aView from the view manager." 
+    views remove: aView! !
+
+!WinAddress methods !
+ 
+asParameter
+        "Answer the receiver in a form suitable for passing
+         as a parameter to a host system procedure call."
+    ^contents! !
+
+!Window class methods !
+
+ctl3dEnabled
+        "Answer whether the Ctl3dDLL class is present and enabled."
+    | ctl3d |
+    ctl3d := Smalltalk at: #Ctl3dDLL ifAbsent: [ ^false ].
+    ^ctl3d enabled!
+   
+ctl3dIfEnabled
+        "Answer the Ctl3dDLL class if present and enabled, otherwise answer nil."
+
+    | ctl3d |
+    ctl3d := Smalltalk at: #Ctl3dDLL ifAbsent: [ ^nil ].
+    ^ctl3d enabled ifTrue: [ ctl3d ] ifFalse: [ nil ]! !
+
+!Window methods !
+ 
+affectsFreeClientArea
+    	"Answer whether the receiver reduces the amount of
+    	free client area in its parent for the receiver's siblings."
+    ^self propertyAt: #affectsFreeClientArea ifAbsent: [ false ]!
+
+affectsFreeClientArea: aBoolean
+    	"Set whether the receiver reduces the amount of
+    	free client area in its parent for the receiver's siblings."
+    ^self
+        propertyAt: #affectsFreeClientArea
+        put: ( aBoolean ifTrue: [ true ] ifFalse: [ nil ] )!
+   
+allChildren
+        "Private - Answer a collection containing the
+         receiver's children, and any nested children
+         (children of children, etc.)"
+    | collection |
+    collection := OrderedCollection new.
+    children notNil ifTrue: [
+        children do: [ :child |
+            collection add: child.
+            collection addAll: child allChildren ] ].
+    ^collection!
+
+allChildrenDo: aOneArgumentBlock
+        "Private - evaluate aOneArgumentBlock for each of the
+        receiver's children, and any nested children (children of children, etc.),
+        passing the child as an argument."
+    children notNil ifTrue: [
+        children do: [ :child |
+            aOneArgumentBlock value: child.
+            child allChildrenDo: aOneArgumentBlock ] ]!
+   
+children
+        "Private - Answer the collection of the receiver's children."
+    children isNil ifTrue: [ ^IdentityDictionary new ].
+    ^children!
+
+children: anIdentityDictionary
+        "Private - Set the dictionary of the receiver's children."
+    children := anIdentityDictionary!
+   
+clearGraphicsTool
+        "Private - clear the graphics tool handle."
+
+    graphicsTool notNil ifTrue: [ graphicsTool handle: nil ]!
+ 
+cursorWindowPosition
+        "Private - Answer the current position of the cursor
+         in window coordinates."
+
+    ^Cursor sense mapScreenToClient: self.!
+ 
+disableRedraw
+        "Disable redrawing of the receiver."
+    handle = NullHandle ifFalse: [handle disableRedraw]!
+   
+enableRedraw
+        "Allow the receiver to be redrawn."
+    handle = NullHandle ifFalse: [handle enableRedraw]!
+  
+entireClientArea
+    "Answer the entire client area available for children
+    relative to origin 0@0"
+
+    ^0 @ 0 extent: self extent!
+ 
+fontAttribute: aFont
+        "Set the font attribute to aFont."
+    self propertyAt: #font put: aFont!
+
+frameWindow
+        "Answer the frame window of the receiver."
+
+    ^self!
+   
+framingBlock
+        "Private - Answer the framingBlock for the receiver; reimplemented
+        in subclasses (TopPane, SubPane)."
+
+    ^nil!
+   
+framingRectangleFor: aRectangle
+        " Private - answer the real rectangle "
+    ^self zoomed
+        ifTrue: [ aRectangle ]
+        ifFalse: [ self framingBlock value: aRectangle ]!
+   
+graphicsToolClass
+        "Private - Answer the graphics tool class used by the receiver."
+    ^Pen!
+  
+hasDescendant: aWindow
+        "Answer whether aWindow is a child window of the receiver."
+
+    ^UserLibrary isChild: self handle child: aWindow handle!
+ 
+hasFocus
+        "Answer true if the receiver currently has the focus."
+
+    ^WindowHandle queryFocus = handle!
+  
+invalidateRect: aRectangle erase:aBoolean
+        "Invalidate aRectangle area in the receiver
+         thus force the area to be repainted.  If aBoolean
+         is true then the area is erased before being
+         repainted."
+
+    self isHandleOk ifFalse: [ "a 0 handle is interpreted as the desktop window."
+        ^self ].
+    UserLibrary
+        invalidateRect: self asParameter
+        rectangle: aRectangle asParameter
+        erase: aBoolean  "erase background."!
+ 
+isMDISupportPane
+        "Answer true if receiver is a support pane for MDI."
+    ^false!
+ 
+isVisible
+        "Answer true if the window is visible"
+    self isHandleOk
+        ifFalse: [ ^false ].
+    ^self visible!
+
+ownerDrawPen
+        "Private - answer the pen to be used for drawing
+        owner drawn items."
+
+    ^self graphicsTool!
+  
+propertyAt: key ifAbsent: aBlock
+        "Answer the value associated with key
+        in the properties dictionary; if absent,
+        answer the result of evaluating aBlock."
+    properties isNil ifTrue: [ ^aBlock value ].
+    ^properties at: key ifAbsent: aBlock!
+ 
+rectangleAttribute
+        "Private - answer the rectangle instance variable of
+        the receiver."
+
+    ^rectangle!
+ 
+rectangleAttribute: aRectangle
+        "Private - set the rectangle instance variable of
+        the receiver to aRectangle."
+
+    rectangle := aRectangle!
+ 
+redraw
+    "Redraw the entire window."
+
+    self isHandleOk ifTrue: [ self invalidateRect: nil ].!
+   
+remove: aPane interestIn: aFacet
+        "Private - Do nothing as windows in general do not manage
+        dependents."!
+  
+searchForDefaultTextPane
+        " Private - Answer the text pane that should be
+         active when the window is opened."
+
+    ^self allChildren detect: [ :aPane | aPane isTextPane ] ifNone: [ nil ].!
+ 
+superWindow
+        "Answer the non-frame parent window of the receiver."
+    ^self parent!
+   
+visible
+        "Answer true if the window is visible"
+     ^UserLibrary isWindowVisible: self handle!
+
+wmSyskeydown: wordInteger with: longInteger
+        "Private - Process the system key down message."
+    | keyCollection |
+        "Trap F9 key to cycle windows when minimized"
+    wordInteger = F9Key ifTrue: [^Notifier cycle].
+
+        "Only process alt key oriented sys keys."
+    (longInteger bitAnd: 16r20000000) ~= 0
+        ifFalse: [^nil].
+
+        "Don't process VK input for which there is a WM_CHAR msg"
+    (KeyboardLibrary
+        mapVirtualKey: wordInteger
+        mapType: 2)  ~= 0
+            ifTrue: [^nil].
+
+   keyCollection := OrderedCollection new: 3.
+   (UserLibrary getKeyState: VkShift) < 0
+        ifTrue: [keyCollection add: ShiftKey] .
+   (UserLibrary getKeyState: VkControl) < 0
+        ifTrue: [keyCollection add: ControlKey].
+    keyCollection add: AltKey.
+    self
+        sendInputEvent: #virtualKeyInput:withKeys:
+        withArgs: (Array with: wordInteger  with: keyCollection).
+    ^nil! !
+
+!WindowHandle methods !
+  
+disableRedraw
+        "Private - the receiver should not repaint itself"
+    ^self noRedraw: true!
+
+enableRedraw
+        "Private - the receiver should repaint itself"
+    ^self noRedraw: false!
+
+hideWindow
+    "Private - make the receiver window
+    and all of its children invisible."
+
+    UserLibrary showWindow: self
+        command: SwHide!
+  
+noRedraw: aBoolean
+        "Private - Stop the receiver from
+         repainting itself."
+    UserLibrary
+        sendMessage: self
+        msg: WmSetredraw
+        wparam: aBoolean not asParameter
+        lparam: nil!
+   
+showIconicWindow
+    "Private - Activate the receiver window
+    and show it as an icon."
+
+    UserLibrary showWindow: self
+        command: SwShowminimized!
+  
+showMaximizedWindow
+    "Private - Activate the receiver window
+    and show it maximized."
+
+    UserLibrary showWindow: self
+        command: SwShowmaximized!
+
+showWindow
+    "Private - Activate the receiver window
+    and show it at its normal size."
+
+    UserLibrary showWindow: self
+        command: SwShow! !
+
+!WinHandle class methods !
+ 
+nullValue
+        "Answer an instance of the receiver class which represents
+        an invalid (uninitialized) value."
+    ^NullHandle! !
+
+!WinHandle methods !
+   
+isWinHandle
+        "Answer whether the receiver is an instance of
+        WinHandle or one of its subclasses."
+    ^true! !
+
+!WinInfo class methods !
+ 
+isWindows95
+        "Answer whether this system is running on Windows 95."
+    | major |
+    ^(major := self windowsMajorVersion) >= 4 or: [
+        major = 3 and: [ self windowsMinorVersion >= 95 ]]! !
+
+!WinLogicalObject methods !
+   
+createObject
+        "Private - Create the windows logical object."
+    | attrib obj dict |
+    attrib := self attributeArray.
+    dict := self class anchorDictionary.
+    obj := dict at: attrib ifAbsent: [nil].
+    obj isNil ifTrue: [
+
+        "Modified by DMZ, OSI 2/1/97 Corrects fundamental bug in Smalltalk Express, where
+        attempting to delete GDI objects that are still selected into a DC corrupts Windows'
+        GDI subsystem. Since there is no easy way to track which GDI objects are selected,
+        for expediency we disable the cache thresholding and flushing code."
+        #modifiedByOSI.
+        "dict size > self class threshold
+            ifTrue: [
+                self class deleteObjects:
+                    (self class destroyAllHandles)]."
+
+        obj := self.
+        dict at: attrib put: self].
+    obj privateHandle isNil ifTrue: [
+        obj handle: obj getHandle]! !
+
+!WinLong methods !
+
++ aNumber
+    ^self class fromInteger: ( self asInteger + aNumber )!
+   
+- anInteger
+        "Answer a copy of the receiver with bytes that represent
+        the value anInteger less than the receiver."
+    ^self class fromInteger: self asInteger - anInteger!
+   
+asUnsignedInteger
+        "Answer the receiver as a positive integer."
+    ^self uLongAtOffset: 0!
+
+printOn: aStream
+        "Append a text representation of the receiver to aStream."
+    aStream nextPutAll: self class name, ': ', self asInteger printString! !
+
+!WinMessage methods !
+ 
+scanCode
+    ^self byteAtOffset: 8! !
+
+!WinPoint methods !
+   
+printOn: aStream
+        "Append a textual representation of the receiver to aStream."
+    aStream nextPutAll: self class name, ' { ', self asPoint printString, ' } '! !
+
+!WinRectangle methods !
+  
+printOn: aStream
+        "Append a textual representation of the receiver to aStream."
+    aStream nextPutAll: self class name, ' { ', self asRectangle printString, ' } '!
+   
+xLeft
+    ^self shortAtOffset: 0!
+  
+xRight
+    ^self shortAtOffset: 4!
+ 
+yBottom
+    ^self shortAtOffset: 6!
+
+yTop
+    ^self shortAtOffset: 2! !
+
+!WinStructure methods !
+  
+booleanAtOffset: anInteger put: aBoolean
+        "Set the value at anInteger in the receiver to aBoolean.
+         Offsets are zero relative."
+    self uShortAtOffset: anInteger put: aBoolean asParameter!
+ 
+floatAtOffset: anInteger
+        "Answer the 8-byte floating point value at offset <anInteger> in the receiver.
+        Offsets are zero relative."
+    | aFloat |
+    aFloat := Float new.
+    aFloat replaceFrom: 1
+        to: aFloat size
+        with: self contents
+        startingAt: anInteger + 1.
+    ^aFloat!
+  
+floatAtOffset: anInteger put: aFloat
+        "Store the 8-byte floating point value at offset <anInteger> in the receiver.
+        Offsets are zero relative."
+    self bytesAtOffset: anInteger put: aFloat! !
+
+!WinTextMetrics methods !
+ 
+tmDescent
+        "Private - Answer the tmDescent field."
+    ^self shortAtOffset: 4!
+ 
+tmExternalLeading
+        "Private - Answer the tmExternalLeading field."
+    ^self shortAtOffset: 8! !
+
+WinLogicalPalette initialize.
+    !
+
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.03 Base Image Fixes #1'.
+package makeCurrent;
+    defineAll: #( 
+        IdentitySet StoredPicture WinDrawItemStruct WinLogicalPalette 
+        WinLogPalette WinStructArray WinWindowPlacement 
+    );
+    extendAll: #( 
+        StoredPicture WinDrawItemStruct 
+    );
+    organize: IdentitySet methodsFor: 'indexing elements' include: #( 
+        findElementIndex: 
+    );
+    organize: StoredPicture class methodsFor: '' include: #( 
+        readMetaFileHeader: readPlaceableHeader: 
+    );
+    organize: StoredPicture methodsFor: '' include: #( 
+        isStoredPicture load: play: 
+    );
+    organize: WinDrawItemStruct class methodsFor: '' include: #( 
+        sizeInBytes 
+    );
+    organize: WinDrawItemStruct methodsFor: '' include: #( 
+        itemActionDrawEntireItem itemActionFocus itemActionSelect 
+        itemHasFocus itemIsDisabled itemIsSelected 
+    );
+    organize: ApplicationWindow methodsFor: '' include: #( 
+        childrenAffectingClientArea childrenAffectingClientArea: 
+        isApplicationWindow ownerDrawPen remove:interestIn: resizeRectangleFor: 
+        subPaneWithFocus subPaneWithFocus: validateBuild wmQuerydragicon:with: 
+        wmSize:with: 
+    );
+    organize: ByteArray methodsFor: 'printing' include: #( 
+        dumpOn:base: dumpOn:base:bytes: dumpString dumpStringBase: 
+        dumpStringBase:bytes: 
+    );
+    organize: CallBack class methodsFor: '' include: #( 
+        exit startUp 
+    );
+    organize: CallBack methodsFor: '' include: #( 
+        registerMessage:parameterTypes:returnType:callingConvention: 
+    );
+    organize: CheckBox class methodsFor: '' include: #( 
+        auto nonAuto 
+    );
+    organize: ClassReader methodsFor: '' include: #( 
+        fileOut: 
+    );
+    organize: Collection methodsFor: 'removing objects' include: #( 
+        removeAll 
+    );
+    organize: ComboBox class methodsFor: '' include: #( 
+        dropDown dropDownList simple 
+    );
+    organize: Context methodsFor: '' include: #( 
+        evaluate evaluateFor: evaluateWithArguments: evaluateWithoutInterrupts 
+        invalidArgumentCount: numberOfArguments receiver validateNumberOfArguments: 
+        value value: value:value: 
+    );
+    organize: CursorManager methodsFor: '' include: #( 
+        displayAt:with: isCursor 
+    );
+    organize: DDEClient class methodsFor: '' include: #( 
+        singleExecute:topic:commandString: singlePoke:topic:item:data: 
+    );
+    organize: Debugger methodsFor: '' include: #( 
+        accept: 
+    );
+    organize: DialogBox methodsFor: '' include: #( 
+        add:toComboBox: add:toComboBox:at: add:toListBox: add:toListBox:at: 
+        deleteAllItemsInComboBox: deleteAllItemsInListBox: hideItem: 
+        queryButton: querySelectionInComboBox: querySelectionInListBox: 
+        queryText:inComboBox:startingAt: queryText:inListBox:startingAt: 
+        queryValue:inComboBox: queryValue:inListBox: select:inComboBox: 
+        select:inListBox: setButton:value: setItemText:string: 
+        setSelectEdit:startingAt:endingAt: setTextLimit:to: setValue:forItem:inComboBox: 
+        setValue:forItem:inListBox: wmHelp:with: 
+    );
+    organize: DialogTopPane methodsFor: '' include: #( 
+        isDialogTopPane 
+    );
+    organize: Dictionary methodsFor: '' include: #( 
+        addAll: isDictionary removeAll 
+    );
+    organize: DrawnButton methodsFor: '' include: #( 
+        disable enable validate 
+    );
+    organize: DynamicLinkLibrary methodsFor: '' include: #( 
+        close 
+    );
+    organize: File class methodsFor: '' include: #( 
+        findFileName: pathNameReadOnly: pathNameReadOnly:in: 
+    );
+    organize: FileHandle class methodsFor: '' include: #( 
+        setLimit: 
+    );
+    organize: FileStream methodsFor: '' include: #( 
+        asByteFileStreamCopy 
+    );
+    organize: Font methodsFor: '' include: #( 
+        bold: fixedWidth 
+    );
+    organize: GDIDLL methodsFor: '' include: #( 
+        getDIBits:hBitmap:startScan:scans:bitsStruct:bitsInfo:wUsage: 
+        setDIBits:hBitmap:startScan:scans:bitsStruct:bitsInfo:wUsage: 
+        setDIBitsToDevice:destX:destY:width:height:srcX:srcY:startScan:scans:bitsExternal:bitsInfo:wUsage: 
+        setDIBitsToDevice:destX:destY:width:height:srcX:srcY:startScan:scans:bitsStruct:bitsInfo:wUsage: 
+        setStretchBltMode:mode: stretchDIBits:xDest:yDest:cxDest:cyDest:xSrc:ySrc:cxSrc:cySrc:bits:bmi:colorUse:rop: 
+        textOut:x:y:textPtr:length: updateColors: 
+    );
+    organize: GraphicsMedium methodsFor: '' include: #( 
+        graphicsTool pen: 
+    );
+    organize: GraphicsTool class methodsFor: '' include: #( 
+        for:medium: 
+    );
+    organize: GraphicsTool methodsFor: '' include: #( 
+        isGraphicsTool releaseAllObjects setStretchBltMode: 
+    );
+    organize: GraphPane methodsFor: '' include: #( 
+        graphicsToolClass isGraphPane 
+    );
+    organize: GroupBox methodsFor: '' include: #( 
+        isTransparent 
+    );
+    organize: HomeContext methodsFor: '' include: #( 
+        isHomeContext receiver 
+    );
+    organize: Icon methodsFor: '' include: #( 
+        createIcon isIcon 
+    );
+    organize: IndexedCollection methodsFor: '' include: #( 
+        findFirst:ifAbsent: findLast:ifAbsent: 
+    );
+    organize: Integer methodsFor: 'printing' include: #( 
+        printOn:base: printOn:base:showRadix: printPaddedTo: 
+        printPaddedWith:to:base: printStringRadix: radix:showRadix: 
+    );
+    organize: KernelDLL methodsFor: '' include: #( 
+        getSystemDirectory:length: getWindowsDirectory:length: 
+        getWindowsDirectoryAddr:length: getWindowsDirectoryStruct:length: 
+        readFile:externalBuffer:bytesToRead:bytesRead:overlapped: 
+        setHandleCount: 
+    );
+    organize: ListBox class methodsFor: '' include: #( 
+        ownerDraw 
+    );
+    organize: ListBox methodsFor: '' include: #( 
+        insertItemInControl: itemHeight itemHeight: printSelector 
+        printSelector: stringForItem: 
+    );
+    organize: Menu methodsFor: '' include: #( 
+        disableAll enableAll popUp 
+    );
+    organize: Message class methodsFor: '' include: #( 
+        numberOfArgumentsFor: receiver:selector:arguments: 
+    );
+    organize: Message methodsFor: '' include: #( 
+        collectArguments: evaluate evaluateFor: evaluateWithArguments: 
+    );
+    organize: MultipleSelectListBox methodsFor: '' include: #( 
+        getSelection selections 
+    );
+    organize: NationalLanguageSupport class methodsFor: '' include: #( 
+        current current: 
+    );
+    organize: NotificationManager methodsFor: '' include: #( 
+        isAltKeyDown isButton1Down isButton2Down isControlKeyDown 
+        isEscapeKeyInput: isShiftKeyDown translateAccelerator: 
+    );
+    organize: NotificationManager methodsFor: 'saving / restoring windows' include: #( 
+        initializeTranscript 
+    );
+    organize: NotificationManager methodsFor: 'testing keys' include: #( 
+        peek: 
+    );
+    organize: Number methodsFor: '' include: #( 
+        asPoint 
+    );
+    organize: Object methodsFor: '' include: #( 
+        displayAt: displayAt:with: displayWith: evaluate evaluateWithArguments: 
+        isApplicationWindow isCursor isDialogTopPane isDictionary 
+        isGraphicsTool isGraphPane isHomeContext isIcon isMemberOf: 
+        isStoredPicture isWinHandle osWarning osWarning: storeOn: 
+    );
+    organize: Object methodsFor: 'copying' include: #( 
+        objectDeepCopy objectShallowCopy 
+    );
+    organize: Object methodsFor: 'reporting errors' include: #( 
+        osError osError: osErrorMessage: osNotification osNotification: 
+    );
+    organize: OrderedCollection methodsFor: '' include: #( 
+        asOrderedCollection 
+    );
+    organize: Pattern methodsFor: '' include: #( 
+        match:index: match:index:each: matchBackward:index: matchBackward:index:each: 
+    );
+    organize: Point methodsFor: '' include: #( 
+        asPoint deviceToLogical: 
+    );
+    organize: Printer methodsFor: '' include: #( 
+        startPrintJob startPrintJob: 
+    );
+    organize: Process class methodsFor: '' include: #( 
+        argumentOffset 
+    );
+    organize: Process methodsFor: '' include: #( 
+        argAt:number: argAt:number:put: numberOfArgsAt: 
+    );
+    organize: ProcessScheduler methodsFor: '' include: #( 
+        backgroundPriority clearProcesses highPriority idleTaskPriority 
+        lowPriority realTimePriority 
+    );
+    organize: RadioButton class methodsFor: '' include: #( 
+        auto nonAuto 
+    );
+    organize: Rectangle methodsFor: '' include: #( 
+        asRectangle deviceToLogical: mapFromWindow:to: merge: 
+    );
+    organize: Screen methodsFor: '' include: #( 
+        rectangleFromUser 
+    );
+    organize: ScrollBar class methodsFor: '' include: #( 
+        horizontal vertical 
+    );
+    organize: SortedCollection methodsFor: '' include: #( 
+        asOrderedCollection deepCopy 
+    );
+    organize: StaticBox class methodsFor: '' include: #( 
+        background backgroundFrame foreground foregroundFrame 
+        halfTone halfToneFrame 
+    );
+    organize: StaticGraphic class methodsFor: '' include: #( 
+        bitmap bitmap: icon 
+    );
+    organize: StaticGraphic methodsFor: '' include: #( 
+        contents contents: setIconHandle: validate 
+    );
+    organize: StaticText class methodsFor: '' include: #( 
+        centered leftJustified rightJustified 
+    );
+    organize: StaticText methodsFor: '' include: #( 
+        isTransparent 
+    );
+    organize: Stream class methodsFor: '' include: #( 
+        crString 
+    );
+    organize: String methodsFor: '' include: #( 
+        asArrayOfSubstringsSeparatedBy: fileNameLessPath replaceEscapeCharacters 
+    );
+    organize: String methodsFor: 'trimming whitespace' include: #( 
+        zapCrs 
+    );
+    organize: StringModel methodsFor: '' include: #( 
+        appendChar: 
+    );
+    organize: SubPane methodsFor: '' include: #( 
+        fontAttribute: isTransparent subPaneWithFocus: wmKillfocus:with: 
+    );
+    organize: Symbol methodsFor: '' include: #( 
+        asParameter 
+    );
+    organize: SystemDictionary methodsFor: '' include: #( 
+        signonDLL version 
+    );
+    organize: SystemDictionary methodsFor: 'session model' include: #( 
+        getGui gui gui: isGui 
+    );
+    organize: TextPane methodsFor: '' include: #( 
+        arrowKeyInput:withKeys: contents: 
+    );
+    organize: TextTool methodsFor: '' include: #( 
+        bell stringWidthOf:at: 
+    );
+    organize: ThreeStateButton class methodsFor: '' include: #( 
+        auto nonAuto 
+    );
+    organize: Toggle methodsFor: '' include: #( 
+        isTransparent 
+    );
+    organize: TopPane methodsFor: '' include: #( 
+        deferredResizeRectangleFor: 
+    );
+    organize: UserDLL methodsFor: '' include: #( 
+        checkMenuItem:item:flags: enableMenuItem:item:flags: 
+        enumWindows:lparam: getMenuCheckMarkDimensions getWindowPlacement:placement: 
+        redrawWindow:rectangle:region:redraw: 
+    );
+    organize: ViewManager methodsFor: '' include: #( 
+        removeView: 
+    );
+    organize: WinAddress methodsFor: '' include: #( 
+        asParameter 
+    );
+    organize: Window class methodsFor: '' include: #( 
+        ctl3dEnabled ctl3dIfEnabled 
+    );
+    organize: Window methodsFor: '' include: #( 
+        affectsFreeClientArea affectsFreeClientArea: allChildren 
+        allChildrenDo: children children: clearGraphicsTool cursorWindowPosition 
+        disableRedraw enableRedraw entireClientArea fontAttribute: 
+        frameWindow framingBlock framingRectangleFor: graphicsToolClass 
+        hasDescendant: hasFocus invalidateRect:erase: isMDISupportPane 
+        isVisible ownerDrawPen propertyAt:ifAbsent: rectangleAttribute 
+        rectangleAttribute: redraw remove:interestIn: searchForDefaultTextPane 
+        superWindow visible wmSyskeydown:with: 
+    );
+    organize: WindowHandle methodsFor: '' include: #( 
+        disableRedraw enableRedraw noRedraw: 
+    );
+    organize: WindowHandle methodsFor: 'showing windows' include: #( 
+        hideWindow showIconicWindow showMaximizedWindow showWindow 
+    );
+    organize: WinHandle class methodsFor: '' include: #( 
+        nullValue 
+    );
+    organize: WinHandle methodsFor: '' include: #( 
+        isWinHandle 
+    );
+    organize: WinInfo class methodsFor: '' include: #( 
+        isWindows95 
+    );
+    organize: WinLogicalObject methodsFor: '' include: #( 
+        createObject 
+    );
+    organize: WinLong methodsFor: '' include: #( 
+        + - asUnsignedInteger printOn: 
+    );
+    organize: WinMessage methodsFor: '' include: #( 
+        scanCode 
+    );
+    organize: WinPoint methodsFor: '' include: #( 
+        printOn: 
+    );
+    organize: WinRectangle methodsFor: '' include: #( 
+        printOn: xLeft xRight yBottom yTop 
+    );
+    organize: WinStructure methodsFor: '' include: #( 
+        booleanAtOffset:put: floatAtOffset: floatAtOffset:put: 
+    );
+    organize: WinTextMetrics methodsFor: '' include: #( 
+        tmDescent tmExternalLeading 
+    );
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'BASEIMG1.203';
+    comments:
+'"Base Image Fixes for Smalltalk Express v2.0, Package #1
+
+    Description:
+
+        This package corrects several base image issues in Smalltalk Express v2.0 and
+        updates the image to v2.03. This package is a superset of the fixes that Digitalk
+        provided in their Smalltalk/V v2.02 patch upgrade.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+
+    Details and Original Digitalk Problem Report #''s:
+
+        *  Groundwork laid for 256-color bitmap support by the addition of the WinLogPalette and
+            WinLogicalPalette classes. WinLogPalette represents a logical color palette structure
+            (LOGPALETTE) which contains an array of color entries for the palette. WinLogicalPalette
+            represents a Window GDI color palette object. An instance of WinLogicalPalette contains
+            a handle to the color palette. Multiple bitmaps may share the same WinLogicalPalette if
+            their color table is the same.
+
+        *  Modified WinLogicalObject>>createObject to correct a fundamental bug in Smalltalk Express
+            where attempting to delete GDI objects that are still selected into a DC corrupts the GDI subsystem.
+
+        * Corrected #objectDeepCopy and #objectShallowCopy to use #basicNew instead of #new.
+
+        * Corrected SortedCollection>>deepCopy to properly copy the sort block.
+
+        *  Several classes and methods were added for compatibility with VST.
+
+        *  PR#355  FunctionKeys do not work correctly in V Win.
+
+        *  PR#561  Smalltalk/vwin crashes when it reached the maximum filehandle it can get.
+
+        *  PR#1013 MDI and popup menu.
+
+        *  PR#1045 Problems with cursors on TextPane.
+
+        *  PR#1102 Print job in PrintManager window should show the name of the job
+            not ''Smalltalk/V''.
+
+        *  PR#1144 nextPut: to an empty TextPane causes walkback because textHolder
+            is nil.
+
+        *  PR#1174 DDEClient singleExecute/singlePoke don''t wait for data.
+
+        *  PR#1203 Problem with function key in Smalltalk/VWIN.
+
+        *  PR#1204 Font>>fixedWidth problem.
+
+        *  PR#1206 DialogBox>>wmHelp:with: does not work with ComboBoxes.
+
+        *  PR#1208 SystemDictionary>>signOnDLL fails with sharing violation if
+            SHARE.EXE is loaded.
+
+        *  PR#1212 NotificationManager>>removeEvents:for: fails to remove all
+            events.
+
+        *  PR#1221 User dynamic link library (dll) is not freed when Smalltalk exits.
+
+        *  PR#1227 Printing to postcript driver causes UAE
+
+        *  PR#1250 MultiSelectListBox>>getSelection uses wrong Array type.
+
+        *  PR#1258 SubPane>>wmKillFocus misspells #loosingFocus.
+
+        *  PR#1267 can''t assign graphic to StaticGraphic.
+
+        *  PR#1274 Bug in Font>>bold:
+
+        *  PR#1280 DialogBox methods truncate signed return values.
+
+        *  PR#1283 VWIN runtimes fail under WIN/OS of OS/2 2.0
+
+        *  PR#1290 VWIN TextPanes don''t work in WindowDialog.
+
+        *  PR#1295 VWIN SubPane hierarchy is missing some public methods present in VPM.
+
+        *  PR#1296 VWIN lacks Menu>>disableAll, Menu>>enableAll methods.
+
+        *  PR#1297 VWIN lacks Window>>enableRedraw, Window>>disableRedraw methods.
+
+        *  PR#1298 VWIN lacks Pattern>>matchBackward:index: method.
+
+        *  PR#1299 VWIN lacks isApplicationWindow, isMemberOf: methods.
+
+        *  PR#1300 VWIN StaticGraphic class only handles icons; VPM also handles bitmaps.
+
+        *  PR#1301 Screen>>rectangleFromUser can answer bogus rectangles in VWIN.
+
+        *  PR#1303 Creating a window with WsPopup style fails in VWIN 2.0
+
+        *  PR#1306 VWFLOAT.DLL not freed on PCs w/ mathchips.
+
+        *  PR#1307 ListBox in Smalltalk/VWIN can display only 5439 items.
+
+        *  PR#1320 Adding a GraphPane to a GroupPane makes the GraphPane''s scrollbars dissappear.
+
+        *  PR#1384 storeOn: problems with Files or WinStructures that redefine #size.
+
+        *  PR#1735 Intermittent GPF during Callbacks.
+
+        *  PR#1756 Can''t save changed variable values in Debugger.
+"
+
+
+"Add required Windows constants."
+WinConstants
+    at: ''MdisAllchildstyles'' put: 1;
+    at: ''RdwInvalidate'' put: 16r0001;
+    at: ''RdwInternalpaint'' put: 16r0002;
+    at: ''RdwErase'' put: 16r0004;
+    at: ''RdwValidate'' put: 16r0008;
+    at: ''RdwNointernalpaint'' put: 16r0010;
+    at: ''RdwNoerase'' put: 16r0020;
+    at: ''RdwNochildren'' put: 16r0040;
+    at: ''RdwAllchildren'' put: 16r0080;
+    at: ''RdwUpdatenow'' put: 16r0100;
+    at: ''RdwErasenow'' put: 16r0200;
+    at: ''RdwFrame'' put: 16r0400;
+    at: ''RdwNoframe'' put: 16r0800;
+    yourself.
+
+"Add OS error codes to the system"
+(Smalltalk
+    at: #OSErrorDescriptions
+    ifAbsent: [ Smalltalk at: #OSErrorDescriptions put: Dictionary new ])
+        at: -5 put: ''Spooler Out of Memory'';
+        at: -4 put: ''Spooler Out of Disk'';
+        at: -1 put: ''General Error'';
+        at: 2 put: ''File Not Found'';
+        at: 3 put: ''Path Not Found'';
+        at: 4 put: ''Too Many Open Files'';
+        at: 5 put: ''Access Denied'';
+        at: 6 put: ''Invalid Handle'';
+        at: 7 put: ''Arena Trashed'';
+        at: 8 put: ''Not Enough Memory'';
+        at: 14 put: ''Out of Memory'';
+        yourself.';
+    fileTime: ( Time fromSeconds: 54430 )
+          on: ( Date fromDays: 35118 );
+    takeCurrent;
+    yourself   !

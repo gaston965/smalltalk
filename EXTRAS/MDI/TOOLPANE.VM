@@ -1,0 +1,1141 @@
+
+
+!Object methods !
+   
+asString
+        "Answer the receiver's string representation."
+
+    | stream |
+
+    stream := WriteStream on: String new.
+    self printOn: stream.
+    ^stream contents!
+
+isStatusPane
+        "Answer true if receiver is an instance of class
+         StatusPane, else answer false."
+
+    ^false!
+ 
+isToolPane
+        "Answer true if receiver is an instance of class
+         ToolPane, else answer false."
+
+    ^false!
+ 
+statusPaneHelp:aKey
+        "Answer the hint text used by
+        the StatusPane for help support.
+        aKey is the selector of highlighted menu item."
+
+    ^HelpStatusPane at:aKey ifAbsent:[]! !
+
+
+!TextTool methods !
+ 
+displayText: aString at: aPoint clipRect:aRectangle options:options
+        "Display aString at aPoint within a clip rectangle."
+        "options can be one of the following values:"
+        "EtoClipped, EtoOpaque"
+    | str |
+    str := (aString isString)
+        ifTrue: [aString]
+        ifFalse: [aString printString].
+    str size > 8000 ifTrue: [ "size must be < 32k"
+        str := (str copyFrom: 1 to: 8000), '...etc...'].
+    self allHandles do: [: h |
+            GDILibrary extTextOut:h  asParameter
+                                                    x: aPoint x
+                                                    y: aPoint y
+                                                    options:options
+                                                    rect:aRectangle asParameter
+                                                    text:str asParameter
+                                                    length:str size
+                                                    dx:nil asParameter]! !
+
+
+!Window methods !
+ 
+minimized
+        "Private - Answer false if the receiver is minimized."
+    ^false!
+  
+statusPane
+        "answer the receiver's status bar"
+    ^self mainWindow statusPane!
+
+toolPane
+        "Answer the receiver's toolPane if any, else answer nil."
+
+    ^self mainWindow toolPane! !
+
+
+!ApplicationWindow methods !
+
+statusPane
+        "Private - Answer the status pane if any, else answer nil."
+    ^children detect:[:c| c isStatusPane] ifNone:[nil].!
+
+statusText
+        "Private - Answer the receiver's statusText property."
+
+    ^self propertyAt:#statusText!
+  
+statusText:anObject
+        "Private - Set the receiver's statusText property."
+
+    self propertyAt:#statusText put:anObject!
+
+toolPane
+        "answer the receiver's toolPane"
+    ^children detect:[:c| c isToolPane] ifNone:[nil].! !
+
+
+!DialogTopPane methods !
+  
+statusPane
+        "Answer the receiver's statusPane if any, else answer nil."
+
+    parent isNil ifTrue:[^nil].
+    ^parent statusPane!
+  
+toolPane
+        "Answer the receiver toolPane if any, else answer nil."
+
+    parent isNil ifTrue:[^nil].
+    ^parent toolPane! !
+
+
+!WinInfo class methods !
+  
+colorButtonFace
+        "Answer the button face color."
+
+    ^UserLibrary getSysColor: ColorBtnface!
+  
+colorButtonHighlight
+        "Answer the button highlight color."
+    |w|
+    self isWindows30
+            ifTrue:[
+                w := WinLong fromInteger:(Pen red:255 green:255 blue:255).
+                ^w contents asString].
+
+    ^UserLibrary getSysColor: ColorBtnhighlight!
+  
+colorButtonShadow
+        "Answer the button shadow color."
+
+    ^UserLibrary getSysColor: ColorBtnshadow!
+
+colorButtonText
+        "Answer the button text color."
+
+    ^UserLibrary getSysColor: ColorBtntext!
+  
+cxBorder
+    "Private - answer the width of a  border."
+
+    ^UserLibrary getSystemMetrics:SmCxborder!
+
+cxIcon
+    "Private - Answer the width of an icon."
+
+    ^UserLibrary getSystemMetrics:SmCxicon!
+  
+cyBorder
+    "Private - Answer the height of a  border."
+
+    ^UserLibrary getSystemMetrics:SmCyborder!
+   
+cyCaption
+    "Private - Answer the height of a title bar."
+
+    ^UserLibrary getSystemMetrics:SmCycaption!
+   
+cyIcon
+    "Private - Answer the height of an icon."
+
+    ^UserLibrary getSystemMetrics:SmCyicon!
+ 
+isWindows30
+        "Answer true if windows 30."
+
+    ^((self windowsMajorVersion >= 3)
+        and:[self windowsMinorVersion >= 10]) not!
+   
+windowsMajorVersion
+        "Answer the Windows major version."
+    |v|
+    v := KernelLibrary getVersion.
+    v := WinAddress fromString: v.
+    ^v byteAtOffset: 0!
+   
+windowsMinorVersion
+        "Answer the Windows minor version."
+    |v|
+    v := KernelLibrary getVersion.
+    v := WinAddress fromString: v.
+    ^v byteAtOffset: 1! !
+
+
+!SubPane methods !
+ 
+show
+    "Private - Toggle visible state of the receiver."
+
+    self visible
+        ifTrue:[self visible:false]
+        ifFalse:[self visible:true].
+    self mainWindow resize:self mainWindow rectangle repaint:true.!
+  
+visible
+        "Private - Answer true if the receiver is logically visible."
+    | z |
+    (z := self propertyAt: #visible) isNil ifTrue:[^true].
+    ^z!
+  
+visible: aBoolean
+        "Private - Set the visible state of the reciever
+         to aBoolean."
+    self propertyAt: #visible put: aBoolean.
+    aBoolean ifTrue:[
+        self showWindow]
+    ifFalse:[
+        self hideWindow].! !
+
+
+!ViewManager methods !
+ 
+statusPane
+        "Answer the receiver's statusPane."
+
+    ^self mainView statusPane!
+
+statusText: aString
+    "Set the receiver's statusText to aString."
+    views size < 1 ifTrue: [
+        self addView: (
+            self topPaneClass new
+                owner: self)].
+    ^(views at: 1) statusText: aString!
+  
+toolPane
+        "Answer the receiver's toolPane if any, else answer nil."
+
+    ^self mainView toolPane! !
+
+
+!ClassHierarchyBrowser methods !
+  
+statusPaneHelp:aKey
+        "Private - Answer the default dictionary used by
+        the status bar for help support."
+
+    ^HelpClassHierarchyBrowser at:aKey ifAbsent:[^super statusPaneHelp:aKey]! !
+
+
+!KernelDLL methods !
+
+getVersion
+    <api: GetVersion ulong>
+    ^self invalidArgument! !
+
+
+!DialogBox methods !
+ 
+statusPane
+        "Answer the receiver's statusPane if any, else answer nil."
+    owner isNil ifTrue:[^nil].
+    ^owner statusPane!
+  
+toolPane
+        "Answer the receiver's toolPane if any, else answe nil."
+    |ownerWindow|
+    ownerWindow:=Notifier findWindow:owner asInteger.
+    ownerWindow isNil ifTrue:[^nil].
+    ^ownerWindow toolPane! !
+
+
+!StatusPane class methods !
+
+supportedEvents
+        "Private - Answer the Set of events that ToolPanes can notify
+         their owners about."
+    ^super supportedEvents
+        add: #doubleClicked;
+        yourself! !
+
+
+!StatusPane methods !
+ 
+isResizable
+        "Answer true if the receiver is left justified, else answer false."
+
+    ^resizable!
+  
+resizable
+        "Set the StatusPane style.
+        The left-most status box in a statusPane rightJusfied
+        will be resizable.
+        The right-most status box in a leftjustified statusPane
+        will be resizable."
+
+    resizable := true!
+  
+display
+        "Private - Display the statusPane."
+
+    self display3D.
+    statusBoxes do:[:each | each displayWith: self graphicsTool].!
+ 
+height:anInteger
+        "Set the receiver's height."
+
+    height:=anInteger!
+
+colorChange
+        "Private - Window's color has changed
+        Set the new background and foreground color."
+
+    colors := self sysColors.
+    self backColor: WinInfo colorButtonFace.
+    self foreColor:WinInfo colorButtonText.
+    ^super colorChange.!
+ 
+open
+        "Private - Open the statusPane."
+    super open.
+    self font isNil ifTrue:[
+        self font: self defaultFont].
+    self event:#getContents.!
+  
+displayHelp
+        "Private - Display the help."
+    |rect xDisplay pen|
+    self display3D.
+    xDisplay := self font width.
+    rect := xDisplay @ 0 corner: rectangle width @ (rectangle bottom down: 2).
+    rect := rect insetBy: (0 @ inset).
+    pen:=self graphicsTool.
+    pen
+        displayText:helpText
+        at: (rect leftBottom rightAndUp: self font descender + 1)
+        clipRect:rect
+        options: EtoOpaque|EtoClipped.!
+   
+updateStatusBox: aStatusPaneBox
+        "Private - aStatusPaneBox has been updated."
+
+    self isHandleOk ifFalse:[^self].
+    helpText notNil ifTrue:[^self].
+    self doGraphics:[
+        aStatusPaneBox displayWith:self graphicsTool].!
+   
+rightJustified
+        "Set the StatusPane style.  The StatusPane boxes will be rightJustified."
+
+    justified := #right!
+   
+leftJustified
+        "Set the StatusPane style.  The StatusPane boxes will be leftJustified."
+
+    justified := #left!
+  
+contents
+        "Answer the receiver's contents,
+        i.e., a collection of statusBox objects."
+
+    ^statusBoxes!
+  
+initialize
+        "Private - Initialize instance variables."
+    super initialize.
+    self height: WinInfo cyCaption - 1.
+    self framingBlock:[:box| (box leftTop down: box height) rightBottom: (box rightBottom down:  self height )].
+    colors := self sysColors.
+    self backColor: WinInfo colorButtonFace.
+    self foreColor:WinInfo colorButtonText.
+    self resizable.
+    self rightJustified.
+    statusBoxes := OrderedCollection new.
+    inset := 3.!
+  
+isLeftJustified
+        "Answer true if the receiver is left justified, else answer false."
+
+    ^justified = #left!
+  
+showHelp:anObject
+    "Private - Set and display the help text."
+    (helpText isNil and:[anObject isNil]) ifTrue:[^self].
+    self doGraphics:[
+        helpText isNil ifTrue:[self graphicsTool erase].
+        helpText:=anObject.
+        helpText isNil ifTrue:[self graphicsTool erase.self display].
+        helpText notNil ifTrue:[self displayHelp]].!
+  
+updateSliders
+        "Private - Reimplemented here because StatusPane
+         have no scrollbars."!
+ 
+isStatusPane
+        "Answer true if receiver is an instance of class
+         StatusPane, else answer false."
+    ^true!
+
+inset
+        "Answer the receiver's inset.
+        The height of a StatusBox is the height
+        of the statusPane minus two times the inset."
+
+    ^inset!
+  
+validate
+        "Private - The window for the receiver was
+         just created or recreated.
+        Show the StatusPane if its visible property is true."
+    |newColors|
+    super validate.
+    helpText := nil.
+    newColors := self sysColors.
+    newColors = colors ifFalse:[
+            self colorChange].
+    self visible ifTrue:[self showWindow].!
+   
+defaultFont
+        "Private - Answer the default font for StatusPane."
+    ^Font face:'Helv' size:(0 @ (self height - (2 * inset))) fixedWidth:false!
+ 
+updateRectangleRightJustified
+        "Private - Update variables depending on the actual size of the StatusPane."
+
+    |xDisplay rect|
+
+    xDisplay := self rectangle width - self height.
+    statusBoxes reverseDo:[:box |
+        xDisplay := xDisplay left: box width + 6.
+        rect := xDisplay @ 0 corner: (xDisplay + box width + 6) @ (rectangle bottom down: 2).
+        rect := rect insetBy: (0 @ inset).
+        box rectangle: rect.
+        xDisplay := xDisplay left: box space].
+
+    self isResizable ifFalse:[^self].
+    statusBoxes isEmpty ifTrue:[^self].
+
+    box := statusBoxes first.
+    xDisplay := xDisplay right: box space.
+    xDisplay := xDisplay right: box width + 6.
+    rect := (box space @ 0) corner: xDisplay @ (rectangle bottom down: 2).
+    rect := rect insetBy: (0 @ inset).
+    box rectangle: rect.!
+  
+sysColors
+        "Private - Answer system colors for StatusPane."
+
+    ^(Array new:2)
+                        at: 1 put: WinInfo colorButtonFace;
+                        at: 2 put: WinInfo colorButtonText;
+                        yourself.!
+ 
+winClass
+    "Private- answer the receiver's window class."
+
+    | className wndClass lptr answer|
+    className := 'SmalltalkV',self class name.
+    (self isRightJustified or:[self isResizable])
+        ifTrue:[className := className,'RightJustified'].
+    wndClass := WinWindowClass new.
+    answer:=UserLibrary getClassInfo: WIN hInstanceExe
+        className: className asParameter
+        wndClass: wndClass asParameter.
+    answer ifTrue:[^className].
+    UserLibrary getClassInfo: WIN hInstanceExe
+        className: 'VWIN' asParameter
+        wndClass: wndClass asParameter.
+    wndClass style:CsDblclks.
+    (self isRightJustified or:[self isResizable])
+            ifTrue:[wndClass style: CsDblclks | CsHredraw].
+    wndClass
+        className: (lptr := WinAddress
+            copyToNonSmalltalkMemory: className asAsciiZ) asParameter.
+    UserLibrary registerClass: wndClass asParameter.
+    lptr unlock; free.
+   ^className!
+  
+updateRectangleLeftJustified
+        "Private - Update variables depending on the actual size of the StatusPane."
+    |xDisplay rect|
+
+    xDisplay := 0.
+    statusBoxes do:[:box |
+        xDisplay := xDisplay right: box space.
+        rect := xDisplay @ 0 corner: (xDisplay + box width + 6) @ (rectangle bottom down: 2).
+        rect := rect insetBy: (0 @ inset).
+        box rectangle: rect.
+        xDisplay := xDisplay right: box width + 6].
+
+    self isResizable ifFalse: [^self].
+    statusBoxes isEmpty ifTrue: [^self].
+
+    box := statusBoxes last.
+    xDisplay := xDisplay left: box width + 6.
+    rect := xDisplay @ 0 corner: (self rectangle width left: self height) @ (rectangle bottom down: 2).
+    rect := rect insetBy: (0 @ inset).
+    box rectangle: rect.!
+  
+statusBoxAt: statusBoxSymbol
+        "Answer the first statusBox with the name statusBoxSymbol."
+
+    ^statusBoxes detect:[:each | each name = statusBoxSymbol] ifNone:[nil]!
+
+fixedSize
+        "Set the StatusPane style.  The StatusPane boxes will be fixed size."
+
+    resizable := false!
+ 
+contents: aStatusBoxCollection
+        "Set the receiver's contents."
+
+    statusBoxes := aStatusBoxCollection.
+    statusBoxes do:[:each | each statusPane: self].!
+ 
+freeClientArea:box
+        "Private - Set the client area left over."
+    rectangle isNil ifTrue:[^self].
+    self visible ifFalse:[^self].
+    box height: box height - self height.!
+  
+isRightJustified
+        "Set the StatusPane style - The StatusPane boxes will be rightJustified."
+
+    ^justified = #right!
+ 
+height
+        "Answer the receiver's height."
+
+    ^height!
+ 
+inset: anInteger
+        "Set the receiver's inset.
+        The height of a StatusBox is the height
+        of the statusPane minus two times the inset."
+
+    inset := anInteger!
+  
+getGraphicsTool
+        "Private - Initialize an empty pen tool."
+    ^Pen forDC: nil medium: self!
+   
+button1DoubleClick: aPoint
+        "Private - Left button is double clicked.
+         Default is do nothing."
+
+    self event: #doubleClicked!
+  
+updateRectangle
+        "Private - Update variables depending on the actual size of the StatusPane."
+
+    super updateRectangle.
+    self isLeftJustified ifTrue:[
+        self updateRectangleLeftJustified]
+    ifFalse:[
+        self updateRectangleRightJustified].!
+
+frameStyle
+        "Private - Answer an Integer with appropriate styles in it."
+     ^WsChild |
+     WsClipchildren |
+     WsClipsiblings!
+  
+display3D
+        "Private - Display the 3D main rectangle."
+
+    |aPen|
+    aPen := self graphicsTool.
+    aPen fill: (self rectangle leftTop rightBottom: (self rectangle rightTop leftAndDown:( 0 @ 1)))
+        color: ClrBlack.
+    aPen fill: ((self rectangle leftTop down: 1) rightBottom: (self rectangle rightTop leftAndDown:( 0 @ 2)))
+        color: WinInfo colorButtonHighlight.! !
+
+
+!StatusBox class methods !
+   
+new
+
+    ^super new initialize! !
+
+
+!StatusBox methods !
+   
+show: aBoolean
+        "Show the receiver's contents if aBoolean is true, else
+        hide the receiver's contents."
+
+    state := aBoolean.
+    self statusPane notNil
+        ifTrue:[self statusPane updateStatusBox: self].!
+  
+rectangle: aRectangle
+        "Private - Set the receiver's rectangle."
+
+    rectangle := aRectangle!
+ 
+width: anInteger
+        "Set the receiver's width. anInteger is in pixel units."
+
+    width := anInteger!
+
+contents: anObject
+        "Set the receiver's contents and update the statusPane."
+
+    contents := anObject.
+    self statusPane notNil
+        ifTrue:[self statusPane updateStatusBox: self].!
+  
+name: aSymbol
+        "Set the statusBox name to aSymbol
+         which can be a Symbol or a String."
+
+    name := aSymbol!
+ 
+space
+        "Answer the receiver's offset in
+        pixel units.
+        An offset specifies the distance between a box and the previous one."
+
+    ^space!
+   
+contents
+        "Answer the receiver's contents."
+
+    ^contents!
+
+initialize
+        "Private - Initialize the receiver."
+
+    state := true.
+    space := 0.
+    width := 0.!
+
+displayWith: aPen
+        "Private - Display itself with aPen."
+    |rcDraw  string|
+
+    rectangle isNil ifTrue:[^self].
+    (rectangle right isLeftEqualOf: rectangle left)
+        ifTrue:[^self].
+
+    rcDraw:=rectangle.
+    aPen fill: ((rcDraw leftBottom leftAndUp:(0 @ 1)) rightTop: (rcDraw leftTop rightAndDown:( 1 @ 0)))
+        color: WinInfo colorButtonShadow.
+    aPen fill: ((rcDraw leftTop rightAndDown: (1 @ 0)) rightBottom: (rcDraw rightTop leftAndDown:( 0 @ 1)))
+        color: WinInfo colorButtonShadow.
+    aPen fill: ((rcDraw leftBottom rightAndUp:(0 @ 0))  rightTop: (rcDraw rightBottom leftAndUp:( 0 @ 1)))
+        color: WinInfo colorButtonHighlight.
+    aPen fill: ((rcDraw rightBottom leftAndUp:(1 @ 0)) rightTop: (rcDraw rightTop leftAndDown:( 2 @ 0)))
+        color: WinInfo colorButtonHighlight.
+
+    contents isNil ifTrue:[^self].
+    string := contents isString
+                        ifTrue:[contents]
+                        ifFalse:[contents printString].
+    state ifFalse:[string := ''].          "Is hidden ?"
+    rcDraw:=rectangle insetBy: (1 @ 1).
+    aPen displayText:string at: (rcDraw leftBottom rightAndUp: (1 @ (aPen font descender + 1)))
+        clipRect:rcDraw
+        options: EtoOpaque|EtoClipped.!
+ 
+statusPane
+        "Private - Answer the receiver's statusPane."
+
+    ^statusPane!
+
+rectangle
+        "Private - Answer the receiver's rectangle."
+
+    ^rectangle!
+   
+width
+        "Answer the receiver's width in pixel units."
+
+    ^width!
+
+space: anInteger
+        "Set the receiver's offset to
+        anInteger pixel units.
+        An offset specifies the distance between a box and the previous one."
+
+    space := anInteger!
+
+name
+        "Answer the statusBox name.  A StatusBox's name is established by
+         sending the 'name:' message to the statusBox."
+
+    ^name!
+  
+statusPane: aStatusPane
+        "Private - Set the receiver's statusPane."
+
+    statusPane := aStatusPane! !
+
+
+!ToolPane class methods !
+   
+supportedEvents
+        "Private - Answer the Set of events that ToolPanes can notify
+         their owners about."
+    ^super supportedEvents
+        add: #doubleClicked;
+        yourself! !
+
+
+!ToolPane methods !
+   
+showHelp:aTool
+        "Private - The use has clicked a tool
+        Show the help."
+    |help context|
+    context := self helpContext.
+    context isNil ifTrue:[^self].
+    help:=context value statusPaneHelp: context key.
+    help isNil ifTrue:[^self].
+    self statusPane showHelp:help!
+
+drawTool:aTool
+        "Private - Display the bitmap's tool depending on its state."
+
+    aTool isNil ifTrue:[^self].
+    self buttonState
+        ifTrue:[aTool displayToolDownWith: graphicsTool]
+        ifFalse:[aTool displayToolUpWith: graphicsTool].!
+  
+validate
+        "Private - The window for the receiver was
+        just created or recreated. Show the ToolPane if the visible
+        property is true."
+    |newColors|
+    super validate.
+    newColors := self sysColors.
+    colors = newColors ifFalse:[
+        self colorChange].
+    self visible ifTrue:[self showWindow].!
+ 
+wmNchittest: wParam with: lParam
+        "Private - Process Non-client mouse hit test message.
+        Reimplemented here because we want to receive the mouse
+        clicks."
+    ^nil!
+
+button1Up:aPoint
+        "Private - Left button is pressed up."
+
+    |found|
+    buttonPressed isNil ifTrue:[^self].
+    (buttonPressed rectangle containsPoint:aPoint)
+        ifTrue:[found:=true]
+        ifFalse:[found:=false].
+    clickState:=false.
+    self clearMouseCapture.
+    buttonState ifTrue:[
+        buttonState:=false.
+        self doGraphics:[self drawTool:buttonPressed]].
+    found ifTrue:[self performSelector:buttonPressed].
+    buttonPressed:=nil.
+    self eraseHelp.!
+  
+performSelector:aTool
+        "Private - The use has clicked a tool
+        Perform its selector."
+    |selector|
+    aTool selector isNil ifTrue:[^self].
+    selector:=aTool selector.
+    (selector isKindOf: Message)
+            ifTrue: [^selector perform].
+    aTool owner isNil ifTrue:[^self].
+    aTool owner perform:aTool selector.!
+   
+isToolPane
+        "Answer true if receiver is an instance of class
+         ToolPane, else answer false."
+    ^true!
+
+height:anInteger
+        "Set the receiver's height."
+
+    height:=anInteger!
+ 
+buttonState:aBoolean
+        "Private - Set the receiver's buttonState."
+
+    buttonState:=aBoolean!
+  
+button1Move:aPoint
+        "Private - Left button is down while the mouse
+         is moving. Display the help text in the status bar if any."
+
+    |found|
+    buttonPressed isNil ifTrue:[^self].
+    (buttonPressed rectangle containsPoint:aPoint)
+        ifTrue:[found:=true]
+        ifFalse:[found:=false].
+
+    found=buttonState ifTrue:[^self].
+    buttonState:=found.
+    self doGraphics:[self drawTool:buttonPressed].!
+   
+initialize
+        "Private - Initialize the receiver."
+
+    |cxBorder cyBorder screenWidth|
+    super initialize.
+    tools := OrderedCollection new.
+    self height: 27.
+    self backColor: WinInfo colorButtonFace.
+    cxBorder:=WinInfo cxBorder.
+    cyBorder:=WinInfo cyBorder.
+    screenWidth := Display width + (2 * cxBorder).
+    colors := Array new:4.
+    self framingBlock:[:box| (Rectangle leftTopUnit leftAndUp: (cxBorder @ cyBorder)) rightBottom: (screenWidth @ self height)].!
+ 
+updateSliders
+        "Private - Reimplemented here because ToolPane
+         have no scrollbars."!
+   
+close
+        "Private - Reimplemented here to release the bitmaps."
+    |answer|
+    answer := super close.
+    toolsBitmap notNil
+        ifTrue:[toolsBitmap release].
+    ^answer.!
+
+contents
+        "Answer the receiver's contents, i.e.
+        a collection of Tool objects."
+
+    ^tools!
+   
+buttonState
+        "Private - Answer the receiver's buttonState."
+
+    ^buttonState!
+ 
+contextForItem:aTool
+        "Private - The user has clicked a tool
+        Answer its context."
+    |helpOwner help key selector|
+    self statusPane isNil ifTrue:[^nil].
+    aTool selector isNil ifTrue:[^nil].
+    selector:=aTool selector.
+    (selector isKindOf: Message) ifTrue: [
+        key:=selector selector.
+        helpOwner:=selector receiver
+    ] ifFalse:[
+        helpOwner:=aTool owner.
+        key:=aTool selector
+    ].
+    helpOwner isNil ifTrue:[^nil].
+    key:=key asString.
+    ^Association key: key value: helpOwner!
+   
+toolAt: toolSymbol
+        "Answer the first tool with the name toolSymbol."
+
+    ^tools detect:[:each | each name = toolSymbol] ifNone:[nil]!
+   
+eraseHelp
+        "Private - a tool has been deselected
+        Erase the help text."
+
+    self statusPane isNil ifTrue:[^self].
+    self statusPane showHelp:nil!
+  
+open
+        "Private - open the toolPane."
+
+    super open.
+    self event:#getContents.!
+   
+freeClientArea:box
+    "Private - Set the client area left over."
+    self visible ifFalse:[^self].
+    box leftTop:(box leftTop rightAndDown: (0 @ self height))!
+   
+height
+        "Answer the receiver's height."
+
+    ^height!
+  
+winClass
+        "Private - Answer the receiver's window class."
+
+    | className wndClass lptr answer|
+    className := 'SmalltalkV',self class name.
+    wndClass := WinWindowClass new.
+    answer:=UserLibrary getClassInfo: WIN hInstanceExe
+        className: className asParameter
+        wndClass: wndClass asParameter.
+    answer ifTrue:[^className].
+    UserLibrary getClassInfo: WIN hInstanceExe
+        className: 'VWIN' asParameter
+        wndClass: wndClass asParameter.
+    wndClass style:CsDblclks;
+        className: (lptr := WinAddress
+            copyToNonSmalltalkMemory: className asAsciiZ) asParameter.
+    UserLibrary registerClass: wndClass asParameter.
+    lptr unlock; free.
+   ^className!
+ 
+makeToolsBitmap
+        "Private - Create a bitmap with all the tools."
+    |aPen|
+    toolsBitmap notNil ifTrue:[toolsBitmap release].
+    toolsBitmap := Bitmap screenExtent: (Display width @ self height).
+    aPen := toolsBitmap pen.
+    aPen backColor: WinInfo colorButtonFace.
+    aPen erase.
+    tools do:[:each | each displayToolUpWith: aPen].!
+   
+colorChange
+        "Private - Window's color has changed.
+        Set the new background color and create the bitmaps."
+
+    colors := self sysColors.
+    self backColor: WinInfo colorButtonFace.
+    tools do:[:each | each colorChange].
+    self makeToolsBitmap.
+    ^super colorChange.!
+ 
+getGraphicsTool
+        "Private - Initialize an empty pen tool."
+    ^Pen forDC: nil medium: self!
+   
+contents: aToolCollection
+        "Set the receiver's contents.
+        aToolCollection is a collection of Tool objects."
+    |leftTopPoint i space|
+
+    tools := aToolCollection.
+    i := 0.
+    space := 0.
+    self contents do:[:each |
+        each space notNil ifTrue:[space := space + each space].
+        leftTopPoint := (i * (each extent x left: 1)) + space  @ 2.
+        each rectangle: (Rectangle leftTop:leftTopPoint extent: each extent).
+        i := i + 1].
+    colors := self sysColors.
+    self makeToolsBitmap.!
+  
+display
+        "Private - Display its contents."
+
+    toolsBitmap isNil ifTrue:[^self].
+    buttonState:=false.
+    graphicsTool
+        copyBitmap: toolsBitmap
+        from: toolsBitmap boundingBox
+        at: Rectangle leftTopUnit!
+   
+frameStyle
+        "Private - Answer an Integer with appropriate styles in it."
+     ^WsChild |
+     WsClipsiblings |
+     WsBorder!
+
+button1DoubleClick: aPoint
+        "Private - Notify the owner that the user has double clicked.."
+
+    self event:#doubleClicked.!
+
+sysColors
+        "Private - Answer system colors for push buttons."
+
+        ^(Array new:4)
+            at: 1 put: WinInfo colorButtonText;
+            at: 2 put: WinInfo colorButtonShadow;
+            at: 3 put: WinInfo colorButtonFace;
+            yourself.!
+ 
+button1Down:aPoint
+        "Private - Left button is pressed down."
+
+    tools do:[:each |
+        (each rectangle containsPoint:aPoint)
+            ifTrue:[buttonPressed:=each]].
+
+    buttonPressed isNil ifTrue:[^super button1Down: aPoint].
+    self helpContext: (self contextForItem: buttonPressed).
+    (self helpManager notNil and:[self helpManager helpMode]) ifTrue:[
+        self helpManager displayHelp: self helpContext key.
+        buttonPressed := nil.
+        ^self].
+    buttonState:=true.
+    clickState:=true.
+    self captureMouseInput.
+    self doGraphics:[self drawTool:buttonPressed].
+    self showHelp:buttonPressed! !
+
+
+!Tool class methods !
+
+fromModule:aFileName id:aString
+        "Answer a new tool. aFileName is a DLL file name.
+        aString is a BITMAP name in this DLL."
+    ^self new fromModule:aFileName id:aString!
+   
+fromFile:aFileName
+        "Answer a new tool. aFileName is a .BMP file name."
+
+    ^self new fromFile:aFileName!
+ 
+new
+
+    ^super new initialize!
+   
+fromBitmap: aBitmap
+        "Answer a new tool. aFileName is a .BMP file name."
+
+    ^self new fromBitmap: aBitmap! !
+
+
+!Tool methods !
+
+owner
+        "Answer the receiver's owner."
+
+    ^owner!
+   
+rectangle
+        "Private - Answer the receiver's rectangle."
+
+    ^rectangle!
+   
+selector
+    "Answer the receiver's selector."
+
+    ^selector!
+
+fromBitmap: aBitmap
+        "Set the receiver's bitmap."
+    bitmap := aBitmap!
+
+displayToolDownWith: aPen
+        "Private - Display the tool down bitmap with aPen."
+
+    bitmap isDIB
+        ifTrue:[
+            bitmap
+                displayWith: aPen
+                from: ((Rectangle leftTopUnit right: self extent x) extent: self extent)
+                to: (self rectangle origin extent: self extent)].
+
+    bitmap isBitmap
+        ifTrue:[
+            aPen
+                copyBitmap: bitmap
+                from: ((Rectangle leftTopUnit right: self extent x) extent: self extent)
+                at: self rectangle origin].!
+  
+sysColors
+        "Private - Answer the System colors for push button."
+    ^Dictionary new
+        at: 4 put: WinInfo colorButtonText;
+        at: 8 put: WinInfo colorButtonShadow;
+        at: 9 put: WinInfo colorButtonFace;
+"        at: 16 put: WinInfo colorButtonHighlight;"
+        yourself.!
+  
+displayToolUpWith: aPen
+        "Private - Display the tool up bitmap with aPen."
+
+    bitmap isDIB
+        ifTrue:[
+            bitmap
+                displayWith: aPen
+                from: (Rectangle leftTopUnit extent: self extent)
+                to: (self rectangle origin extent: self extent)].
+
+    bitmap isBitmap
+        ifTrue:[
+            aPen
+                copyBitmap: bitmap
+                from: (Rectangle leftTopUnit extent: self extent)
+                at: self rectangle origin].!
+
+colorChange
+        "Private - Window's colors have changed."
+
+    bitmap isDIB
+        ifTrue:[bitmap colors: self sysColors].!
+
+name: aSymbol
+        "Set the tool name to aSymbol
+         which can be a Symbol or a String."
+
+    name := aSymbol!
+  
+space:anInteger
+        "Set the receiver's offset to anInteger
+        pixel units.
+        An offset specifies the distance between a tool and the previous one."
+
+    space := anInteger!
+ 
+space
+        "Answer the receiver's offset in pixel unit."
+
+    ^space!
+   
+name
+        "Answer the tool name.  Tool's name is established by
+         sending the 'name:' message to the tool."
+
+    ^name!
+ 
+extent:aPoint
+        "Set the receiver's extent."
+
+    extent := aPoint!
+
+extent
+        "Answer the receiver's extent."
+
+    ^extent!
+ 
+defaultExtent
+        "Private - Answer the default height/width of the receiver's tools."
+
+    ^25 @ 22!
+ 
+initialize
+        "Private - Initialize the receiver's instance variable."
+
+    extent := self defaultExtent!
+
+owner:anOwner
+        "Set the receiver's owner."
+
+    owner:=anOwner!
+   
+rectangle:aRectangle
+        "Private - Set the receiver's rectangle."
+
+    rectangle:=aRectangle!
+
+selector:aSymbol
+        "Set the receiver's selector. It can be either
+        aSymbol or a message."
+
+    selector:=aSymbol!
+  
+fromFile:aFileName
+        "Set the receiver's bitmap."
+
+    bitmap := DIB fromFile:aFileName.
+    self colorChange.!
+
+fromModule:aFileName id:bitmapId
+        "Set the receiver's bitmap."
+    bitmap := DIB fromModule:aFileName id: bitmapId.
+    self colorChange.! !

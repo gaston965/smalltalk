@@ -1,0 +1,13 @@
+#include "vwmsgs.h"
+
+STRINGTABLE
+BEGIN
+OutOfMem	"Out of memory - unable to continue."
+NotEnufMem	"Not enough memory to load image!"
+OLVersMismatch	"Object library version mismatch "
+MissingDNU	"doesNotUnderstand: method missing!"
+VMStackOF	"virtual machine stack overflow"
+BogusProcess	"malformed process"
+END
+
+

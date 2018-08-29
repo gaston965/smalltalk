@@ -1,0 +1,62 @@
+This file contains information about user-defined
+primitives not convered in Appendix 4 of the manual.
+
+The files for user-defined primitives are:
+    objects.h - structure definitions for objects       
+    userprim.doc - this file
+    userprim.mac - macros for user-define primitves
+    fixdptrs.h - declarations for fixed pointer objects       
+    libentry.asm - Windows dynamic link library entry routine
+    vwfloat.c - sample user-defined primitives
+    vwfloat   - make file for vwfloat.dll
+    vwfloat.def - definition file for vwfloat.dll
+
+Updating Garbage Collector
+The garbage collector must be updated after every 
+pointer store excluding Character, SmallInteger,
+nil, and Boolean objects. Failure to do so will invalidate
+the garbage collector. The function OldToNewUpdate
+(a function in vwvm20.dll) can be called by your primitive
+to update the garbage collector. To use it, do the following:   
+
+    1) Declare OldToNewUpdate as an import function
+        in your dll definition file ( .DEF ). For example,
+            IMPORTS vwvm20.OldToNewUpdate
+    2) Declare the OldToNewUpdate using:
+            VOID FAR PASCAL OldToNewUpdate( struct object *, struct object * );
+     3) Call OldToNewUpdate after a pointer store.
+            OldToNewUpdate( object1, object2 );
+        where object1 is the object to store into and object2 is
+        is the object being stored. 
+
+The following code fragments illustrate the use of 
+OldToNewUpdate to update the garbage collection. It assumes 
+that you know how to create primitive methods (See Appendix 3).   
+     
+    Smalltalk/V code   
+        | a |
+        a := Array new:4.                     
+        "Call dll function to store 'hello' into first element of array a."
+        MyDllClass store: 'hello' into: a       
+
+    DLL Module
+        #include <windows.h>
+        #include <dos.h>
+        #include <objects.h>
+            ..
+            ..    
+        /* Declaration for OldToNewUpdate */
+        VOID FAR PASCAL OldToNewUpdate( struct object *, struct object * );
+        
+        /*call from Smalltalk/V to store object1 (string 'hello') into 
+          first element of object2 (array a).*/
+        VOID FAR PASCAL storeInto( object1, object2 )
+        struct object *object1, *object2;
+        {
+            object2->value.instanceVar[0] = FP_OFF( object1 );
+            object2->value.instanceVar[1] = FP_SEG( object1 );
+            OldToNewUpdate( object2, object1 );
+        }
+                     
+
+

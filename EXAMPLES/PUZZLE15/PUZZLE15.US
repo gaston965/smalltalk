@@ -1,0 +1,71 @@
+\* 
+    Puzzle15.US: Text resource definition file.
+    Country         - United States
+    Language     - US English
+
+    To translate this file for other languages only change 
+    the text string between the double-quotes ("...").
+*\
+
+
+\************ 
+    Application
+*************\
+STRINGTABLE
+BEGIN
+    ApplicationTitle    "Puzzle"     \*Application window titlebar string*\
+
+    HelpMenuTitle     "&Help"        \*Help menu title and items text*\
+    HelpContents       "&Contents"
+    HelpOn                "&Search for Help on..."
+    HelpForHelp        "&How to Use Help"
+
+    PuzzleMenuTitle    "&Puzzle"        \*Actual application menu string*\
+    PuzzleMenu        "Scramble\Unscramble\New Size...\Colors..."     \*Content of the Puzzle menu*\
+
+    SolvedMessage    "Puzzle Solved!"    \*Message displayed when puzzle is solved*\
+
+    SizeQueryMessage    "Please enter a new size between 2 and 10."    \*Prompter query for new puzzle size*\
+    DefaultSize                "4"    \*Prompter default size*\
+
+    HelpManagerTitle    "Puzzle 15 Help"        \*Help manager titlebar string*\
+    HelpFileName          "examples\puzzle15\puzzle15.hlp"    \*Help file name string*\
+    HelpMapFileName   "examples\puzzle15\helpmap.h"    \*Help mapping id file name string*\
+    VwHelpMapFileName  "examples\puzzle15\vwhelp.h"
+
+    FontFaceName        "Tms Rmn Bold"    \*Name of font used to number the puzzle tiles*\
+
+    CloseConfirm           "Are you sure you want to exit?"
+END
+
+\**************
+    Color dialog 
+***************\
+STRINGTABLE
+BEGIN
+    ColorDialogTitle        "15 Puzzle Color Dialog" \*Color dialog titlebar string*\
+    FaceColorText            "The Face Color"    \*Face color static text*\
+    BorderColorText        "The Border Color"    \*Border color static text*\
+    OkButtonText            "Ok"        \*Ok pushbutton text*\
+    CancelButtonText    "Cancel"    \*Cancel pushbutton text*\ 
+    ColorBlack                 "Black"    \*List of selectable colors*\
+    ColorDarkred            "Darkred"
+    ColorBlue                "Blue"
+    ColorPink                    "Pink"
+    ColorDefault            "Default"
+    ColorDarkgray            "Darkgray"
+    ColorBrown                "Brown"
+    ColorGreen                "Green"
+    ColorYellow                "Yellow"
+    ColorCyan                "Cyan"
+    ColorDarkblue            "Darkblue"
+    ColorWhite                "White"
+    ColorDarkcyan            "Darkcyan"
+    ColorBackground        "Background"
+    ColorDarkgreen        "Darkgreen"
+    ColorNeutral            "Neutral"
+    ColorRed                    "Red"
+    ColorPalegray            "Palegray"
+    ColorDarkpink            "DarkPink"
+    ColorLightgray            "Lightgray"
+END

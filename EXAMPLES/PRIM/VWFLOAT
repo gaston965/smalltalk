@@ -1,0 +1,17 @@
+#================
+# VWFLOAT.DLL make file
+#================
+
+
+all: vwfloat.dll
+
+vwfloat.obj : vwfloat.c objects.h userprim.mac fixdptrs.h
+    cl -c -ALw -Gsw -Os /FPi vwfloat.c
+
+libentry.obj: libentry.asm
+    masm libentry,libentry;
+
+vwfloat.dll : vwfloat.obj libentry.obj vwfloat.def vwfloat
+    link /NOD /NOE vwfloat libentry, vwfloat.dll,,ldllcew WIN87EM libw, vwfloat.def
+    rc -30 vwfloat.dll
+

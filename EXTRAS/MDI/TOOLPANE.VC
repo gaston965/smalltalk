@@ -1,0 +1,117 @@
+Smalltalk at: #HelpStatusPane put: ((Dictionary new)
+add: (Association key: ('ScSize') value: ('Size'));
+add: (Association key: ('mdiCascade') value: ('Arranges windows by overlapping previous window'));
+add: (Association key: ('mdiCloseAll') value: ('Closes all not minimized windows'));
+add: (Association key: ('inspectIt') value: ('Opens an inspector on the result of evaluating the selected text'));
+add: (Association key: ('Walkback') value: ('Resume, Debug'));
+add: (Association key: ('saveAs') value: ('Saves the active TextPane with a new name'));
+add: (Association key: ('Partial File') value: ('Read the entire file'));
+add: (Association key: ('fileItIn') value: ('Compiles and evaluates the selected text (in change log format)'));
+add: (Association key: ('pasteSelection') value: ('Replaces the selection with the Clipboard contents'));
+add: (Association key: ('readEntireFile') value: ('Read all the file now'));
+add: (Association key: ('setPrinterFonts') value: ('Sets the printer fonts'));
+add: (Association key: ('MDIMenu') value: ('Switches to the window containing this document'));
+add: (Association key: ('cutSelection') value: ('Cuts the selection and puts it on the clipboard'));
+add: (Association key: ('mdiTile') value: ('Arranges windows as non-overlapping tiles'));
+add: (Association key: ('debug') value: ('Close the walkback window and open a debugger window on the process'));
+add: (Association key: ('clearSelection') value: ('Removes the selection'));
+add: (Association key: ('print') value: ('Prints the active TextPane or the screen'));
+add: (Association key: ('openProjectBrowser') value: ('Opens another Project Browser'));
+add: (Association key: ('ScRestore') value: ('Restore'));
+add: (Association key: ('ScMove') value: ('Move'));
+add: (Association key: ('accept') value: ('Saves the modified text of the active TextPane'));
+add: (Association key: ('searchHelpOn') value: ('Get Help information by using keywords'));
+add: (Association key: ('openClassBrowser') value: ('Opens another Class Browser'));
+add: (Association key: ('restore') value: ('Restores the active TextPane'));
+add: (Association key: ('openDemo') value: ('Opens the Graphics Demonstration'));
+add: (Association key: ('resume') value: ('Resume the process if resumable'));
+add: (Association key: ('Help') value: ('Get Help'));
+add: (Association key: ('mdiNewWindow') value: ('Opens another window for the active TextPane'));
+add: (Association key: ('again') value: ('Redo the prior find or replace command'));
+add: (Association key: ('MDISysMenu') value: ('Move, size or close document window'));
+add: (Association key: ('saveImage') value: ('Saves the image'));
+add: (Association key: ('openFile') value: ('Opens an existing file'));
+add: (Association key: ('Smalltalk') value: ('Compiles, evaluates, files it in'));
+add: (Association key: ('about') value: ('Displays version and copyright information'));
+add: (Association key: ('ScMaximize') value: ('Maximize'));
+add: (Association key: ('displayHelpForHelp') value: ('Describes how to use Help'));
+add: (Association key: ('ScMinimize') value: ('Minimize'));
+add: (Association key: ('openDiskBrowser') value: ('Opens another Disk Browser'));
+add: (Association key: ('undo') value: ('Reverses the last action'));
+add: (Association key: ('add') value: ('Add a new key to the dictionary by prompting for a new key expression'));
+add: (Association key: ('ScTasklist') value: ('Pops up the task manager'));
+add: (Association key: ('ScClose') value: ('Close'));
+add: (Association key: ('File') value: ('Opens a new workspace, an existing file, a browser'));
+add: (Association key: ('printIt') value: ('Evaluates the selected text and display the result'));
+add: (Association key: ('doIt') value: ('Compiles and executes the selected text'));
+add: (Association key: ('mdiArrange') value: ('Arranges Icons along bottom of Transcript window'));
+add: (Association key: ('install') value: ('Opens a File Dialog to file in a file'));
+add: (Association key: ('Dictionary') value: ('Add, Inspect, Remove'));
+add: (Association key: ('aboutV') value: ('Opens the dialog box about Smalltalk/V'));
+add: (Association key: ('inspectSelection') value: ('Open an Inspector on the value object associated with the selected key'));
+add: (Association key: ('remove') value: ('Remove the selected key from the dictionary'));
+add: (Association key: ('Window') value: ('Rearrange windows or activate specified window'));
+add: (Association key: ('ScNextwindow') value: ('Next Window'));
+add: (Association key: ('zoom') value: ('Zooms the active TextPane'));
+add: (Association key: ('openWorkspace') value: ('Opens another workspace'));
+add: (Association key: ('setFonts') value: ('Sets the listfont, textfont and buttonfont'));
+add: (Association key: ('Edit') value: ('Undo, cut, copy, paste, clear, select all, print, find'));
+add: (Association key: ('copySelection') value: ('Copies the selection and puts it on the clipboard'));
+add: (Association key: ('SysMenu') value: ('Move, size or close application window'));
+add: (Association key: ('displayHelpIndex') value: ('Lists the Help topics'));
+add: (Association key: ('printSelection') value: ('Prints the selected text'));
+add: (Association key: ('selectAll') value: ('Selects the entire text of the TextPane'));
+add: (Association key: ('findReplace') value: ('Finds text and changes it'));yourself).!
+
+Smalltalk at: #HelpClassHierarchyBrowser put: ((Dictionary new)
+add: (Association key: ('assigned') value: ('Display only the methods which assign the selected instance variable'));
+add: (Association key: ('used') value: ('Display only the methods which use and do not assign the selected instance variable'));
+add: (Association key: ('localSenders') value: ('Opens a window with the local senders of the selected method'));
+add: (Association key: ('bothInstVar') value: ('Display only the methods which use the selected instance variable'));
+add: (Association key: ('implementors') value: ('Opens a window with the implementors of the selected method'));
+add: (Association key: ('localImplementors') value: ('Opens a window with the local implementors of the selected method'));
+add: (Association key: ('Variables') value: ('Assigned, Used, Both'));
+add: (Association key: ('fileOut') value: ('Files out the selected class'));
+add: (Association key: ('senders') value: ('Opens a window with the senders of the selected method'));
+add: (Association key: ('removeSubClass') value: ('Deletes the selected class'));
+add: (Association key: ('addSubClass') value: ('Add a subclass to the selected class'));
+add: (Association key: ('newMethod') value: ('Display the text for a new method template in the text pane'));
+add: (Association key: ('hideShow') value: ('Change the hide/show status of the selected class'));
+add: (Association key: ('browse') value: ('Opens a ClassBrowser on the selected class'));
+add: (Association key: ('Methods') value: ('Creates a new method, searches senders, implementors, removes, file out a method'));
+add: (Association key: ('findClass') value: ('Prompts for a class to search for, and position at that point in the hierarchy'));
+add: (Association key: ('Classes') value: ('Adds, Files out, removes, finds, browses the selected class'));
+add: (Association key: ('fileOutMethod') value: ('Files out the selected method to a file named with the method name reduced to 8 characters, extension mth'));
+add: (Association key: ('removeSelector') value: ('Removes the selected method'));
+add: (Association key: ('update') value: ('Recomputes the browsed classes and display them'));
+add: (Association key: ('fileOutWithSubclasses') value: ('Files out the selected class with its subclass'));
+add: (Association key: ('messages') value: ('Opens a Message Browser for the selected class'));yourself).!
+
+
+SubPane subclass: #StatusPane
+  instanceVariableNames: 
+    'justified helpText colors height inset statusBoxes resizable '
+  classVariableNames: ''
+  poolDictionaries: 
+    'WinConstants ColorConstants '!
+
+Object subclass: #StatusBox
+  instanceVariableNames: 
+    'contents width space rectangle state statusPane name '
+  classVariableNames: ''
+  poolDictionaries: 
+    'WinConstants '!
+
+GroupPane subclass: #ToolPane
+  instanceVariableNames: 
+    'buttonState clickState buttonPressed tools height colors toolsBitmap '
+  classVariableNames: ''
+  poolDictionaries: 
+    'WinConstants ColorConstants '!
+
+Object subclass: #Tool
+  instanceVariableNames: 
+    'selector owner rectangle space extent bitmap name '
+  classVariableNames: ''
+  poolDictionaries: 
+    'WinConstants ColorConstants '!

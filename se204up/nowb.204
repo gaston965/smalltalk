@@ -1,0 +1,138 @@
+"make sure classes needed by this package exist"
+#( 
+    DialogTopPane OrderedCollection WinAddress WinDialogInfo 
+    WindowHandle WinLong 
+)
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+
+"Non-WindowBuilder Fixes - Smalltalk Express v2.0.4
+
+    Description:
+
+        This package corrects several base image issues in a Smalltalk Express v2.0.3
+        image that does not contain WindowBuilder and updates the image to v2.0.4.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/7/97
+"!
+
+!DialogTopPane methods !
+ 
+buildItems
+        "Private - Build the control items within
+         the dialog box.  Answer an array of item
+         templates."
+    | answer subpaneStyle rect text|
+    answer := OrderedCollection new.
+    children do: [ :subpane |
+        subpane style isNil ifTrue: [ subpane style: subpane getStyle ].
+        subpane isSubPane ifTrue: [
+            (rect := subpane framingBlock) isContext
+                ifTrue: [ rect := rect value: (0@0 extent: rectangle extent )].
+            text := subpane initialText.
+            text isString ifFalse:[
+                text := nil].
+            answer add:
+                (WinDialogInfo
+                    itemTemplateStyle: subpane style
+                    x: rect left
+                    y: rect top
+                    cx: rect extent x
+                    cy: rect extent y
+                    id: subpane id
+                    className: subpane winClass
+                    text: text).
+            subpane initSize: rect ]].
+    ^answer!
+  
+buildWindow: aParentWindow
+        "Private - Create the dialog window for the receiver."
+    | winDlgTemplate items winDlgFontInfo tempByteArray m pDlgTemplate |
+
+    style isNil ifTrue: [ style := self getStyle ].
+    framingBlock isNil
+        ifTrue: [
+            rectangle := self initSize.
+            framingBlock := rectangle]
+        ifFalse: [rectangle := framingBlock value: parent rectangle].
+
+    NewWindow notNil ifTrue: [
+        NewWindow := nil.
+        Terminal bell.
+        ^self ].
+    winDlgTemplate := WinDialogInfo
+        dialogTemplateStyle: style
+        itemCount: 0
+        x: rectangle origin x
+        y: rectangle origin y
+        cx: rectangle extent x
+        cy: rectangle extent y
+        menuName: nil
+        className: nil
+        text: label.
+    winDlgFontInfo := WinDialogInfo         "not used yet"
+        fontPointSize: 0 typeFaceName: nil.
+    items := self buildItems.
+    winDlgTemplate byteAtOffset: 4 put: items size.
+    tempByteArray := winDlgTemplate contents.
+    items do: [ :i |
+        tempByteArray := tempByteArray, i contents ].
+    winDlgTemplate contents: tempByteArray.
+
+    pDlgTemplate := WinAddress copyToNonSmalltalkMemory: winDlgTemplate contents.
+    handle := WindowHandle fromInteger: (
+        UserLibrary
+            createDialogIndirect: WIN hInstanceExe
+            dialogTemplate: pDlgTemplate asParameter
+            parent: parent asParameter
+            dialogFunction:
+                (WinLong fromBytes: DialogProcInstance) asParameter).
+    pDlgTemplate free.
+
+    handle = NullHandle ifTrue: [^self error: 'Dialog creation error'].
+    self initGraphics.
+    self receiveMessages.
+    NewWindow := nil.
+    self buildDialogItems.
+    children do: [ :subpane | subpane validate ].
+
+    m := UserLibrary
+            getSystemMenu: self asParameter
+            revert: 0.
+    self propertyAt: #sysMenu put: m.
+    PoppedModelessWindows add: handle.
+    self showWindow.! !
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.0.4 Non-WindowBuilder Fixes'.
+package makeCurrent;
+    organize: DialogTopPane methodsFor: '' include: #( 
+        buildItems buildWindow: 
+    );
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'NOWB.204';
+    comments:
+'"Non-WindowBuilder Fixes - Smalltalk Express v2.0.4
+
+    Description:
+
+        This package corrects several base image issues in a Smalltalk Express v2.0.3
+        image that does not contain WindowBuilder and updates the image to v2.0.4.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/7/97
+"';
+    fileTime: ( Time fromSeconds: 79668 )
+          on: ( Date fromDays: 35131 );
+    takeCurrent;
+    yourself   !

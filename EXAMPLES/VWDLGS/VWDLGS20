@@ -1,0 +1,29 @@
+# Standard Windows make file.  The utility MAKE.EXE compares the
+# creation date of the file to the left of the colon with the file(s)
+# to the right of the colon.  If the file(s) on the right are newer
+# then the file on the left, Make will execute all of the command lines
+# following this line that are indented by at least one tab or space.
+# Any valid MS-DOS command line may be used.
+
+# This line allows NMAKE to work as well
+
+all: vwdlgs20.dll
+
+# Update the resource if necessary
+
+# Update the object file if necessary
+
+vwdlgs20.obj: vwdlgs20.c
+    cl -c -AS -Gsw -Oas -Zpe vwdlgs20.c
+
+# Update the executable file if necessary, and if so, add the resource back in.
+
+vwdlgs20.dll: vwdlgs20.obj 
+    link /NOD vwdlgs20 libentry, vwdlgs20.dll /align:16, NUL, libw sdllcew,vwdlgs20.def
+    rc -30 vwdlgs20.rc vwdlgs20.dll
+
+# If the .res file is new and the .exe file is not, update the resource.
+# Note that the .rc file can be updated without having to either 
+# compile or link the file.
+
+

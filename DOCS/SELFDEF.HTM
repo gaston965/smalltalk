@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>Smalltalk proxies</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00FFFF" alink="#FF0000">
+<h1 align=center>Automatic Creation of Smalltalk 
+<a name="top">Proxies</a></h1>
+<hr>
+<h2>SelfDefinedStructure </h2>
+<pre>Until now, whenever you come across a C struct for which there is not 
+already a subclass of WinStructure, you must add one and implement a 
+set-and-get method for each field of the struct.  SelfDefinedStructures 
+allows you to have an instance of WinStructure that corresponds to a 
+C struct but does not require an entirely new Smalltalk class.  A 
+SelfDefinedStructure will respond to messages for setting and getting 
+the fields of the struct, even though no such methods exist in the image.</pre>
+<pre>A generic WinStructure is defined by sending the message#define:
+withFields: to class SelfDefinedStruct, passing in the name of
+the struct and a dictionary which defines the fields of the struct.
+This is done once, when a project is filed in, for example.</pre>
+<pre>An instance of a SelfDefinedStructure is created by sending the
+message #named: to class SelfDefinedStructure, passing in the name
+of the struct (as defined in #define:withFields:).  This instance
+can then be sent messages to get and set the fields of the struct,
+just as if there were an entire subclass of WinStructure.</pre>
+<pre>An example of a SelfDefinedStructure is OPENFILENAME structure
+which is used to support FileDialog class.</pre>
+<pre>Here's the definition of OPENFILENAME from commdlg.h included with
+Windows 3.1 Development kit.</pre>
+<pre>typedef struct tagOFN
+    {
+    DWORD   lStructSize;
+    HWND    hwndOwner;
+    HANDLE  hInstance;
+    LPSTR   lpstrFilter;
+    LPSTR   lpstrCustomFilter;
+    DWORD   nMaxCustFilter;
+    DWORD   nFilterIndex;
+    LPSTR   lpstrFile;
+    DWORD   nMaxFile;
+    LPSTR   lpstrFileTitle;
+    DWORD   nMaxFileTitle;
+    LPSTR   lpstrInitialDir;
+    LPSTR   lpstrTitle;
+    DWORD   Flags;
+    WORD    nFileOffset;
+    WORD    nFileExtension;
+    LPSTR   lpstrDefExt;
+    DWORD   lCustData;
+    BOOL (FAR PASCAL *lpfnHook)(HWND, unsigned, WORD, LONG);
+    LPSTR   lpTemplateName;
+    }   OPENFILENAME;
+typedef OPENFILENAME  FAR * LPOPENFILENAME;</pre>
+<pre>First define the structure with an expression like this one:</pre>
+<pre>|d|
+d := Dictionary new.
+d
+    at: #lStructSize put: #(0 ulong yourself);
+    at: #hwndOwner put: #(4 ushort yourself);
+    at: #hInstance put: #(6 ushort yourself);
+    at: #lpstrFilter put: #(8 4 asWinAddress);
+    at: #lpstrCustomFilter put: #(12 4 asWinAddress);
+    at: #nMaxCustFilter put: #(16 ulong yourself);
+    at: #nFilterIndex put: #(20 ulong yourself);
+    at: #lpstrFile put: #(24 4 asWinAddress);
+    at: #nMaxFile put: #(28 ulong yourself);
+    at: #lpstrFileTitle put: #(32 4 asWinAddress);
+    at: #nMaxFileTitle put: #(36 ulong yourself);
+    at: #lpstrInitialDir put: #(40 4 asWinAddress);
+    at: #lpstrTitle put: #(44 4 asWinAddress);
+    at: #flags put: #(48 ulong yourself);
+    at: #nFileOffset put: #(52 ushort yourself);
+    at: #nFileExtension put: #(54 ushort yourself);
+    at: #lpstrDefExt put: #(56 4 asWinAddress);
+    at: #lCustData put: #(60 ulong yourself);
+    at: #lpfnHook put: #(64 4 asWinAddress);
+    at: #lpstrTemplateName put: #(68 4 asWinAddress).
+SelfDefinedStructure define: 'OPENFILENAME' withFields: d.</pre>
+<pre>The first a:put: above indicates there is a field named #lStructSize at offset
+0 which is an unsigned long.  When retrieving this field, the value will be
+sent the message #yourself before it is returned.  Since a ulong field will
+always be a Smalltalk Integer (that is, WinStruct&gt;&gt;uShortAtOffset: always
+answers an Integer), #yourself simply answers that Integer.</pre>
+<pre>You would evaluate this expression once and save the image (This has
+already been done in the base image).  WinStructure has a class variable
+that keeps all the defined structs.</pre>
+<pre>Then to create an instance of OPENFILENAME struct:
+    openFileName := SelfDefinedStructure named: 'OPENFILENAME'.</pre>
+<pre>The structure can now be sent the following messages (even though
+there are no methods in the system with these selectors):</pre>
+<pre>    Message                       Description</pre>
+<pre>    lStructSize                   Answers the length of the structure in bytes
+    hwndOwner                 Answers the windows that owns the dialog box.
+    hInstance                    Answers  a instance handle that has the dialog
+                                            box template.
+    lpstrFilter                    Points to a buffer containing pairs of null-terminated
+                                            filter strings.
+    . . .                               . . .
+    . . .                               . . .</pre>
+<pre>Note that the implementation of SelfDefinedStructure uses the doesNotUnderstand
+mechanism of Smalltalk/V and is therefore slightly slower in accessing fields
+than using the &quot;traditional&quot; mechanism of creating a subclass of WinStructure
+with methods for getting and setting the fields.</pre>
+<pre>For SelfDefinedStructure, we are following the naming convention of the
+structure found in the native environment (i.e. common dialog's
+OPENFILENAME structure is named OPENFILENAME in the Smalltalk
+environment).</pre>
+<hr>
+<p><a href="#top">[top]</a> <a href="index.htm">[index]</a></p>
+</body>
+
+</html>

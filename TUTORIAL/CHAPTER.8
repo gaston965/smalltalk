@@ -1,0 +1,52 @@
+TUTORIAL EXAMPLES FOR CHAPTER 8 - DEBUGGING
+
+"A Document Retrieval System"
+
+"Evaluate the following with Do it."
+
+    (File pathName: 'tutorial\wrdindx8.st') fileIn; close
+
+
+"Debugging Class WordIndex"
+
+"Evaluate the following with Do it."
+
+    Index := WordIndex new initialize  
+ 
+
+"Evaluate the following with Do it"
+
+    Index addDocument: 'tutorial\chapter.5'.
+    Index addDocument: 'tutorial\chapter.6'. 
+
+
+"Replace the addWord:for: method with the following:"
+
+addWord: wordString for: pathName
+        "Add wordString to words dictionary for
+        document described by pathName."
+    (words includesKey: wordString)
+        ifFalse: [words at: wordString put: Set new].
+    (words at: wordString) add: pathName    
+                             
+
+"Evaluate the following with Show it."
+
+    Index locateDocuments: #('show' 'class')      
+            
+
+"Evaluate each of the following with Show it."
+
+    Index locateDocuments: #( 'where' 'the' 'turtle')     
+                                     
+    Index locateDocuments: #( 'each' 'talk')              
+                       
+
+"Hop, Skip and Jump"
+
+"Evaluate the following with Show it."
+    
+    self halt.
+    Index locateDocuments: #( 'each' 'talk')    
+
+ 

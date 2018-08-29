@@ -1,0 +1,463 @@
+"make sure classes needed by this package exist"
+#( 
+    AboutDialog ApplicationWindow Bitmap Button ByteArray DialogTopPane 
+    GDIDLL GraphPane GroupPane Object StaticText SubPane SystemDictionary 
+    ViewManager WinAddress WinBitmapInfo WinBitmapInfoHeader 
+    Window 
+)
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+
+"Base Image Fixes - Smalltalk Express v2.0.4
+
+    Description:
+
+        This package corrects several base image issues in Smalltalk Express v2.0.3
+        updates the image to v2.0.4.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/10/97
+
+    Details:
+
+        *  Missing #isDialogTopPane method.
+
+        *  Corrected handling of large bitmaps by copying bits to/from external memory
+            when calling GDI bitmap functions. This works around Win16 size limitation
+            in directly passed structs.
+"!
+
+!AboutDialog methods !
+   
+open
+        "Open a dialog box telling about Smalltalk/V."
+    | lineHeight |
+    self
+        label: 'About'.
+
+    lineHeight := 8.
+    self addSubpane:
+        (StaticText new
+            centered;
+            contents: 'Smalltalk Express v', Smalltalk version;
+            framingBlock: [:box |
+                (box leftTop down: lineHeight)
+                    extentFromLeftTop: box width @ lineHeight ] ).
+
+    self addSubpane:
+        (StaticText new centered;
+            contents: '(c) Copyright ParcPlace-Digitalk Inc. 1992-1996';
+            framingBlock: [:box |  (box leftTop down: lineHeight * 3)
+                    extentFromLeftTop: box width @ lineHeight ] ).
+
+    self addSubpane:
+        (StaticText new centered;
+            contents: 'All rights reserved';
+            framingBlock: [:box | (box leftTop down: lineHeight * 4)
+                    extentFromLeftTop: box width @ lineHeight ] ).
+
+    self addSubpane:
+        (StaticText new centered;
+            contents: '999 East Arques Ave.';
+            framingBlock: [:box | (box leftTop down: lineHeight * 6)
+                    extentFromLeftTop: box width @ lineHeight ] ).
+
+    self addSubpane:
+        (StaticText new centered;
+            contents: 'Sunnyvale, CA 94086-4593';
+            framingBlock: [:box | (box leftTop down: lineHeight * 7)
+                    extentFromLeftTop: box width @ lineHeight ] ).
+
+    self addSubpane:
+        (StaticText new centered;
+            contents: 'www.parcplace.com';
+            framingBlock: [:box | (box leftTop down: lineHeight * 8)
+                    extentFromLeftTop: box width @ lineHeight ] ).
+
+    self addSubpane:
+        (StaticText new centered;
+            contents: 'Smalltalk Express is a trademark';
+            framingBlock: [:box | (box leftTop down: lineHeight * 12)
+                    extentFromLeftTop: box width @ lineHeight ] ).
+
+    self addSubpane:
+        (StaticText new centered;
+            contents: 'of ParcPlace-Digitalk Inc.';
+            framingBlock: [:box | (box leftTop down: lineHeight * 13)
+                    extentFromLeftTop: box width @ lineHeight ] ).
+
+    self addSubpane:
+        (Button new defaultPushButton;
+            idOK;
+            contents: 'OK';
+            when: #clicked perform: #ok:;
+            framingBlock: [:box | (box leftTop rightAndDown:
+                        (box width - 35) // 2 @ (lineHeight * 19 // 2))
+                    extentFromLeftTop: 35 @ (lineHeight * 2)] ).
+
+    self openWindow! !
+
+!ApplicationWindow methods !
+ 
+buildWindow
+        "Private - Create the host window for the receiver."
+    |m|
+    style isNil ifTrue: [ style := self getStyle ].
+    NewWindow notNil ifTrue:[NewWindow := nil.  Terminal bell.^self].   "A Walkback came up during creation of window"
+    NewWindow := self.
+    self create: self winClass
+        title: label
+        style: style
+        rectangle: (0@0 extent: 0@0)
+        parent: parent.
+    NewWindow := nil.
+
+    handle = NullHandle ifTrue: [^nil].
+
+    "menu and subpanes created in the wmCreate message process"
+
+    "Set the size of the frame window."
+    self handle setWindowPos: nil
+            rectangle: rectangle
+            fs: SwpNozorder.
+    rectangle := self rectangle.
+
+    m := UserLibrary
+            getSystemMenu: self asParameter
+            revert: 0.
+    self propertyAt: #sysMenu put: m.
+
+    self activeTextPane: self searchForDefaultTextPane.!
+ 
+getStyle
+        "Answer the initial style of the receiver, composed of
+       its basicStyle and its defaultStyle."
+    ^self defaultFrameStyle! !
+
+!Bitmap class methods !
+   
+createDIBitmap: hDC
+    bitmapInfo: bitmapInfo
+    init: initFlag
+    bits: bits
+    usage: usageFlag
+        "Private - call the CreateDIBitmap API."
+    | hBitmap bitmapInfoHeader bitsAddr |
+    bitmapInfoHeader := WinBitmapInfoHeader
+        width: bitmapInfo width
+        height: bitmapInfo height
+        planes: bitmapInfo planes
+        bitCount: bitmapInfo bitCount.
+    "Modified by DMZ, OSI 3/10/97 to copy bits into external memory before
+    calling CreateDIBitmap api. This works around Win16 size limitation in
+    directly passed structs."
+    #modifiedByOSI.
+    bitsAddr := WinAddress copyToNonSmalltalkMemory: bits.
+    hBitmap := GDILibrary
+        createDIBitmap: hDC
+        infoHeader: bitmapInfoHeader asParameter
+        dwUsage: initFlag
+        initBits: bitsAddr asParameter
+        initInfo: bitmapInfo asParameter
+        wUsage: usageFlag.
+    bitsAddr unlockAndFree.
+    hBitmap = 0
+            ifTrue: [ ^self osError ].
+    ^hBitmap! !
+
+!Bitmap methods !
+   
+getDIBits
+        "Answer a ByteArray which contains the bits
+         of the receiver in device independent format."
+    | bits bytes hPrevious hdc extraBytes tmpBitmapInfo bitsAddr |
+    self validate.      "make sure handle is valid."
+    (hdc := UserLibrary getDC: nil) = 0
+        ifTrue: [ ^self osError ].
+    palette == nil ifFalse: [
+        hPrevious := UserLibrary
+            selectPalette: hdc
+            with: palette asParameter
+            forceBackground: false.
+        UserLibrary realizePalette: hdc ].
+
+    "Following fix courtesy Ed Shirk - If an 8 bit bitmap has a color table with
+    fewer than 256 entries and getDIBits is called, Windows writes the full
+    256 entries.  This exceeds the size of the ByteArray pointed to by bitmapInfo.
+    Object memory is overwritten and VWIN crashes instantly. The fix is to ensure
+    that there is sufficient space."
+    tmpBitmapInfo := bitmapInfo.
+    bitmapInfo bitCount = 8 ifTrue:
+        [ extraBytes := 1024 - bitmapInfo colorTable size .
+        extraBytes > 0
+            ifTrue: [ tmpBitmapInfo := WinBitmapInfo fromBytes: ( bitmapInfo contents, (ByteArray new: extraBytes) ) ] ].
+
+    "call GetDIBits with nil to fill in the rest of bitmapInfo."
+    GDILibrary
+        getDIBits: hdc
+        hBitmap: self handle
+        startScan: 0
+        scans: self height
+        bits: nil
+        bitsInfo: tmpBitmapInfo asParameter
+        wUsage: DibRgbColors.
+
+    "Modified by DMZ, OSI 3/10/97 to have getDIBits api copy bits into
+    external memory. This works around Win16 size limitation in directly
+    passed structs."
+    bytes := self sizeInBytes.
+    bitsAddr := WinAddress allocateMemory: bytes.
+    GDILibrary getDIBits: hdc
+        hBitmap: self handle
+        startScan: 0
+        scans: self height
+        bits: bitsAddr asParameter
+        bitsInfo: tmpBitmapInfo asParameter
+        wUsage: DibRgbColors.
+    bits := ByteArray new: bytes.
+    WinAddress copyFrom: bitsAddr to: bits count: bytes.
+    bitsAddr unlockAndFree.
+
+    palette  == nil ifFalse: [
+        UserLibrary
+            selectPalette: hdc
+            with: hPrevious
+            forceBackground: false ].
+    UserLibrary releaseDC: nil with: hdc.
+    self bitmapInfo: tmpBitmapInfo.
+    ^bits! !
+
+!DialogTopPane methods !
+  
+buildDialogItems
+        "Private - Build the control items."
+    children do: [ :subpane |
+        subpane isSubPane ifTrue: [
+            subpane buildDialogItem: handle ]].!
+
+isDialogTopPane
+        "Answer whether the receiver is a kind of DialogTopPane."
+    ^true! !
+
+!GraphPane class methods !
+  
+openWindow: aTitleString extent: aPoint
+        "Create a new window titled aTitleString and initial
+          extent aPoint with a single GraphPane. Answer the
+          GraphPane."
+    | g w |
+    w := ViewManager new.
+    "Setting the style with WsClipchildren so that contents won't be
+      erased prematurely during the use of Turtle Graphics."
+    w    label: aTitleString;
+          style:  w mainView getStyle | WsClipchildren;
+          addSubpane: (g := self new
+                   framingRatio: (0 @ 0 extent: 1 @ 1)).
+     w mainView openIn: (w mainView boxOfSize: aPoint).
+    ^g! !
+
+!GroupPane methods !
+   
+defaultStyle
+        "Private - Answer an Integer with appropriate styles in it."
+    ^WsBorder | WsClipsiblings! !
+
+!Object methods !
+  
+isDialogTopPane
+        "Answer whether the receiver is a kind of DialogTopPane."
+    ^false!
+ 
+isSubPane
+        "Answer whether the receiver is a kind of SubPane."
+    ^false! !
+
+!SubPane methods !
+ 
+buildWindow: parentWindow
+        "Private - Create the window for the receiver
+         using parentWindow as the parent."
+    | ps |
+    style isNil ifTrue: [ style := self getStyle].
+    self create: self winClass
+        title: self initialText
+        style:  style
+        rectangle: (0@0 extent: 0@0)
+        parent: self parent.
+    handle = NullHandle ifTrue: [^nil].
+    curFont isNil ifTrue: [curFont := self defaultFont].
+    self initGraphics.
+    self receiveMessages.
+    children size ~= 0
+        ifTrue: [
+            children do: [:each |
+                (each buildWindow: self) isNil ifTrue:[self close.^nil]]]!
+   
+defaultStyle
+        "Private - Answer an Integer with appropriate styles in it."
+    ^WsBorder |
+        WsHscroll |
+        WsVscroll |
+        WsClipsiblings!
+  
+isSubPane
+        "Answer whether the receiver is a kind of SubPane."
+    ^true! !
+
+!SystemDictionary methods !
+ 
+version
+        "Answer the version number as a string"
+    ^'2.0.4'! !
+
+!Window class methods !
+
+disablePaletteMessages
+    " Window disablePaletteMessages "
+    WinEvents at:783 put:  nil.
+    WinEvents at:784 put:  nil.
+    WinEvents at:785 put:  nil!
+
+enablePaletteMessages
+    " Window enablePaletteMessages "
+    ( GDIDLL canUnderstand: #updateColors: ) ifFalse: [ ^self error: 'Better not do this' ].
+    ( self canUnderstand: #wmQuerynewpalette:with: )
+        ifTrue: [ WinEvents at:783 put:  #wmQuerynewpalette:with: ].
+    ( self canUnderstand: #wmPaletteischanging:with: )
+        ifTrue: [ WinEvents at:784 put:  #wmPaletteischanging:with: ].
+    ( self canUnderstand: #wmPalettechanged:with: )
+        ifTrue: [ WinEvents at:785 put:  #wmPalettechanged:with: ]! !
+
+!Window methods !
+  
+addStyle: styleBits
+        "Private - if style is nil, initialize it appropriately:
+         if #noDefaultStyle was previously sent to the receiver,
+         set it to 0, otherwise set it to defaultStyle; then add the
+         given style bits to the flag.  Answer the added styleBits."
+    style isNil ifTrue: [ style := self getStyle ].
+    style := style | styleBits.
+    ^style!
+  
+basicStyle
+        "Private - Answer the basic host window style for the receiver."
+    ^WsVisible!
+   
+defaultStyle
+        "Private - Answer the specific style flags which
+         define special characteristics of this window;
+         usually reimplemented in subclasses."
+    ^0!
+
+getStyle
+        "Answer the initial style of the receiver, composed of
+       its basicStyle and its defaultStyle."
+    ^self basicStyle | self defaultStyle!
+   
+hasStyle: aStyle
+        "Answer whether the receiver has the specified bits set in
+        its style flag."
+    | flags |
+    flags := style isNil ifTrue: [ self getStyle ] ifFalse: [ style ].
+    ^( flags bitAnd: aStyle ) = aStyle!
+  
+hideWindow
+        "Make the receiver invisible."
+    self frameWindow removeStyle: WsVisible.
+    self isHandleOk ifTrue: [ self frameWindow handle hideWindow ]!
+   
+isHidden
+       "Answer whether the receiver is hidden."
+    ^( self frameWindow hasStyle: WsVisible ) not!
+   
+removeStyle: styleBits
+        "Private - if style is nil, initialize it appropriately:
+         if #noDefaultStyle was previously sent to the receiver,
+         set it to 0, otherwise set it to defaultStyle; then remove
+         the given style bits from the flag.  Answer the removed
+         styleBits."
+    | mask |
+    style isNil ifTrue: [ style := self getStyle ].
+    mask := styleBits bitXor: 16rFFFFFFFF.
+    style := style bitAnd: mask.
+    ^styleBits!
+   
+showWindow
+        "Make the receiver visible."
+    self frameWindow addStyle: WsVisible.
+    self isHandleOk ifTrue: [ self frameWindow handle showWindow ]! !
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.0.4 Base Image Fixes'.
+package makeCurrent;
+    organize: AboutDialog methodsFor: '' include: #( 
+        open 
+    );
+    organize: ApplicationWindow methodsFor: '' include: #( 
+        buildWindow getStyle 
+    );
+    organize: Bitmap class methodsFor: '' include: #( 
+        createDIBitmap:bitmapInfo:init:bits:usage: 
+    );
+    organize: Bitmap methodsFor: '' include: #( 
+        getDIBits 
+    );
+    organize: DialogTopPane methodsFor: '' include: #( 
+        buildDialogItems isDialogTopPane 
+    );
+    organize: GraphPane class methodsFor: '' include: #( 
+        openWindow:extent: 
+    );
+    organize: GroupPane methodsFor: '' include: #( 
+        defaultStyle 
+    );
+    organize: Object methodsFor: '' include: #( 
+        isDialogTopPane isSubPane 
+    );
+    organize: SubPane methodsFor: '' include: #( 
+        buildWindow: defaultStyle isSubPane 
+    );
+    organize: SystemDictionary methodsFor: '' include: #( 
+        version 
+    );
+    organize: Window class methodsFor: '' include: #( 
+        disablePaletteMessages enablePaletteMessages 
+    );
+    organize: Window methodsFor: '' include: #( 
+        addStyle: basicStyle defaultStyle getStyle hasStyle: 
+        hideWindow isHidden removeStyle: showWindow 
+    );
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'BASEIMG.204';
+    comments:
+'"Base Image Fixes - Smalltalk Express v2.0.4
+
+    Description:
+
+        This package corrects several base image issues in Smalltalk Express v2.0.3
+        updates the image to v2.0.4.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/10/97
+
+    Details:
+
+        *  Missing #isDialogTopPane method.
+
+        *  Corrected handling of large bitmaps by copying bits to/from external memory
+            when calling GDI bitmap functions. This works around Win16 size limitation
+            in directly passed structs.
+"';
+    fileTime: ( Time fromSeconds: 37752 )
+          on: ( Date fromDays: 35132 );
+    takeCurrent;
+    yourself !

@@ -1,0 +1,126 @@
+| prod multiplicando multiplicador |
+
+multiplicando:= (Prompter prompt:'ingrese multiplicando' default:'' ) asInteger.
+multiplicador:= (Prompter prompt:'ingrese multiplicando' default:'' ) asInteger.
+
+
+   prod:=0.
+1 to: (multiplicador) do:[:i| prod:= prod + multiplicando.].
+
+MessageBox message:'el resultado es: ', prod asString.
+
+                                                     
+| divisor dividendo cociente resto |
+
+dividendo:= (Prompter prompt:'ingrese divisor' default:'') asInteger.
+divisor:=(Prompter prompt:'ingrese dividendo' default:'')asInteger.
+
+resto:=0.
+[ dividendo >= divisor] whileTrue:[
+
+                                          dividendo:=dividendo - divisor.
+                                          resto:= resto + 1.
+                                       ].
+MessageBox message:'el cociente es', resto asString , ' resto es ', dividendo asString.  
+
+----------------------------------------------------------------------------------------------------------------------------------------------  
+
+| base potencia mult|
+
+base:=(Prompter prompt:'ingrese base' default:'') asInteger.
+potencia:= (Prompter prompt:'ingrese potencia' default:'') asInteger.
+
+mult:=1.
+
+1 to: potencia do:[:i| mult:=mult*base.].
+
+MessageBox message:' la potencia es ' , mult asString.
+                                                                                             
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+| sum numero determinar |
+
+numero:=(Prompter prompt:'ingrese un numero para determinar si es primo o no es primo' default:'') asInteger.
+
+sum:=0.
+1 to:(numero) do:[:i|  determinar:= (numero \\ i). (determinar=0) ifTrue:[ sum:= sum + 1.].].
+                                                 (sum=2) ifTrue:[MessageBox message:'el numero  ',numero asString , 'es primo']
+                                                               ifFalse:[MessageBox message:'el numero ', numero asString, 'no es primo'].       
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+| sum numero determinar |
+
+numero:=(Prompter prompt:'ingrese un numero para determinar si es par o no es impar' default:'') asInteger.
+
+
+determinar:= (numero \\ 2).
+                                                 (determinar=0) ifTrue:[MessageBox message:'el numero  ',numero asString , 'es par']
+                                                               ifFalse:[MessageBox message:'el numero ', numero asString, ' es impar'].
+                                                                                                                                                                                           
+
+------------------------------------------------------------------------------------------------------------
+
+ | numero determinar |
+
+ numero:= (Prompter prompt:'Ingrese un numero ' default:'') asInteger.
+
+ 1 to: (numero) do:[:i| determinar:= (numero \\ i). (determinar=0) ifTrue:[ MessageBox message:'el numero ', i asString, ' es multiplo de ', numero asString]. ].                                            
+                                                                                                                                                                                              
+----------------------------------------------------------------------------------------------------------------------
+
+| a numero |
+
+ a:= #( 0 0 0 0 ).
+
+
+  [numero ~= 600000 ] whileTrue:[
+
+
+                                                      numero:=(Prompter prompt:'ingrese un numero ' default:'' )asInteger.
+
+                                                    (( numero \\ 2)=0) ifTrue:[a at:1put:((a at:1)+1)].
+                                                      (( numero \\ 3)=0) ifTrue:[a at:2 put:((a at:2)+1)].
+                                                       (( numero \\ 5)=0) ifTrue:[a at:3 put:((a at:3)+1)].
+                                                         (( numero \\ 7)=0) ifTrue:[a at:4 put:((a at:4)+1)].
+                                                                    
+                                                            numero:=(Prompter prompt:'para salir oprima 600000 ' default:'' )asInteger. 
+
+                                                    ].
+
+MessageBox message:'la cantidad de multiplos de 2 son :', (a at:1) asString,
+                                       'la cantidad de multiplos de 3 son :',(a at:2) asString,
+                                       'la cantidad de multiplos de 5 son :',(a at:3) asString,
+                                        'la cantidad de multiplos de 7 son :',(a at:4) asString. 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+| ingreso determinar |
+
+ ingreso:= (Prompter prompt:'ingrese un numero para determinar si es un perfecto (? ' default:'' ) asInteger.
+      determinar:=0.
+1 to: (ingreso) do:[:i| ((ingreso \\ i )=0) ifTrue:[ determinar:= determinar + i] .].        
+
+ (determinar=ingreso) ifTrue:[ MessageBox message:'decir que el numero ', ingreso asString, ' es Verdadero' ]
+                                    ifFalse:[ MessageBox message:'decir que el numero ', ingreso asString, ' es Falso' ].  
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+                                    
+    | ingreso determinar ingreso2 |
+
+ ingreso:= (Prompter prompt:'ingrese un numero para determinar si es amigo con otro (? ' default:'' ) asInteger. 
+  ingreso2:= (Prompter prompt:'ingrese un numero para determinar si es amigo con el anterior (? ' default:'' ) asInteger. 
+      determinar:=0.
+1 to: (ingreso) do:[:i| ((ingreso \\ i )=0) ifTrue:[ determinar:= determinar + i] .].
+
+ (determinar=ingreso2) ifTrue:[ MessageBox message:'los numeros ', ingreso asString, ' y', ingreso2 asString, 'son amigos' ]
+                                      ifFalse:[ MessageBox message:'los numeros ', ingreso asString, 'y', ingreso2 asString, 'no son amigos' ].                                                           
+
+                                                
+                          
+                                                                                        
+
+                                    

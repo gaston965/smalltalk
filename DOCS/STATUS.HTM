@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>The Status Pane Widgets</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00FFFF" alink="#FF0000">
+<h1 align=center><a name="top"><font color="#0000FF">StatusPane</font></a></h1>
+<hr>
+<pre>The StatusPane class is a Subpane that always appears at the lower
+portion of the TopPane.   </pre>
+<pre>StatusPane (along with ToolPane and MDI) can be installed by filing in
+&quot;mdi.st&quot; in the extras\mdi subdirectory.  In Smalltalk Express, these classes have already been installed.</pre>
+<pre>StatusPane has two major functions:</pre>
+<pre>1. Display information reflecting the states of the application.</pre>
+<pre>2. Show hints when the user highlights a menuitem or clicks on a 
+button of a ToolPane.</pre>
+<pre>StatusPane uses a helper class called StatusBox. StatusPane handles
+a collection of StatusBox objects. A StatusBox object appears as a small 
+box with a 3D effect.</pre>
+<pre>StatusPane can be leftJustified or rightJustifed, fixedSize or resizable. 
+The default style is leftJustified and resizable.</pre>
+<pre>An application may also assign preview help for menu items through the 
+StatusPane.  The help text for each menu item and menu title is given by 
+the menu owner by responding to the statusPaneHelp: message.  The 
+parameter of the statusPaneHelp: method may be one of following:</pre>
+<pre>1. If the preview help is for a menu item, the parameter is the selector 
+of the highlighted menu item represented as a string. </pre>
+<pre>2. If the preview help is for a menu, the parameter is the title of the 
+highlighted menu represented as a string.</pre>
+<pre>Each application (ViewManager subclass) typically
+ </pre>
+<pre>- defines a dictionary, the key being the menu selectors, and the value 
+being the text of the hints.</pre>
+<pre>- reimplements the statusPaneHelp method as in the following:</pre>
+<pre>ViewManagerApplication&gt;&gt;statusPaneHelp:aKey
+    &quot;Private - Answer the hint text to the StatusPane&quot;
+    ^HelpDictionary at:aKey ifAbsent:[^super statusPaneHelp:aKey].</pre>
+<pre>The StatusPane has a default framingBlock, and therefore you do not need to
+specify it. The application usually sets the height. The default height is the 
+height of the caption bar.</pre>
+<pre>StatusPane Programming Interface
+===========================</pre>
+<pre>contents
+        &quot;Answer the receiver's contents, i.e., a collection of statusBox 	objects.&quot;</pre>
+<pre>contents: aStatusBoxCollection
+        &quot;Set the receiver's contents.&quot;</pre>
+<pre>fixedSize
+        &quot;Set the StatusPane style. The StatusPane boxes will be fixed size.&quot;</pre>
+<pre>height
+        &quot;Answer the receiver's height.&quot;</pre>
+<pre>height:anInteger
+        &quot;Set the receiver's height.&quot;</pre>
+<pre>inset
+        &quot;Answer the receiver's inset.
+        The height of a StatusBox is the height
+        of the statusPane minus two times the inset.&quot;</pre>
+<pre>inset: anInteger
+        &quot;Set the receiver's inset.
+        The height of a StatusBox is the height
+        of the statusPane minus two times the inset.&quot;</pre>
+<pre>isStatusPane
+        &quot;Answer true if receiver is an instance of class
+         StatusPane, else answer false.&quot;</pre>
+<pre>leftJustified
+        &quot;Set the StatusPane style. The StatusPane boxes will be 
+          leftJustified.&quot;</pre>
+<pre>resizable
+        &quot;Set the StatusPane style. The left-most status box in a 
+         rightJustified statusPane will be resizable. The right-most status 
+         box in a left Justified statusPane will be resizable.&quot;</pre>
+<pre>rightJustified
+        &quot;Set the StatusPane style. The StatusPane boxes will be 
+          rightJustified.&quot;</pre>
+<pre>statusBoxAt: statusBoxSymbol
+        &quot;Answer the first statusBox with the name statusBoxSymbol.&quot;</pre>
+<pre>StatusBox Programming Interface
+===========================</pre>
+<pre>contents
+        &quot;Answer the receiver's contents.&quot;</pre>
+<pre>contents: anObject
+        &quot;Set the receiver's contents and update the statusPane.&quot;</pre>
+<pre>name
+        &quot;Answer the statusBox name.  A StatusBox's name is established by
+         sending the 'name:' message to the statusBox.&quot;</pre>
+<pre>name: aSymbol
+        &quot;Set the statusBox name to aSymbol
+         which can be a Symbol or a String.&quot;</pre>
+<pre>show: aBoolean
+        &quot;Show the receiver's contents if aBoolean is true, else
+        hide the receiver's contents.&quot;</pre>
+<pre>space
+        &quot;Answer the receiver's offset in pixel units. An offset specifies 
+         the distance between a box and the previous one.&quot;</pre>
+<pre>space: anInteger
+        &quot;Set the receiver's offset to anInteger pixel units. An offset 
+         specifies the distance between a box and the previous one.&quot;</pre>
+<pre>width
+        &quot;Answer the receiver's width in pixel units.&quot;</pre>
+<pre>width: anInteger
+        &quot;Set the receiver's width. anInteger is in pixel units.&quot;
+</pre>
+<pre>Example:</pre>
+<pre>Look at the MDIDemo class in the extras\mdi\mdidemo subdirectory.</pre>
+<pre>MDIDemo&gt;&gt;open
+......</pre>
+<pre>    self
+        addSubpane:(
+            StatusPane new
+                owner: self;
+                fixedSize;
+                leftJustified;
+                height: 45;
+                inset: 6;
+                when: #doubleClicked perform: #statusPaneDoubleClicked:;
+                when: #getContents perform: #statusPane:).</pre>
+<pre>........</pre>
+<pre>MDIDemo&gt;&gt;statusPane: aStatusPane
+        &quot;Private - Set the status pane contents.&quot;</pre>
+<pre>    | statusBoxes |
+    statusBoxes := OrderedCollection new
+                                    add: ( StatusBox new
+                                        space: aStatusPane font width;
+                                        width: Display width // 3;
+                                        name: #status);
+                                    add: ( StatusBox new
+                                        space: aStatusPane font width * 2;
+                                        width: Display width // 3;
+                                        name: #mdidemo);
+                                    yourself.</pre>
+<pre>    aStatusPane contents: statusBoxes.
+</pre>
+<pre>MDIDemo&gt;&gt;childActivate:aPane
+        &quot;Private - Update the status pane. Shows
+        the label of the active MDI document.&quot;
+    |mdiActive|
+    (mdiActive := self frame mdiGetActive) notNil ifTrue:[
+        (self statusPane statusBoxAt: #status) contents: mdiActive label].</pre>
+<hr>
+<p><a href="#top">[top]</a> <a href="index.htm">[index]</a></p>
+</body>
+
+</html>

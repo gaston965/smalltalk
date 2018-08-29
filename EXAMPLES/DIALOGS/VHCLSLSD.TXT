@@ -1,0 +1,55 @@
+VehicleSalesDialog
+------------------------------- 
+
+This file contains a brief description of Vehicle 
+SalesDialog.  VehicleSalesDialog is an example of a
+DialogBox created in Smalltalk (by creating a subclass
+of WindowDialog).  It also demonstrates the use of 
+the following:
+
+    - Creating a Modal DialogBox.
+        (Modal DialogBox disables the parent window).
+
+    - Use of FormattedEntryFields.
+        (Name field only accepts alpha characters.
+         Date, phone number, social security and
+         currency field only accept numbers and their
+         output is formated.)
+
+    - Use of FormattedStaticText.
+        (currency field's output is formated.)
+
+    - Customizing FormattedEntryFields.
+        (Look at how social security entry field is created
+            in #buildCustControls.)   
+
+    - Use of GroupBox in a DialogBox.
+        (Look at how the GroupBox is created in
+            #buildCustControls and #buildVehicleControls.)
+
+    - Use of #textChanged event to trigger an action.
+        (The tax and total price is calculated
+            automatically when the price of the vehicle
+            changes).       
+
+To install VehicleSalesDialog into your system, 
+evaluate the following expression: 
+
+    (File pathName: 'examples\dialogs\vhclslsd.st') fileIn; close.
+
+To open a VehicleSalesDialog, evaluate the following 
+expression: 
+
+    VehicleSalesDialog new open
+
+VehicleSalesDialog is an example of a dialog box 
+that might appear in a vehicle sales application.  
+The dialog box lets the user enter in customer 
+information including name, address, phone number 
+& social security number.  After, the user selects a
+the vehicle in the combo box, the dialog box sets
+the default price and calculates the tax and total price. 
+ 
+
+
+

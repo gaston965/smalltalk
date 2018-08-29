@@ -1,0 +1,120 @@
+|d|
+d := Dictionary new.
+d
+    at: #wFileSignature put: #(0 ushort yourself);
+    at: #wLengthMod512 put: #(2 ushort yourself); 
+    at: #wLength put: #(4 ushort yourself);
+    at: #wRelocationTableItems put: #(6 ushort yourself);
+    at: #wHeaderSize put: #(8 ushort yourself);
+    at: #wMinAbove put: #(10 ushort yourself);
+    at: #wDesiredAbove put: #(12 ushort yourself);
+    at: #wStackDisplacement put: #(14 ushort yourself);
+    at: #wSP put: #(16 ushort yourself);
+    at: #wCheckSum put: #(18 ushort yourself);
+    at: #wIP put: #(20 ushort yourself);
+    at: #wCodeDisplacement put: #(22 ushort yourself);
+    at: #wFirstRelocationItem put: #(24 ushort yourself);
+    at: #wOverlayNumber put: #(26 ushort yourself);
+    at: #wReserved put: #(28 32 yourself);
+    at: #lNewExeOffset put: #(60 ulong yourself).
+
+SelfDefinedStructure define: 'EXEHDR' withFields: d.  
+
+d := Dictionary new.
+d
+    at: #wNewSignature put: #(0 ushort yourself);      
+    at: #cLinkerVer put: #(2 1 yourself);
+    at: #cLinkerRev put: #(3 1 yourself);         
+    at: #wEntryOffset put: #(4 ushort yourself);
+    at: #wEntrySize put: #(6 ushort yourself);
+    at: #lChecksum put: #(8 ulong yourself);
+    at: #wFlags put: #(12 ushort yourself);
+    at: #wAutoDataSegment put: #(14 ushort yourself);
+    at: #wHeapInit put: #(16 ushort yourself);
+    at: #wStackInit put: #(18 ushort yourself);
+    at: #wIPInit put: #(20 ushort yourself);
+    at: #wCSInit put: #(22 ushort yourself);
+    at: #wSPInit put: #(24 ushort yourself);
+    at: #wSSInit put: #(26 ushort yourself);
+    at: #wSegEntries put: #(28 ushort yourself);
+    at: #wModEntries put: #(30 ushort yourself);
+    at: #wNonResSize put: #(32 ushort yourself);
+    at: #wSegOffset put: #(34 ushort yourself);
+    at: #wResourceOffset put: #(36 ushort yourself);
+    at: #wResOffset put: #(38 ushort yourself);
+    at: #wModOffset put: #(40 ushort yourself);
+    at: #wImportOffset put: #(42 ushort yourself);
+    at: #lNonResOffset put: #(44 ulong yourself);
+    at: #wMoveableEntry put: #(48 ushort yourself);       
+    at: #wAlign put: #(50 ushort yourself);
+    at: #wResourceSegs put: #(52 ushort yourself);
+    at: #bExeType put: #(54 1 yourself);
+    at: #bAdditionalFlags put: #(55 1 yourself);
+    at: #wFastOffset put: #(56 2 yourself);
+    at: #wFastSize put: #(58 2 yourself);
+    at: #wReserved put: #(60 2 yourself);
+    at: #wExpVersion put: #(62 2 yourself).
+
+SelfDefinedStructure define: 'NEWEXEHDR' withFields: d.
+
+d := Dictionary new.
+d
+    at: #wType put: #(0 ushort yourself);
+    at: #wCount put: #(2 ushort yourself);
+    at: #lReserved put: #(4 ulong yourself).
+
+SelfDefinedStructure define: 'RESTYPEINFO' withFields: d.
+
+d := Dictionary new.
+d
+    at: #wOffset put: #(0 ushort yourself);
+    at: #wLength put: #(2 ushort yourself);
+    at: #wFlags put: #(4 ushort yourself);
+    at: #wID put: #(6 ushort yourself);
+    at: #wHandle put: #(8 ushort yourself); 
+    at: #wUsage put: #(10 ushort yourself).
+
+SelfDefinedStructure define: 'RESNAMEINFO' withFields: d.
+
+d := Dictionary new.
+d
+    at: #resourceTypeInfo put: #(0 10 yourself);
+    at: #resourceNameInfo put: #(10 12 yourself).
+
+SelfDefinedStructure define: 'RESTABLE' withFields: d.
+
+d := Dictionary new.
+d
+    at: #width put: #(0 byte yourself);
+    at: #height put: #(1 byte yourself);
+    at: #colorCount put: #(2 byte yourself);
+    at: #reserved put: #(3 byte yourself);
+    at: #wPlanes put: #(4 ushort yourself);
+    at: #wBitsPerPel put: #(6 ushort yourself);
+    at: #dwBytesInRes put: #(8 ulong yourself);
+    at: #wOrdinalNumber put: #(12 ushort yourself).
+
+SelfDefinedStructure define: 'ICONENTRY' withFields: d.
+
+d := Dictionary new.
+d
+    at: #wReserved put: #(0 ushort yourself);
+    at: #wType put: #(2 ushort yourself);
+    at: #wCount put: #(4 ushort yourself).
+
+SelfDefinedStructure define: 'ICONDIR' withFields: d.
+   
+ExecutableFileFormatConstants:=Dictionary new
+    at:'IconTypeUnknown' put:0;
+    at:'IconTypeCGA' put:1;
+    at:'IconTypeMono' put:2;
+    at:'IconTypeEGA' put:3;
+    at:'IconTypeVGA' put:4;
+    at:'IconTypeHires' put:5;
+    at:'OS2EXE' put:1;
+    at:'WindowsEXE' put:2;
+    at:'IconResourceType' put:3;
+    at:'OrdinalFlag' put: 32768;
+    at:'GroupIconResType' put: 14;
+    yourself. !
+

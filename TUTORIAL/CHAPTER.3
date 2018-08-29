@@ -1,0 +1,271 @@
+TUTORIAL EXAMPLES FOR CHAPTER 3 - OBJECTS AND MESSAGES
+
+"Simple Messages"
+
+"Evaluate the following with Show it."
+
+     20 factorial
+
+
+"Evaluate the following with Show it."
+
+     'now is the time' size
+
+
+"Evaluate the following with Show it."
+
+    #( 1 3 5 7 ) at: 2
+
+
+"Evaluate the following with Show it and get walkback."
+
+     '20' factorial
+
+
+"Unary Messages"
+
+"Evaluate each of the following with Show it."
+
+     #( 'array' 'of' 'strings' ) size
+
+     'now is the time' asUpperCase
+
+     'hello there' reversed
+
+     #( 4 'five' 6 7 ) reversed
+
+     $A asciiValue
+
+     65 asCharacter
+
+
+"Keyword Messages"
+
+"Evaluate each of the following with Show it."
+
+      'now is the time' at: 6
+
+      'Hello' includes: $e
+
+      'hello' at: 1 put: $H
+
+      'The quick brown' copyFrom: 4 to: 9
+
+
+"Evaluate each of the following with Show it."
+
+      #( 9 8 7 6 5 ) at: 3
+
+      #( 1 ( 2 3 ) 4 5 ) includes: #( 2 3 )
+
+      #( 1 0 4 5) at: 2 put: #( 2 3 )
+
+      #( 9 8 7 6 5 ) copyFrom: 1 to: 2
+
+
+"Arithmetic Messages"
+
+"Evaluate the following with Show it."
+
+     3 + 4
+
+
+"Evaluate each of the following with Show it."
+
+     5 * 7
+
+     5 // 2
+
+     4 \\ 3
+
+     2 / 6
+
+
+"Evaluate the following with Show it."
+
+     3 + 4 * 2
+
+
+"Evaluate the following with Show it."
+
+     3 + ( 4 * 2 )
+
+
+"Evaluate the following with Show it."
+
+      1.5 + 6.3e2
+
+
+"Binary Messages"
+
+"Evaluate each of the following with Show it."
+
+       'hello', ' there'
+
+       #(1 2 3), #(4 5 6)
+
+
+"Messages inside of Messages"
+
+"Evaluate each of the following with Show it."
+
+     'hello' size + 4
+
+     'now' size + #( 1 2 3 4 ) size
+
+     #( 1 12 24 36) includes: 4 factorial
+
+
+"Evaluate the following with Show it."
+
+     4 factorial between: 3 + 4 and: 'hello' size * 7
+
+
+"Evaluate the following with Show it."
+
+      'hello' at: ( #( 5 3 1 ) at: 2 )
+
+
+"Evaluate the following with Show it and get walkback."
+
+      'hello' at: #( 5 3 1 ) at: 2
+
+
+"Expression Series"
+
+"Evaluate the following as a single unit with Do it."
+
+      Window turtleWindow: 'Turtle Graphics'.
+      Turtle black.
+      Turtle home.
+      Turtle go: 100.
+      Turtle turn: 120.
+      Turtle go: 100.
+      Turtle turn: 120.
+      Turtle go: 100.
+      Turtle turn: 120
+
+
+"Cascaded Messages"
+
+"Evaluate the following with Do it."
+
+      Window turtleWindow: 'Turtle Graphics'.
+      Turtle
+          defaultNib: 2;
+          foreColor: ClrDarkgray;
+          home;
+          go: 100;
+          turn: 120;
+          go: 100;
+          turn: 120;
+          go: 100;
+          turn: 120
+
+
+"Simple Loops"
+
+"Evaluate the following with Do it."
+
+     Window turtleWindow: 'Turtle Graphics'.
+     Turtle
+         black;
+         home.
+     3 timesRepeat: [ Turtle go: 100; turn: 120 ]
+
+
+"Evaluate the following with Do it."
+
+      Window turtleWindow: 'Turtle Graphics'.
+      Turtle
+         black;
+         home.
+     3 timesRepeat: [
+         Turtle
+             go: 100;
+             turn: 120]
+
+
+"Objects and Messages Are Safe"
+
+"Evaluate the following with Do it."
+
+     'hello' at: 1 put: 23
+
+
+"Temporary Variables"
+
+"Evaluate the following with Show it."
+
+     | temp index factorials |
+     factorials := #( 3 4 5 6 ).
+     index := 1.
+     factorials size timesRepeat: [
+         temp := factorials at: index.
+         factorials at: index put: temp factorial.
+         index := index + 1].
+     ^factorials
+                        
+
+"Global Variables"
+
+"Evaluate the following (one at a time) with Show it."
+
+    Display 
+    Transcript 
+    Disk
+
+
+"Evaluate the following with Show it."
+
+     Sammy
+
+
+"Evaluate the following with Show it."
+
+     Sammy := 'Sammy Jones' 
+
+
+"Putting It All Together"
+
+"Evaluate the following with Do it."
+
+     "Draw a polygon flower"
+     | sides length |
+     Window turtleWindow: 'Turtle Graphics'.
+     sides := 5.
+     length := 240 // sides.
+     Turtle
+         black;
+         home;
+         north.
+     sides timesRepeat: [
+         Turtle go: length.
+         sides - 1 timesRepeat: [
+             Turtle
+                 turn: 360 // sides;
+                 go: length] ]
+
+
+"Evaluate the following with Do it."
+
+     "Draw a polygon flower"
+     | sides length |
+     sides := 5.
+     length := 240 // sides.
+      Window turtleWindow: 'Turtle Graphics'.
+     Turtle
+         black; up;
+         home; turn: 90;
+         down; north.
+     sides timesRepeat: [
+         Turtle
+             up;
+             go: length // 2;
+             down;
+             go: length.
+         sides - 1 timesRepeat: [
+             Turtle
+                 turn: 360 // sides;
+                 go: length ] ]
+

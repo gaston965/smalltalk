@@ -1,0 +1,45 @@
+
+
+
+!Date class methods !
+ 
+newCalendarForMonth: aSymbol year: anInteger
+        "Answer a String containing the formatted calendar
+         for the month name aSymbol in the year anInteger."
+    | aStream index daysInMonth firstDayIndex daysBlank |
+    firstDayIndex := (self newDay: 1 month: aSymbol
+        year: anInteger) dayIndex.
+    aStream := WriteStream on: (String new: 200).
+    daysInMonth := self daysInMonth: aSymbol
+        forYear: anInteger.
+    aStream nextPutAll: '  Su Mo Tu We Th Fr Sa'; cr. "add two spaces here"
+    daysBlank := firstDayIndex \\ 7.
+    index := 1.
+    aStream space.      "add this line"
+    aStream space.      "add this line"
+    [index <= daysBlank ]
+        whileTrue: [
+            aStream nextPutAll: '   '.
+            index := index + 1].
+    1 to: 9 do: [ :i |
+        index > 7
+            ifTrue: [
+                index := 1.
+                aStream cr.
+                aStream space.     "add this line"
+                aStream space].    "add this line"
+        aStream space.
+        i printOn: aStream.
+        aStream space.
+        index := index + 1].
+    10 to: daysInMonth do: [ :i |
+        index > 7
+            ifTrue: [
+                index := 1.
+                aStream cr.
+                aStream space.  "add this line"
+                aStream space].  "add this line"
+        i printOn: aStream.
+        aStream space.
+        index := index + 1].
+    ^aStream contents! !

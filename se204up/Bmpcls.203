@@ -1,0 +1,32 @@
+| bmpDict oldVarNames |
+Smalltalk at: '%TmpBmps' asSymbol put: OrderedCollection new.
+oldVarNames := Bitmap allInstVarNames.
+Bitmap allInstances do: [ :oldBmp |
+    bmpDict := Dictionary new.
+    1 to: oldVarNames size do: [ :i |
+        bmpDict at: (oldVarNames at: i) put: (oldBmp instVarAt: i) ].
+    oldBmp become: bmpDict.
+    (Smalltalk at: '%TmpBmps' asSymbol) add: bmpDict ]. !
+
+GraphicsMedium subclass: #Bitmap
+  instanceVariableNames:
+    'bitmapHandle bitmapInfo archive palette '
+  classVariableNames:
+    'MemoryContext OldMemoryContext BitmapHandleTable DefaultBitmap AuxillaryDC DefaultPaletteHandle '
+  poolDictionaries:
+    'WinConstants ' !
+
+| newVarNames newBmp |
+newVarNames := Bitmap allInstVarNames.
+(Smalltalk at: '%TmpBmps' asSymbol) do: [ :bmpDict |
+    newBmp := Bitmap basicNew.
+    1 to: newVarNames size do: [ :i |
+        newBmp
+            instVarAt: i
+            put: (bmpDict at: (newVarNames at: i) ifAbsent: [ nil ]) ].
+    bmpDict become: newBmp ]. !
+
+Smalltalk removeKey: '%TmpBmps' asSymbol. !
+
+(Bitmap classPool at: 'DefaultPaletteHandle') isNil
+    ifTrue: [ Bitmap classPool at: 'DefaultPaletteHandle' put: (GraphicsTool getStockObject: DefaultPalette) ].!

@@ -1,0 +1,69 @@
+                    Smalltalk Express License Agreement
+
+GRANT OF LICENSE. Objectshare grants you (i) a nonexclusive, transferable
+license to use the Objectshare software Smalltalk Express (the "Software"),
+and (ii) a nonexclusive, transferable license to use the related
+written(online) materials ("Documentation"). You may access the Software
+from a hard disk, over a network, or by any other method you choose so long
+as you otherwise comply with this Agreement. For the purposes of this
+section, "use" means loading the software into RAM, as well as installation
+on a hard disk or other storage device. The Software may be transferred or
+copied, so long as, all original files and trademarks preserved.
+
+COPYRIGHT. The Software and Documentation are owned by Objectshare and are
+protected by US and international copyright laws. You agree not to remove
+any Objectshare or ParcPlace-Digitalk trademarks or copyright notices from
+the Software or Documentation.
+
+OTHER RESTRICTIONS. You may not disclose, publish, translate, rent, lease,
+transfer, export or otherwise make available the Software and Documentation
+in any form, to any person or entity, except as expressly licensed herein.
+You may not reverse engineer, decompile or disassemble the Software.
+
+You may not use or distribute any of the Software, including but not
+limited to the source code of the Software and any example code, other than
+in conjunction with development or runtime versions of the Software. You
+may not distribute applications that require development system components
+without a special license from Objectshare. For purposes of this section,
+"development system components" means the Smalltalk/V classes Compiler,
+Debugger and ClassHierarchyBrowser, and all of their subclasses, and any
+other classes and/or code designated in the file DEVCOMPS.TXT in the
+Software.
+
+RUNTIME RIGHTS AND LIMITATIONS. You may reproduce and distribute executable
+files created by using the Software. You may reproduce and distribute the
+runtime Dynamic Link Libraries ("DLLs") which are identified in the
+Documentation as being required to execute programs, provided that you (a)
+distribute the DLLs only in conjunction with and as an integral part of
+executable applications created by you utilizing the Software; (b) do not
+distribute any software with your application that utilizes the Smalltalk/V
+virtual machine DLL unless it was created using the Software; (Continued)
+(c) do not use Objectshare's name, logo or trademarks to market your
+software without the express written permission of Objectshare; (d) include
+Objectshare's copyright notice for its Software on your product label and
+as a part of the sign-on message for software created by you; and (e) agree
+to indemnify, hold harmless and defend Objectshare from and against any
+claims or lawsuits, including attorneys' fees, that arise or result from
+the use or distribution of your software. The license in this section to
+distribute executables and/or DLLs is royalty-free provided that your
+software application product is created using the Software for operation
+with the Smalltalk/V runtime DLLs. Please contact Objectshare for the
+applicable licensing terms for all other uses and/or distribution of
+executables and runtime DLLs.
+
+IN NO EVENT SHALL Objectshare BE LIABLE FOR ANY LOSS OF PROFIT OR ANY OTHER
+DAMAGE, INCLUDING BUT NOT LIMITED TO SPECIAL, INCIDENTAL, CONSEQUENTIAL OR
+OTHER DAMAGES. THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
+KIND. Objectshare SPECIFICALLY DISCLAIMS ALL OTHER WARRANTIES, EXPRESS OR
+IMPLIED, INCLUDING WITHOUT LIMITATION THE IMPLIED WARRANTIES OF
+MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE. Objectshare DOES NOT
+WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS OR THAT THE OPERATION
+OF THE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE.
+
+GOVERNING LAW. This Agreement shall be governed and construed under the
+laws of the State of California and subject to the exclusive jurisdiction
+of the courts therein.
+
+ENTIRE AGREEMENT. You agree that this Agreement expresses the entire
+understanding between you and Objectshare, and supersedes all other
+communications, oral or written, relating to the Software.

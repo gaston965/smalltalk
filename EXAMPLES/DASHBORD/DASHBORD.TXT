@@ -1,0 +1,241 @@
+Dashboard 
+
+The class Dashboard implements a simulated car dashboard 
+using dials and gauges.  It is an example of a visual 
+simulation and an example of using instances of the 
+ControlApparatus classes. 
+
+To file in the Dashboard evaluate the following expression: 
+
+     (File pathName: 'examples\dashbord\dashbord.st') fileIn; close 
+
+To open the dash board, evaluate the following expression: 
+
+     Dashboard new open
+
+To operate the dials and gauges, click the left mouse button 
+when the cursor is over the new reading to which you wish to 
+set the gauge.  To push a button (change gears), click the 
+left mouse button when the cursor is over the button you 
+wish to press.  Notice that when you change the reading of 
+one dial or gauge, the others react accordingly.  Two of the 
+gauges are connected to the system clock (the fuel and temp 
+gauges).  To enable or disable the clock, use the clock menu 
+of the dash board.  
+
+To see a demonstration of Dynamic Data Exchange (DDE),
+open dashboard and then open 'dash.xls' from Microsoft Excel or
+open 'dash.doc' from Microsoft Word. When you adjust the dials 
+and gauges, the mph, rpm, and oil gauge values
+will be updated in these documents.
+
+The following is a brief description of the structure of the 
+class DashBoard.  
+
+Dashboard 
+
+    The Dashboard class implements a simple car dashboard 
+    simulation.  
+
+    Inherits From:    ApplicationWindow Window Object 
+
+    Inherited By:     (None) 
+
+    Instance Variables defined in Dashboard: 
+
+        accToRpm 
+            Contains a Fraction expressing the ratio of the 
+            accelerator to the tachometer (rpm gauge).  
+
+        clockOn 
+            Contains a Boolean indicating whether the system 
+            clock is connected to the dash board.  
+
+        clockString 
+            Contains the string of the current time that is 
+            displayed on the dash board if the clock is 
+            connected to it.  
+
+        dials 
+            (From class ControlPanel) 
+
+        gearRatios 
+            Contains an array of the gear ratio fractions 
+            for 1st, 2nd, and 3rd gear.  
+
+        idleSpeed 
+            Contains the idle speed (rpm) as an Integer.  
+
+        rpmToFuel 
+            Contains a fraction expressing the ratio of the 
+            fuel used to the engine speed per clock tick.  
+
+        rpmToOil 
+            Contains a Fraction expressing the ratio of the 
+            oil pressure to the engine speed (rpm).  
+
+        timeToTemp 
+            Contains anInteger expressing the amount to 
+            increment the temp gauge by for each clock tick.  
+
+
+What follows is a brief description of the ControlApparatus 
+class hierarchy.  
+
+ControlApparatus 
+
+    ControlApparatus is an abstract class.  Subclasses of 
+    ControlApparatus implement various kinds of dials, 
+    gauges, and switches (graphical input and/or output 
+    objects).  
+
+    Inherits From:      Object 
+
+    Inherited By:       SwitchButton Dial Scale Switch 
+
+    Instance Variables defined in ControlApparatus: 
+
+        backColor 
+            Contains a halftone mask of the background color 
+            of the receiver.  
+
+        dependentArray 
+            Contains an array of dependent objects of the 
+            receiver.  
+
+        foreColor 
+            Contains a halftone mask of the foreground color 
+            of the receiver.  
+
+        form 
+            Contains a Form on which to draw the receiver 
+            (usually the Display).  
+
+        frame 
+            Contains a Rectangle in which the receiver is 
+            drawn.           
+     
+        pen 
+            Contains a Pen used to draw various control apparatus.
+
+        lastChange 
+            Contains the last change in value of the 
+            receiver.  
+
+Scale 
+
+    Scale class is an abstract class.  Subclasses of Scale 
+    implement dials or gauges that can be set to any value 
+    within a linear range of values 
+
+    Subclasses of Scale must implement the following 
+    instance messages: 
+
+        drawNeedle 
+            Draw the needle at the current reading.  
+
+        eraseNeedle 
+            Erase the needle that is currently displayed.  
+
+    Inherits From:      ControlApparatus Object 
+
+    Inherited By:       Dial 
+
+    Instance Variables defined in Scale: 
+
+        highReading 
+            Contains an Integer which is the maximum scale 
+            reading.  
+
+        lowReading 
+            Contains an Integer which is the minimum scale 
+            reading.  
+
+        reading 
+            Contains an Integer which is the current scale 
+            reading.  
+
+Dial 
+
+    Class Dial implements scales that are circular or arc 
+    shaped.  
+
+    Inherits From:      Scale ControlApparatus Object 
+
+    Inherited By:       (None) 
+
+    Instance Variables defined in Dial: 
+
+        center 
+            Contains a Point which is the center of the 
+            receiver.  
+
+        highDegree 
+            Contains an Integer which is the degree (angle) 
+            of the highReading of the receiver.  
+
+        lowDegree 
+            Contains an Integer which is the degree (angle) 
+            of the lowReading of the receiver.  
+
+        pen 
+            Contains the pen which is used to draw the 
+            needle for the receiver.  
+
+        r 
+            Contains an Integer which is the radius of the 
+            receiver.  
+
+        readingsPerDegree 
+            Contains a Fraction which is the ratio of the 
+            scale interval to the angle of the dial.  
+
+        tip 
+            Contains the point at which the tip of the 
+            needle is currently drawn.  
+
+Switch 
+
+    Class Switch is an abstract class.  Subclasses of Switch 
+    implement banks of buttons or switches.  Only one button 
+    or switch in a bank can be selected at a time.  
+
+    Subclasses of Switch must implement the following 
+    instance messages: 
+
+        draw: anInteger 
+            Draw the switch anInteger of the receiver.  
+
+        reverse: anInteger 
+            Draw in reverse the switch anInteger of the 
+            receiver.  
+
+        switch: anInteger contain: aPoint 
+            Answer true if aPoint is inside switch anInteger 
+            of the receiver, otherwise anwer false.  
+
+    Inherits From:      ControlApparatus Object 
+
+    Inherited By:       SwitchButton 
+
+    Instance Variables defined in Switch: 
+
+        areas 
+            Contains an Array of Rectangles each of which 
+            contains a single switch of the receiver.  
+
+        selection 
+            Contains an Integer which is the index of the 
+            switch currently selected.  
+
+SwitchButton 
+
+    Class SwitchButton implements a bank of rectangular push 
+    buttons arranged horizontally.  
+
+    Inherits From:      Switch ControlApparatus Object 
+
+    Inherited By:       (None) 
+
+    Instance Variable defined in Button:    (None) 
+

@@ -1,0 +1,33 @@
+
+!NationalLanguageSupport methods !
+
+initCollateTable
+        "Private - Initialize the receiver's collateTablewith
+          the collating-sequence table for the current country
+          and language settings. The table is a character
+          array of 256 elements in which each element in
+          the table specifies the sorting weight of the
+          corresponding character. The sorting weight is the
+          value used to determine if a character appears
+          before or after another character in a sorted list."
+    | collection aString bString|
+    "Copy the previously compiled collate table if
+      there is no change in the system settings."
+    ((NationalLanguage collateTable) notNil
+        and: [(self country = NationalLanguage country)
+        and: [self language = NationalLanguage language]])
+        ifTrue: [self collateTable: (NationalLanguage collateTable)]
+        ifFalse: [
+           aString := String new: 2.
+           bString := String new: 2.
+           collection := SortedCollection sortBlock: [ :a :b |
+               aString at: 1 put: a.
+               bString at: 1 put: b.
+               (UserLibrary lStrCmpi: aString withString: bString) <= 0 ].
+           0 to: 255 do: [ :i | collection add: (i asCharacter)].
+           collateTable := ByteArray new: 256.
+           1 to: 256 do: [ :i |
+               collateTable at: ((collection at: i) asInteger + 1) put: (i - 1)]].
+    "Load table used by String primitive <= "
+    VWVMLibrary loadCollateTable: collateTable.! !
+

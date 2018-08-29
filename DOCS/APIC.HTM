@@ -1,0 +1,194 @@
+<HTML>
+<HEAD>
+<TITLE>Creating callable C DLLs </TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z">
+</HEAD>
+<BODY BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#00ffff">
+<H1><CENTER><A NAME="top"><FONT SIZE=6 COLOR=#0000FF>Creating
+C DLLs</FONT></A></CENTER></H1>
+<HR>
+<P>
+Writing a dynamic link library that uses the C calling convention
+is very similar to writing one that uses the PASCAL calling convention
+(see the floating point documentation).  Here is example C code
+for the C calling convention:
+<HR>
+<P>
+<TT>#include &lt;windows.h&gt;</TT>
+<P>
+<TT>#include &lt;dos.h&gt;</TT>
+<P>
+<TT>#include &quot;fixdptrs.h&quot;<BR>
+</TT>
+<P>
+<TT>int FAR PASCAL LibMain (HANDLE hInstance,</TT>
+<P>
+<TT>WORD wDataSeg,</TT>
+<P>
+<TT>WORD cbHeapSize,</TT>
+<P>
+<TT>LPSTR lpszCmdLine)</TT>
+<P>
+<TT>{</TT>
+<P>
+<TT>return (1);</TT>
+<P>
+<TT>}<BR>
+</TT>
+<P>
+<TT>int FAR PASCAL WEP (int nParameter)</TT>
+<P>
+<TT>{</TT>
+<P>
+<TT>return (1);</TT>
+<P>
+<TT>}<BR>
+</TT>
+<P>
+<TT>VOID FAR  INITFXDPTRSSEG ( smlPosObj, smlNegObj)</TT>
+<P>
+<TT>struct smallPosObj *smlPosObj;</TT>
+<P>
+<TT>struct smallNegObj *smlNegObj;</TT>
+<P>
+<TT>{</TT>
+<P>
+<TT>plusSmallSeg = FP_SEG( smlPosObj );</TT>
+<P>
+<TT>minusSmallSeg = FP_SEG( smlNegObj );</TT>
+<P>
+<TT>}<BR>
+</TT>
+<P>
+<TT>BOOL FAR  ISPSI(recvr)</TT>
+<P>
+<TT>struct floatObject far *recvr;</TT>
+<P>
+<TT>{</TT>
+<P>
+<TT>if (FP_SEG(recvr) == plusSmallSeg)</TT>
+<P>
+<TT>{return TRUE;}</TT>
+<P>
+<TT>else</TT>
+<P>
+<TT>{return FALSE;}</TT>
+<P>
+<TT>}<BR>
+</TT>
+<P>
+<TT>short FAR  BINARYSUM(high,middle,low)</TT>
+<P>
+<TT>short high, middle, low;</TT>
+<P>
+<TT>{</TT>
+<P>
+<TT>short answer;</TT>
+<P>
+<TT>answer = 0;</TT>
+<P>
+<TT>if (high == TRUE) answer = answer + 4;</TT>
+<P>
+<TT>if (middle == TRUE) answer = answer + 2;</TT>
+<P>
+<TT>if (low == TRUE) answer = answer + 1;</TT>
+<P>
+<TT>return answer;</TT>
+<P>
+<TT>}</TT>
+<HR>
+<P>
+You would declare a .def file with these exports:
+<HR>
+<P>
+<TT>LIBRARY VWCPRIM</TT>
+<P>
+<TT>DESCRIPTION 'Example C dynamic link library'</TT>
+<P>
+<TT>EXETYPE WINDOWS</TT>
+<P>
+<TT>CODE    MOVEABLE DISCARDABLE</TT>
+<P>
+<TT>DATA    MOVEABLE SINGLE</TT>
+<P>
+<TT>HEAPSIZE 0</TT>
+<P>
+<TT>EXPORTS WEP @1  RESIDENTNAME</TT>
+<P>
+<TT>_INITFXDPTRSSEG  @2 </TT>
+<P>
+<TT>_ISPSI           @3</TT>
+<P>
+<TT>_BINARYSUM       @4  </TT>
+<HR>
+<P>
+Make the DLL and put it in your system DLL directory. Then in
+Smalltalk, define a subclass of DynamicLinkLibrary, say TestCDLL,
+and define the following methods.
+<HR>
+<P>
+<TT>!TestCDLL methods!</TT>
+<P>
+<TT>initialize</TT>
+<P>
+<TT>&quot;Initialize fixed pointers segments&quot;</TT>
+<P>
+<TT>self initFxdPtrsSeg: 3 with: -3!<BR>
+</TT>
+<P>
+<TT>initFxdPtrsSeg: anObject1 with: anObject2</TT>
+<P>
+<TT>&lt;c: '_INITFXDPTRSSEG' self self none&gt;!<BR>
+</TT>
+<P>
+<TT>binarySum: high middle: middle low: low</TT>
+<P>
+<TT>&quot;Test if anObject's class is positive small integer&quot;</TT>
+<P>
+<TT>&lt;c: '_BINARYSUM' boolean boolean boolean short&gt;!<BR>
+</TT>
+<P>
+<TT>isPSI: anObject</TT>
+<P>
+<TT>&quot;Test if anObject's class is positive small integer&quot;</TT>
+<P>
+<TT>&lt;c: '_ISPSI' self boolean&gt;! !</TT>
+<HR>
+<P>
+Open the DLL for Smalltalk by executing:<BR>
+<P>
+<TT>TestCLibrary := TestCDLL open: 'vwcprim.dll'.<BR>
+</TT>
+<P>
+This assigns the handle to TestCLibrary. This must be executed
+everytime you start up Smalltalk, so you might want to put it
+in the SystemDictionary method 'startUp'.
+<P>
+Initialize the fixed pointer segments..
+<P>
+<TT>TestCLibrary initialize</TT>
+<HR>
+<P>
+Try evaluating:<BR>
+<P>
+<TT>TestCLibrary isPSI: 1</TT>
+<P>
+Should be true
+<P>
+<TT>TestCLibrary isPSI: -1</TT>
+<P>
+Should be false
+<P>
+<TT>TestCLibrary binarySum: true middle: true low: false</TT>
+<P>
+Should be 6
+<P>
+<TT>TestCLibrary binarySum: false middle: true low: true</TT>
+<P>
+Should be 3
+<HR>
+<P>
+<A HREF="#top" >[top]</A> <A HREF="index.htm" >[index]</A>
+</BODY>
+</HTML>

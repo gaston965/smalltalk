@@ -1,0 +1,254 @@
+TUTORIAL EXAMPLES FOR CHAPTER 10 - WINDOWS
+ 
+"If you do not have the Animal classes already defined,
+ evaluate the following with Do it; otherwise, skip."
+
+    (File pathName: 'tutorial\class10.st') fileIn; close
+
+
+"Evaluate the following with Do it to define methods in Animal
+ and its subclasses."
+
+    (File pathName: 'tutorial\animal10.st') fileIn; close
+
+
+"The Prompter"
+
+"Evaluate the following with Show it for a Prompter."
+
+    Prompter prompt: 'Do you know Smalltalk/V?'
+             default: 'Yes, I''ve done a tutorial.'     
+ 
+
+"Single Pane Window"
+
+"Evaluate the following with Do it."
+
+    LearnWindow :=
+        TextWindow
+            windowLabeled: 'Learning Status'
+            frame: ((Display boundingBox leftTop rightAndDown: 100 @ 100)
+                  extentFromLeftTop: 400 @ 200).
+                        
+
+"Evaluate the following with Do it."
+
+    LearnWindow
+        nextPutAll: 'I have learned everything about Smalltalk.';
+        cr.
+
+
+"Evaluate the following with Show it."
+
+    LearnWindow contents      
+  
+
+"Evaluate the following with Do it."
+
+    LearnWindow close.  
+
+    
+"Evaluate the following with Do it."
+
+ViewManager subclass: #AnimalHabitatWindow
+  instanceVariableNames:
+    'habitat replyStream inputPane '
+  classVariableNames: ''
+  poolDictionaries: ''
+
+
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\window1.st') fileIn; close
+
+
+"Evaluate the following with Do it."
+
+     Snoopy := Dog new name: 'Snoopy'.
+     Polly := Parrot new name: 'Polly'.
+     Habitat := AnimalHabitat new
+            add: Snoopy;
+            add: Polly.
+    Habitat script: 'Snoopy be quiet'.
+    AnimalHabitatWindow new openOn: Habitat    
+
+
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\window2.st') fileIn; close
+
+
+"Evaluate the following with Do it."
+
+    AnimalHabitatWindow new openOn: Habitat
+
+
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\window3.st') fileIn; close
+
+
+"Evaluate the following with Do it."
+
+     Snoopy
+         learn: 'barking' action: [Snoopy talk];
+         learn: 'quietly' action: [Snoopy beQuiet; talk];
+         learn: 'is upset' action: [Snoopy beNoisy; talk].
+     Polly
+         learn: 'to be pleasant' action:
+             [Polly vocabulary: 'Have a nice day'; talk];
+         learn: '* nasty' action:
+             [Polly vocabulary: 'Why are you bothering me';
+                talk]
+                          
+
+"Evaluate the following with Do it."
+
+     Habitat script: '
+          Snoopy is upset about the way that Polly is
+          behaving.  It is as if whenever anyone asks
+          Polly to talk, Polly will be nasty.  Maybe if
+          instead of Snoopy barking at Polly when he
+          wants Polly to talk, Snoopy quietly asks Polly
+          to be pleasant for a change, things would go
+          better.  Now maybe Snoopy barking quietly will
+          not make Polly nasty.'.  
+
+    Habitat browse   
+
+
+"Multi-Pane Windows"
+
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\window4.st') fileIn; close
+
+
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\window5.st') fileIn; close
+
+
+"Running the Animation"
+
+"Evaluate with Do it to install the dog bitmaps if you did
+  not do so in Chapter 9."
+
+    "Load the dog bitmaps from disk files."
+    | dogPictures |
+    TutorialPictures := Dictionary new.
+    dogPictures := Array new: 4.
+    1 to: dogPictures size do: [ :i |
+        dogPictures at: i put: (
+            Bitmap fromFile: 'tutorial\dog', i printString, '.bmp' ) ].
+    TutorialPictures at: 'dogs' put: dogPictures
+
+
+"Evaluate the following with Do it."
+
+    | dogImages |
+    dogImages := TutorialPictures at: 'dogs'.
+    Kennel := AnimalHabitat new.
+    Kennel add:
+        (Snoopy := Dog new
+            name: 'Snoopy'
+            picture: dogImages
+            color: ClrBlack).
+    Kennel add:
+        (Lassie := Dog new
+            name: 'Lassie'
+            picture: dogImages
+            color: ClrBrown).
+    Kennel add:
+        (Wow := Dog new
+            name: 'Wow'
+            picture: dogImages
+            color: ClrRed)
+
+
+"Evaluate the following long expression with Do it."
+
+     Snoopy learn: 'bark a little'
+         action: [Snoopy beQuiet].
+     Snoopy learn: 'bark a lot'
+         action: [Snoopy beNoisy].
+     Snoopy learn: 'talk' action: [Snoopy talk].
+     Snoopy learn: 'home' action: [Snoopy home].
+     Snoopy learn: 'top speed'
+        action: [Snoopy topSpeed].
+     Snoopy learn: 'run'
+         action: [Snoopy run].
+     Snoopy learn: 'run inside kennel'
+         action: [Snoopy bounce].
+     Snoopy learn: 'walk'
+         action: [Snoopy walk].
+     Snoopy learn: 'direction'
+         action: [Snoopy direction].
+     Snoopy learn: 'turn'
+         action: [Snoopy turn].
+     Lassie learn: 'bark a little'
+         action: [Lassie beQuiet].
+     Lassie learn: 'bark a lot'
+         action: [Lassie beNoisy].
+     Lassie learn: 'talk' action: [Lassie talk].
+     Lassie learn: 'home' action: [Lassie home].
+     Lassie learn: 'top speed'
+         action: [Lassie topSpeed].
+     Lassie learn: 'run'
+         action: [Lassie run].
+     Lassie learn: 'walk'
+         action: [Lassie walk].
+     Lassie learn: 'direction'
+         action: [Lassie direction].
+     Lassie learn: 'turn'
+         action: [Lassie turn].
+     Wow learn: 'bark a little'
+         action: [Wow beQuiet].
+     Wow learn: 'bark a lot'
+         action: [Wow beNoisy].
+     Wow learn: 'talk' action: [Wow talk].
+     Wow learn: 'home' action: [Wow home].
+     Wow learn: 'top speed'
+         action: [Wow topSpeed].
+     Wow learn: 'run'
+         action: [Wow run].
+     Wow learn: 'walk'
+         action: [Wow walk].
+     Wow learn: 'direction'
+         action: [Wow direction].
+     Wow learn: 'turn'
+         action: [Wow turn]
+
+
+"Evaluate the following long expression with Do it."
+
+Kennel script:
+ 'Snoopy home
+  Lassie home
+  Wow home
+  Snoopy top speed 40
+  Lassie top speed 30
+  Wow top speed 20
+  Snoopy bark a little
+  Lassie bark a little
+  Wow bark a lot
+  Snoopy direction 45
+  Snoopy walk 200
+  Snoopy talk
+  Lassie direction 90
+  Lassie walk 150
+  Lassie talk
+  Lassie turn 225
+  Lassie run 150
+  Lassie talk
+  Wow direction 0
+  Wow walk 300
+  Wow talk
+  Wow turn 135
+  Wow run 250
+  Wow talk
+  Snoopy run inside kennel 100 feet'.
+Kennel browse
+
+
+

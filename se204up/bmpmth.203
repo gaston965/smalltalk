@@ -1,0 +1,1687 @@
+"make sure classes needed by this package exist"
+#( 
+    ApplicationWindow Array Association Bag Bitmap ByteArray 
+    DeviceContext DIB Dictionary File GDIDLL GraphicsTool Icon 
+    Pen Process SelfDefinedStructure String TopPane WinAddress 
+    WinBitmapFileHeader WinBitmapInfo WinBitmapInfoHeader WinBitmapStruct 
+    Window WinHandle WinLogicalPalette WinLogPalette 
+)
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+  
+"Bitmap Fixes for Smalltalk Express v2.0
+
+    Description:
+
+        This package adds hi-color bitmap and display adapter support to Smalltalk Express v2.0,
+        updating the image to v2.03. This package is a combination of the fixes that Digitalk provided
+        in their Smalltalk/V v2.02 patch upgrade and work done by Didier Besset.
+
+        Support is provided for TopPane-specific color palettes, although it must be enabled explicitly
+        by Do'ing:
+
+            Window enablePaletteMessages
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+"!
+
+!ApplicationWindow methods !
+
+saveImageFile
+        "Private - Save the current image and
+         log the event on the change log."
+    (Sources at: 2) close.
+    Disk makeCurrent.
+    ^Smalltalk save! !
+
+!Bitmap class methods !
+  
+aboutToSaveImage
+        "Private - clean up unused bitmaps, and save backup
+         of all Bitmap instances"
+    self purgeUnusedBitmaps.
+    self allInstancesPrim do: [ :b | b aboutToSaveImage ].
+    OldMemoryContext := MemoryContext!
+  
+bitBlt: destDC
+    x: x1
+    y: y1
+    width: srcWidth
+    height: srcHeight
+    srcDC: srcDC
+    xSrc: x2
+    ySrc: y2
+    rop: aRopConstant
+        "Private - Call GDI BitBlt function."
+    ( GDILibrary
+         bitBlt: destDC
+         x: x1
+         y: y1
+         width: srcWidth
+         height: srcHeight
+         srcDC: srcDC
+         xSrc: x2
+         ySrc: y2
+         rop: aRopConstant )
+            ifFalse: [ ^self osError ]!
+   
+createBitmap: width
+    height: height
+    planes: planes
+    bitCount: bitCount
+    bits: bits
+        "Private - call the CreateBitmap API."
+    | hBitmap |
+    ( hBitmap := GDILibrary
+        createBitmap: width
+        height: height
+        planes: planes
+        bitCount: bitCount
+        bits: bits ) = 0
+            ifTrue: [ ^self osError ].
+    ^hBitmap!
+ 
+createCompatibleDC: aDeviceContext
+        "Private - call the CreateCompatibleDC API."
+    | hDC |
+    ( hDC := GDILibrary createCompatibleDC: aDeviceContext ) = 0
+        ifTrue: [ ^self osError ].
+    ^hDC!
+  
+createDIBitmap: hDC
+    bitmapInfo: bitmapInfo
+    init: initFlag
+    bits: bits
+    usage: usageFlag
+        "Private - call the CreateDIBitmap API."
+    | hBitmap bitmapInfoHeader |
+    bitmapInfoHeader := WinBitmapInfoHeader
+        width: bitmapInfo width
+        height: bitmapInfo height
+        planes: bitmapInfo planes
+        bitCount: bitmapInfo bitCount.
+    ( hBitmap := GDILibrary
+        createDIBitmap: hDC
+        infoHeader: bitmapInfoHeader asParameter
+        dwUsage: initFlag
+        initBitsStruct: bits asParameter
+        initInfo: bitmapInfo asParameter
+        wUsage: usageFlag ) = 0
+            ifTrue: [ ^self osError ].
+    ^hBitmap!
+
+createDIBitmap: hDC
+    bitmapInfo: bitmapInfo
+    init: initFlag
+    externalBits: anExternalAddress
+    usage: usageFlag
+        "Private - call the CreateDIBitmap API."
+    | hBitmap bitmapInfoHeader |
+    bitmapInfoHeader := WinBitmapInfoHeader
+        width: bitmapInfo width
+        height: bitmapInfo height
+        planes: bitmapInfo planes
+        bitCount: bitmapInfo bitCount.
+    ( hBitmap := GDILibrary
+        createDIBitmap: hDC
+        infoHeader: bitmapInfoHeader asParameter
+        dwUsage: initFlag
+        initBits: anExternalAddress asParameter
+        initInfo: bitmapInfo asParameter
+        wUsage: usageFlag ) = 0
+            ifTrue: [ ^self osError ].
+    ^hBitmap!
+
+fromDLLFile: aFileName name: bitmapName
+        "Answer an instance of Bitmap loaded from aModule,
+         identified by bitmapName."
+    ^self fromModule: aFileName id: bitmapName!
+   
+fromFile: bitmapFile in: dir
+        "Answer an instance of Bitmap copied from bitmapFile.
+        bitmapFile must be in DIB format with '.bmp' extension."
+    ^(DIB fromFile: bitmapFile in: dir) asBitmap!
+
+fromFileStream: aFileStream
+        "Answer an instance of Bitmap read from aFileStream.
+        The contents of aFileStream must be in DIB format (as
+        that of a file with '.bmp' extension)."
+    ^(DIB fromFileStream: aFileStream) asBitmap!
+ 
+fromHandle: hBitmap clipWidth: aClipWidth clipHeight: aClipHeight
+         "Answer an instance of Bitmap copied from
+          bitmap handle hBitmap, Clipped by clipWidth
+          and clipHeight."
+    | bitmapStruct srcDC newBitmap oldHandle1 oldHandle2 aWidth aHeight|
+    srcDC := GDILibrary createCompatibleDC: Display deviceContext.
+    oldHandle1 := GDILibrary selectObject: srcDC with: hBitmap.
+    GDILibrary
+        getObject: hBitmap
+        count: WinBitmapStruct sizeInBytes
+        lpObject: (bitmapStruct :=  WinBitmapStruct new) asParameter.
+    aWidth := aClipWidth isNil
+        ifTrue: [ bitmapStruct width ]
+        ifFalse: [ bitmapStruct width min: aClipWidth ].
+    aHeight := aClipHeight isNil
+        ifTrue: [ bitmapStruct height ]
+        ifFalse:[ bitmapStruct height min: aClipHeight ].
+    bitmapStruct width: aWidth.
+    bitmapStruct height: aHeight.
+    newBitmap := self new bitmapIndirect: bitmapStruct.
+    oldHandle2 := GDILibrary
+        selectObject: newBitmap deviceContext
+        with: newBitmap handle.
+    GDILibrary bitBlt: newBitmap deviceContext
+          x: 0
+          y: 0
+          width: aWidth
+          height: aHeight
+          srcDC: srcDC
+          xSrc: 0
+          ySrc: 0
+          rop:  Srccopy.
+     oldHandle1 ~= 0 ifTrue: [ GDILibrary selectObject: srcDC with: oldHandle1].
+     GDILibrary deleteDC: srcDC.
+     GDILibrary selectObject: newBitmap deviceContext with: oldHandle2.
+     ^newBitmap!
+
+fromHandle: hBitmap offset: offset extent: extent
+        "Answer an instance of Bitmap copied from
+        bitmap handle hBitmap, Clipped by clipWidth
+        and clipHeight."
+    | bitmapStruct srcDC newBitmap oldHandle1 oldHandle2 aWidth aHeight aClipWidth aClipHeight |
+    aClipWidth := extent x.
+    aClipHeight := extent y.
+    srcDC := self createCompatibleDC: Display deviceContext.
+    oldHandle1 := GDILibrary selectObject: srcDC with: hBitmap.
+    GDILibrary
+        getObject: hBitmap
+        count: WinBitmapStruct sizeInBytes
+        lpObject: ( bitmapStruct := WinBitmapStruct new ) asParameter.
+    aWidth := aClipWidth isNil
+        ifTrue: [ bitmapStruct width ]
+        ifFalse: [ bitmapStruct width min: aClipWidth ].
+    aHeight := aClipHeight isNil
+        ifTrue: [ bitmapStruct height ]
+        ifFalse: [ bitmapStruct height min: aClipHeight ].
+    bitmapStruct width: aWidth.
+    bitmapStruct height: aHeight.
+    newBitmap := self new bitmapIndirect: bitmapStruct.
+    oldHandle2 := GDILibrary
+        selectObject: newBitmap deviceContext
+        with: newBitmap handle.
+    self
+        bitBlt: newBitmap deviceContext
+        x: 0
+        y: 0
+        width: aWidth
+        height: aHeight
+        srcDC: srcDC
+        xSrc: offset x "- 1"
+        ySrc: offset y "- 1"
+        rop: Srccopy.
+    oldHandle1 ~= 0 ifTrue: [ GDILibrary selectObject: srcDC with: oldHandle1 ].
+    GDILibrary deleteDC: srcDC.
+    GDILibrary selectObject: newBitmap deviceContext with: oldHandle2.
+    ^newBitmap!
+ 
+fromModule: aModuleName id:  bitmapName
+        "Answer an instance of Bitmap whose id is bitmapName
+         contain in the module identified by aModuleName.
+         bitmapName may be an integer or a string."
+    | handle bitmap |
+    "Modified by DMZ, OSI 2/1/97 Note that in VST, this
+    method only supports module names as its first argument,
+    whereas in Smalltalk Express the first argument is a module handle."
+    #modifiedByOSI.
+    aModuleName isString ifFalse: [ ^self error: 'Obsolete usage' ].
+    ^self new fromModule: aModuleName id: bitmapName!
+ 
+initialize
+        "Private - Initialize memory device context. This must
+         be done at each startUp."
+    | hBitmap |
+    BitmapHandleTable := Dictionary new.
+    MemoryContext := GDILibrary createCompatibleDC: Display deviceContext.
+    AuxillaryDC := GDILibrary createCompatibleDC: Display deviceContext.
+    hBitmap := self
+        createBitmap: 1
+        height: 1
+        planes: 1
+        bitCount: 1
+        bits: nil.
+    DefaultBitmap := GDILibrary selectObject: MemoryContext with: hBitmap.
+    GDILibrary selectObject: MemoryContext with: DefaultBitmap.
+    GDILibrary deleteObject: hBitmap.
+    DefaultPaletteHandle := GraphicsTool getStockObject: DefaultPalette.
+"    Bitmap allInstancesPrim do: [ : each | each restoreBitmap].
+    OldMemoryContext := MemoryContext"!
+   
+purgeUnusedBitmaps
+        "Private - Purge unused bitmaps from the system."
+    | handles all bitmaps |
+    all := BitmapHandleTable keys.
+    BitmapHandleTable := Dictionary new.
+    bitmaps := Bitmap allInstances.
+    handles := bitmaps collect: [ :each | each bitmapHandle "handle" ].
+    GDILibrary selectObject: MemoryContext with: DefaultBitmap.
+    all do: [ :each |
+        ( each notNil and: [ ( handles includes: each ) not ] ) ifTrue: [
+            GDILibrary deleteObject: each ]].
+    bitmaps do: [ :each |
+        each bitmapHandle notNil ifTrue: [
+            BitmapHandleTable at: each bitmapHandle put: each ] ].!
+
+readBitmapHeader: bitmapFile
+        "Private - Read the bitmap info header structure from a
+         bitmapFile. Answer an instance of WinBitmapInfoHeader."
+    | bitmapInfo |
+    bitmapInfo := WinBitmapInfoHeader new.
+    bitmapInfo
+        biSize: bitmapFile nextULong;
+        width:  bitmapFile nextULong;
+        height: bitmapFile nextULong;
+        planes: bitmapFile nextUShort;
+        bitCount: bitmapFile nextUShort;
+        compression: bitmapFile nextULong;
+        sizeImage: bitmapFile nextULong;
+        xPelsPerMeter: bitmapFile nextULong;
+        yPelsPerMeter: bitmapFile nextULong;
+        clrUsed: bitmapFile nextULong;
+        clrImportant: bitmapFile nextULong.
+    ^bitmapInfo!
+ 
+readBitmapInfo: aStream
+        "Private - Answer an instance of WinBitmapInfoHeader
+         read from aStream . aStream position is updated."
+
+    | bitmapInfo size rgb rgbTriple position byteArray coreHeader count |
+    position := aStream position.
+    size := aStream nextULong.
+    aStream position: position.
+    size = 12
+        ifTrue: [   "OS/2 1.2 format."
+            coreHeader := SelfDefinedStructure named: 'OS2BITMAPCOREHEADER'.
+            coreHeader contents
+                replaceFrom: 1
+                to: coreHeader contents size
+                with: aStream contents
+                startingAt: position + 1.
+            position := position + size.
+            rgbTriple := ByteArray new: ((1 bitShift: coreHeader bitCount) * 3).
+            rgbTriple
+                replaceFrom: 1
+                to: rgbTriple size
+                with: aStream contents
+                startingAt: position + 1.
+            position := position + rgbTriple size.
+            bitmapInfo := WinBitmapInfoHeader
+                width: coreHeader width
+                height: coreHeader height
+                planes: 1
+                bitCount: (coreHeader bitCount * coreHeader planes).
+            coreHeader bitCount = 24 ifFalse: [
+                rgb := ByteArray new: ((1 bitShift: coreHeader bitCount) * 4).
+                count := 0.
+                1 to: rgbTriple size by: 3 do: [: i |
+                    rgb at: i + count put: (rgbTriple at: i).
+                    rgb at: i + 1 + count  put: (rgbTriple at: i + 1).
+                    rgb at: i + 2 + count put: (rgbTriple at: i + 2).
+                    rgb at: i + 3 + count put: 0.
+                    count := count + 1 ]]]
+
+        ifFalse: [  "Windows or OS/2 2.0 format."
+            byteArray  := ByteArray new: size.
+            byteArray replaceFrom: 1
+                to: size
+                with: aStream contents
+                startingAt: position + 1.
+            position := position + size.
+            bitmapInfo := WinBitmapInfoHeader fromBytes: (
+                byteArray copyFrom: 1 to: WinBitmapInfoHeader sizeInBytes).
+            bitmapInfo biSize: WinBitmapInfoHeader sizeInBytes.
+
+            bitmapInfo bitCount = 24
+                ifFalse: [
+                    rgb := ByteArray new: (WinBitmapInfo colorTableSize: bitmapInfo bitCount).
+                    rgb replaceFrom: 1
+                        to: rgb size
+                        with: aStream contents
+                        startingAt: position + 1.
+                        position := position + rgb size ] ].
+    bitmapInfo := WinBitmapInfo fromBytes: (
+        rgb isNil
+            ifTrue: [ bitmapInfo contents ]
+            ifFalse: [ bitmapInfo contents, rgb ] ).
+    aStream position: position.
+    ^bitmapInfo!
+ 
+width: w height: h bits: aByteArray
+        "Answer a new Bitmap with width w and height h
+        and bits copied from aByteArray."
+    ^self new width: w height: h bits: aByteArray! !
+
+!Bitmap methods !
+   
+archive
+        "Private - answer the archive bits."
+    ^archive!
+
+archive: aByteArray
+        "Private - set the receiver's archive bits to aByteArray."
+    archive := aByteArray.!
+
+asParameter
+        "Answer the receiver in a form suitable for passing
+         as a parameter to a host procedure call."
+    ^self handle!
+ 
+bitmapHandle
+        "Answer the handle of the receiver without
+        bringing it to life."
+    ^bitmapHandle!
+ 
+changeSize: extent
+        "Change the size of the receiver to extent."
+    | clone |
+    clone := self clone.
+    self release.
+    self width: extent x
+        height: extent y
+        planes: self planes
+        bitCount: self bitCount.
+    self pen
+        copyBitmap: clone
+        from: clone boundingBox
+        to: self boundingBox.
+    clone release!
+
+clone
+        "Answer a new bitmap which has the same
+        attributes as the receiver."
+    | clone bits dc |
+    archive isArray ifTrue: [   "can't clone a bitmap from a dll."
+        ^self ].
+    clone := self class new.
+    bits := ( archive isNil          "must be done before copying bitmapInfo to"
+        ifTrue: [ self getDIBits ]  "ensure the color table is created."
+        ifFalse: [ archive ] ).
+    clone bitmapInfo: bitmapInfo deepCopy.
+    dc := ( ( deviceContext isNil or: [ deviceContext = MemoryContext ] ) or: [
+        deviceContext = OldMemoryContext ] )
+            ifTrue: [ self class memoryContext ]
+            ifFalse: [ self class createCompatibleDC: Display deviceContext ].
+    clone
+        deviceContext: dc ;
+        graphicsTool: ( Pen for: dc medium: clone ).
+    clone createBitmap: bits.
+    ^clone!
+ 
+createBitmap
+        "Private - Create a Windows bitmap for the receiver.
+         Answer the handle of the bitmap."
+    | handle |
+    handle := bitmapInfo bitCount = 1
+        ifTrue: [
+            self class
+                createBitmap: self width
+                height: self height
+                planes: 1
+                bitCount: 1
+                bits: nil ]
+        ifFalse: [
+            self class
+                createDIBitmap: Display deviceContext
+                bitmapInfo: bitmapInfo
+                init: nil
+                bits: nil
+                usage: DibRgbColors ].
+    bitmapHandle := handle.
+    BitmapHandleTable at: handle put: self!
+ 
+createBitmap: bits
+        "Private - Create a Windows bitmap for the receiver and
+         initialize the bitmap with bits. Answer the handle of the
+         bitmap."
+    | handle hdc hPrevious |
+    (hdc := UserLibrary getDC: nil) = 0
+        ifTrue: [ ^self osError ].
+    palette := self createDIBPalette.
+    palette == nil
+        ifFalse: [
+            hPrevious := UserLibrary
+                selectPalette: hdc
+                with: palette asParameter
+                forceBackground: false.
+            UserLibrary realizePalette: hdc ].
+    bitmapInfo bitCount = 1
+        ifTrue: [
+            handle := self class
+                createBitmap: self width
+                height: self height
+                planes: 1
+                bitCount: 1
+                bits: nil.
+            GDILibrary
+                setDIBits: hdc
+                hBitmap: handle
+                startScan: 0
+                scans: self height
+                bitsStruct: bits asParameter
+                bitsInfo: bitmapInfo asParameter
+                wUsage: DibRgbColors]
+        ifFalse: [
+            handle := self class
+                createDIBitmap: hdc
+                bitmapInfo: bitmapInfo
+                init: CbmInit
+                bits: bits
+                usage: DibRgbColors ].
+    palette == nil ifFalse: [
+        UserLibrary
+            selectPalette: hdc
+            with: hPrevious
+            forceBackground: false].
+    UserLibrary releaseDC: nil with: hdc.
+    bitmapHandle := handle.
+    BitmapHandleTable at: handle put: self!
+ 
+createDIBPalette
+        "Private - Create a GDI palette from the color table of
+          bitmapInfo."
+    | logPalette |
+    self bitCount > 8 ifTrue: [ ^nil ].
+    "self bitCount = 24 ifTrue: [^0]."
+
+    logPalette := WinLogicalPalette fromWinLogPalette: (
+        WinLogPalette fromRgbColor: bitmapInfo colorTable).
+    ^logPalette
+    "^GDILibrary createPalette: logPalette asParameter"!
+  
+deselect
+        "Deselect the receiver from the device context."
+    UserLibrary selectPalette: deviceContext
+        with: DefaultPaletteHandle
+        forceBackground: false.
+    ^GDILibrary selectObject: deviceContext
+        with: DefaultBitmap!
+
+deselectFromAuxDC: hPrevious
+        "Private - Deselect the receiver from the auxillary
+         device context."
+    UserLibrary selectPalette: AuxillaryDC
+        with: DefaultPaletteHandle
+        forceBackground: false.
+    ^GDILibrary selectObject: AuxillaryDC
+        with: hPrevious!
+  
+displayAt: aPoint with: aPen
+        "Display the receiver at aPoint on aPen's medium
+         using aPen."
+    aPen notNil ifTrue: [
+        aPen copyBitmap: self
+            from: self boundingBox
+            at: aPoint ]!
+  
+displayIn: aRect with: aPen
+        "Display the receiver in aRect using aPen."
+    aPen copyBitmap: self
+        from: self boundingBox
+        to: aRect!
+ 
+extent: aPoint
+        "Private - Initialize the receiver with extent aPoint."
+    ^self width: aPoint x height: aPoint y!
+
+fileInActivate: anObjectFiler
+        " Activate instance which has just been loaded. "
+    deviceContext notNil ifTrue: [ ^self ].  " already activated "
+    self deviceContext: OldMemoryContext.
+    ^self!
+ 
+fileOutSurrogate: anObjectFiler
+        " Answer surrogate for object filing.
+          Save bitmap in archive; don't store DC, pen, or bitmapHandle. "
+    | surrogate instVarNames |
+    self saveBitmap.
+    surrogate := self copy.
+    instVarNames := surrogate class allInstVarNames.
+    surrogate   " clear system resource handles to nil "
+        instVarAt: (instVarNames indexOf: 'deviceContext') put: nil;
+        instVarAt: (instVarNames indexOf: 'graphicsTool') put: nil;
+        instVarAt: (instVarNames indexOf: 'bitmapHandle') put: nil;
+        instVarAt: (instVarNames indexOf: 'palette') put: nil.
+    ^surrogate!
+   
+fromModule: aModuleName id: bitmapName
+        "Private - Load the receiver from the module
+        aModuleName with id bitmapName."
+    | bitmapStruct hLibrary path |
+    aModuleName notNil ifTrue: [
+        (hLibrary := KernelLibrary loadLibrary: aModuleName asParameter) < 32 ifTrue: [
+            ^self error: 'Can not open DLL, error code: ', hLibrary asString ]].
+    (bitmapHandle := UserLibrary
+        loadBitmap: hLibrary asParameter
+        name: bitmapName asParameter) = 0
+            ifTrue: [ ^self error: 'LoadBitmap ', bitmapName asString, ' failed from module ', aModuleName asString ].
+    BitmapHandleTable at: bitmapHandle put: self.
+    (hLibrary notNil and: [ aModuleName isString ]) ifTrue: [
+        KernelLibrary freeLibrary: hLibrary ].
+
+    "use archive to save dll name and id."
+    archive := Array with: aModuleName with: bitmapName.
+    GDILibrary
+        getObject: bitmapHandle
+        count: WinBitmapStruct sizeInBytes
+        lpObject: ( bitmapStruct :=  WinBitmapStruct new ) asParameter.
+    bitmapInfo := WinBitmapInfo
+        width: bitmapStruct width
+        height: bitmapStruct height
+        planes: 1
+        bitCount: bitmapStruct planes * bitmapStruct bitsPixel.
+    deviceContext := self class memoryContext.
+    graphicsTool := Pen forDC: deviceContext medium: self.
+    graphicsTool
+        width: bitmapInfo width;
+        height: bitmapInfo height!
+ 
+fromSysID: id
+    "Added by OSI"
+    | handle bitmap |
+    #addedByOSI.
+    ^self fromModule: nil id: id!
+   
+getCb: bitCount
+        "Private - Answer the size of the bitmapInfo struct."
+    | count |
+    count := WinBitmapInfoHeader sizeInBytes.
+    bitCount >= 24
+        ifTrue: [^count]     "No color table for this format."
+        ifFalse: [^(count + (4 * (1 bitShift: bitCount)))]!
+   
+getDIBits
+        "Answer a ByteArray which contains the bits
+         of the receiver in device independent format."
+    | bits bytes hPrevious hdc |
+    self validate.      "make sure handle is valid."
+    (hdc := UserLibrary getDC: nil) = 0
+        ifTrue: [ ^self osError ].
+    palette == nil ifFalse: [
+        hPrevious := UserLibrary
+            selectPalette: hdc
+            with: palette asParameter
+            forceBackground: false.
+        UserLibrary realizePalette: hdc ].
+
+    "call GetDIBits with nil to fill in the rest of bitmapInfo."
+    GDILibrary
+        getDIBits: hdc
+        hBitmap: self handle
+        startScan: 0
+        scans: self height
+        bits: nil
+        bitsInfo: bitmapInfo asParameter
+        wUsage: DibRgbColors.
+
+    bytes := self sizeInBytes.
+    bits := ByteArray new: bytes.
+    GDILibrary getDIBits: hdc
+        hBitmap: self handle
+        startScan: 0
+        scans: self height
+        bitsStruct: bits asParameter
+        bitsInfo: bitmapInfo asParameter
+        wUsage: DibRgbColors.
+
+    palette  == nil ifFalse: [
+        UserLibrary
+            selectPalette: hdc
+            with: hPrevious
+            forceBackground: false ].
+    UserLibrary releaseDC: nil with: hdc.
+    ^bits!
+  
+handle
+        "Private - Answer the handle."
+    self validate.
+    ^bitmapHandle!
+  
+initHandle
+        "Private - the receiver has been released, set the handle to nil."
+    BitmapHandleTable removeKey: bitmapHandle ifAbsent: [ ].
+    graphicsTool := nil.
+    bitmapHandle := nil.
+    palette := nil.
+        "set variable to indicate type of device context to restore."
+    deviceContext :=
+        ( deviceContext isNil or: [ deviceContext  = MemoryContext ] )
+            ifTrue: [ nil ]
+            ifFalse: [ DeviceContext new ]!
+
+initPenWidth: width height: height planes: planes bitCount: bitCount forDC: aDeviceContext
+        "Private - Initialize the receiver's pen."
+
+    | bitsPel |
+    bitsPel :=  ( bitCount > 8 "and: [  OperatingSystem isWin32s ]" )
+        ifTrue: [ 24 ]    "16 and 32 bit count not supported in Win16"
+        ifFalse: [ bitCount ].
+    bitmapInfo := WinBitmapInfo
+        width: width
+        height: height
+        planes: 1
+        bitCount: bitsPel.
+
+    deviceContext := aDeviceContext.
+    graphicsTool := Pen forDC: aDeviceContext medium: self.
+    graphicsTool
+        width: width;
+        height: height!
+   
+isValid
+        "Answer true if the bitmap has a handle or archive."
+    ^bitmapHandle notNil or: [archive notNil]!
+   
+outputToFile: aFileName
+        "Output the receiver in DIB format to aFileName."
+    | aFileStream |
+    aFileStream := (File pathName: aFileName) asByteFileStream.
+    self outputToFileStream: aFileStream.
+    aFileStream close.!
+
+outputToFileStream: aFileStream
+        "Output the receiver in DIB format to aFileStream."
+    | fileHeader bits |
+    bits := self getDIBits.
+    bits isNil ifTrue: [ ^self ].
+    fileHeader := WinBitmapFileHeader new.
+    fileHeader bfType: 'BM';
+        bfSize: 14 + bitmapInfo contents size + bits size;
+        reserved1: 0;
+        reserved2: 0;
+        offBits: 14 + bitmapInfo contents size.
+    aFileStream nextPutAll: fileHeader contents.
+    aFileStream putBytesFrom: bitmapInfo contents.
+    aFileStream putBytesFrom: bits.!
+  
+palette
+    ^palette!
+  
+release
+        "Delete the receiver from the device context. Freeing
+          up all system storage associated with the receiver."
+    bitmapHandle isNil ifTrue: [ ^self ].
+    self deselect.
+    deviceContext = MemoryContext
+        ifFalse: [ graphicsTool deleteDC ].
+    GDILibrary deleteObject: bitmapHandle.
+    self initHandle.!
+
+restoreBitmap
+        "Private - Recreate the receiver and copy the bits
+         from the archive buffer. This is done upon restarting
+         a saved image."
+    | dc |
+    archive isNil ifTrue: [
+        bitmapHandle := nil.
+        ^self ].
+    archive isArray ifTrue: [   "bitmap is from a dll"
+        ^self fromModule: ( archive at: 1 ) id: ( archive at: 2 ) ].
+    self createBitmap: archive.
+    dc := ( ( deviceContext isNil or: [ deviceContext = MemoryContext ] ) or: [
+        deviceContext = OldMemoryContext ] )
+            ifTrue: [ self class memoryContext ]
+            ifFalse: [ self class createCompatibleDC: Display deviceContext ].
+
+    self
+        deviceContext: dc;
+        graphicsTool: (Pen forDC: dc medium: self).
+    bitmapHandle notNil ifTrue: [ archive := nil]!
+   
+saveBitmap
+        "Private - Save the receiver's bits in an archive buffer
+          when saving image."
+    bitmapHandle isNil ifTrue: [ ^self ].
+    "archive := self getDIBits."
+    archive isArray ifFalse: [  "not from a dll"
+        archive := self getDIBits ].
+    self release!
+ 
+select
+        "Private - Select the receiver into the device context
+         and answer the previously selected bitmap handle."
+    self validate.
+    (deviceContext = MemoryContext and: [ graphicsTool notNil ])
+        ifTrue: [ graphicsTool resetAttributes ].
+    palette == nil ifFalse: [
+        UserLibrary selectPalette: deviceContext
+            with: palette asParameter
+            forceBackground: false.
+        UserLibrary realizePalette: deviceContext].
+    bitmapHandle notNil
+        ifTrue: [ GDILibrary selectObject: deviceContext with: bitmapHandle ].!
+
+selectToAuxDC
+        "Private - Select the receiver into the auxillary
+         device context."
+    self deselect.
+    self validate.
+    palette == nil ifFalse: [
+        UserLibrary
+            selectPalette: AuxillaryDC
+            with: palette asParameter
+            forceBackground: false.
+        UserLibrary realizePalette: AuxillaryDC ].
+    bitmapHandle notNil
+        ifTrue: [ ^GDILibrary selectObject: AuxillaryDC with: self handle ]!
+  
+setDIBits: aByteArray
+        "Private - Set the bitmap bits of the receiver to aByteArray."
+    self setDIBits: aByteArray using: bitmapInfo!
+
+setDIBits: aByteArray using: aBitmapInfo
+        "Private - Set the bitmap bits of the receiver to aByteArray."
+    | hdc result |
+    hdc := UserLibrary getDC: nil.
+    result := GDILibrary
+        setDIBits: hdc
+        hBitmap: self handle
+        startScan: 0
+        scans: self height
+        bitsStruct: aByteArray asParameter
+        bitsInfo: aBitmapInfo asParameter
+        wUsage: DibRgbColors.
+    UserLibrary releaseDC: nil with: hdc.
+    result = 0 ifTrue: [ self osError ]!
+   
+validate
+        "Private - Restore from archive if necessary."
+    | state |
+    state := Process enableInterrupts: false.
+
+    ((bitmapHandle isNil
+        or: [bitmapHandle = NullHandle])
+        and: [archive notNil]) ifTrue: [
+           bitmapHandle := WinHandle new.
+           self restoreBitmap].
+
+    Process enableInterrupts: state!
+  
+width: w height: h planes: planes bitCount: bitsPixel
+        "Initialize the receiver with w and h
+         as its width and height."
+    | bitCount hOldBitmap |
+    bitCount := planes * bitsPixel.
+    self initPenWidth: w
+        height: h
+        planes: 1
+        bitCount: bitCount.
+    bitmapInfo bitCount: bitCount.
+    self createBitmap.
+
+    hOldBitmap := graphicsTool selectObject: self handle.
+    graphicsTool patternFill: (0 @ 0 extent: self extent)
+        rule: Whiteness.
+   graphicsTool selectObject: hOldBitmap! !
+
+!DIB class methods !
+  
+fromFile: bitmapFile
+        "Create a DIB bitmap from bitmapFile"
+    ^self fromFile: bitmapFile in: Disk!
+   
+fromFile: aFileName in: aDirectory
+    "Read a DIB bitmap from a file named aFileName."
+    | stream answer |
+    stream := File pathNameReadOnly: aFileName in: aDirectory.
+    answer := self fromFileStream: stream.
+    stream close.
+    ^answer!
+
+fromFileStream: aFileStream
+        "Create a DIB bitmap from bitmapFile"
+    | file dib type |
+    file := aFileStream asByteFileStreamCopy.
+    type := String new: 2.
+    type at: 1 put: file next.
+    type at: 2 put: file next.
+    "check file type and position file pointer to DIB's info header."
+    type  = 'BM'
+        ifTrue: [file skip: 12]
+        ifFalse: [
+            type = 'BA'
+                ifTrue: [file skip: 26]
+                ifFalse: [
+                    file close.
+                    self error: 'Invalid bitmap format'.
+                    ^nil]
+            ].
+
+    dib := self new
+        fromStream: file.
+    ^dib! !
+
+!DIB methods !
+ 
+asDIB
+    ^self!
+   
+bitCount
+        "Answer the bitCount field of bitmapInfo structure."
+    ^bitmapInfo bitCount!
+   
+bitmapInfo
+    ^bitmapInfo!
+
+bitmapInfo: aWinBitmapInfo
+    bitmapInfo := aWinBitmapInfo!
+   
+bits
+    ^bits!
+
+bits: aByteArray
+    bits := aByteArray!
+   
+createDIBPalette
+        "Private - Create a GDI palette from the color table of
+          bitmapInfo."
+    | logPalette |
+    self bitCount = 24 ifTrue: [^0].
+    logPalette := WinLogPalette fromRgbColor: bitmapInfo colorTable.
+    ^GDILibrary createPalette: logPalette asParameter!
+   
+displayWith: destPen from:sRectangle to: dRectangle rule: aRopConstant
+        "Copy sRectangle from the receiver to dRectangle in the destPen medium
+          using aRopConstant.
+          Data will be compressed or streched if
+          the two rectangle are not the same extent."
+        "Fixed by SNI - Select the receiver palette  before
+        to display it"
+
+    |answer destinationDC hPrevious isMemDC hPalette hPPalette pBits|
+    destinationDC := destPen handle.
+    (isMemDC := ((destPen graphicsMedium isBitmap) and: [
+        destPen graphicsMedium deviceContext = Bitmap memoryContext]))
+        ifTrue: [
+            destinationDC := Bitmap auxillaryDC.
+            hPrevious := destPen graphicsMedium selectToAuxDC].
+
+    (hPalette := self createDIBPalette) ~= 0
+        ifTrue: [
+            hPPalette := UserLibrary selectPalette: destinationDC
+                with: hPalette
+                forceBackground: false.
+            UserLibrary realizePalette: destinationDC].
+    pBits := WinAddress copyToNonSmalltalkMemory: bits asParameter.
+    answer := GDILibrary
+        stretchDIBits: destinationDC
+        xDest: dRectangle left
+        yDest: dRectangle top
+        cxDest: dRectangle width
+        cyDest: dRectangle height
+        xSrc: sRectangle left
+        ySrc: sRectangle top
+        cxSrc: sRectangle width
+        cySrc: sRectangle height
+        bits: pBits asParameter
+        bmi: bitmapInfo asParameter
+        colorUse: DibRgbColors
+        rop: aRopConstant.
+
+    pBits unlockAndFree.
+
+    hPalette ~= 0
+        ifTrue: [
+            UserLibrary selectPalette: destinationDC
+                with: hPPalette
+                forceBackground: false.
+            GDILibrary deleteObject: hPalette].
+
+    isMemDC ifTrue: [
+        destPen graphicsMedium deselectFromAuxDC: hPrevious].
+    ^answer!
+   
+fromStream: aStream
+        "Private - Set the receiver's instance variables,
+        parsing aStream. aStream must point to the DIB's
+        info header."
+    | bytes |
+    bitmapInfo := Bitmap readBitmapInfo: aStream.
+    bitmapInfo sizeImage = 0
+        ifTrue: [ bytes := (((
+            bitmapInfo width * bitmapInfo bitCount) + 31) // 32 * 4) * bitmapInfo height ]
+        ifFalse: [ bytes := bitmapInfo sizeImage ].
+
+    bits := ByteArray new: bytes.
+    bits replaceFrom: 1
+        to: bytes
+        with: aStream contents
+        startingAt: aStream position + 1.!
+   
+numberOfColors
+        "Answer the number of colors in the bitmap."
+    self bitCount = 24
+        ifTrue: [^0]         "A 24 bitCount bitmap has no color table."
+        ifFalse: [^(1 bitShift: self bitCount)]! !
+
+!GraphicsTool methods !
+
+copy: srcPen from: aRectangle at: aPoint rule: aRopConstant
+        "Copy aRectangle from the scrPen medium to the
+         receiver medium at aPoint using aRopConstant.
+         aRopConstant defines how the source is combined with
+         the destination."
+    | destinationDC isMemDC hPrevious |
+    destinationDC := self handle.
+    (isMemDC := (graphicsMedium isBitmap and: [
+        graphicsMedium deviceContext = Bitmap memoryContext ]))
+        ifTrue: [
+            destinationDC := Bitmap auxillaryDC.
+            hPrevious := graphicsMedium selectToAuxDC].
+    srcPen graphicsMedium isBitmap
+        ifTrue: [ srcPen graphicsMedium select ].
+    Bitmap
+        bitBlt: destinationDC
+        x: aPoint x
+        y: aPoint y
+        width: aRectangle width
+        height: aRectangle height
+        srcDC: srcPen handle
+        xSrc: aRectangle origin x
+        ySrc: aRectangle origin y
+        rop: aRopConstant.
+    srcPen graphicsMedium isBitmap
+        ifTrue: [ srcPen graphicsMedium deselect ].
+    isMemDC ifTrue: [
+        graphicsMedium deselectFromAuxDC: hPrevious].!
+  
+copy: srcPen from: sRectangle to: dRectangle rule: aRopConstant
+        "Copy sRectangle from the scrPen medium to the
+         receiver medium in dRectangle using aRopConstant.
+         aRopConstant defines how the source is combined with
+         the destination. Data will be stretched or compressed if
+         the two rectangles are not the same extent."
+    | destinationDC isMemDC hPrevious |
+    destinationDC := self handle.
+    (isMemDC := (graphicsMedium isBitmap and: [
+        graphicsMedium deviceContext = Bitmap memoryContext]))
+        ifTrue: [
+            destinationDC := Bitmap auxillaryDC.
+            hPrevious := graphicsMedium selectToAuxDC ].
+    srcPen graphicsMedium isBitmap
+        ifTrue: [ srcPen graphicsMedium select ].
+    self
+        stretchBlt: destinationDC
+        x: dRectangle origin x
+        y: dRectangle origin y
+        dWidth: dRectangle width
+        dHeight: dRectangle height
+        srcDC: srcPen handle
+        xSrc: sRectangle origin x
+        ySrc: sRectangle origin y
+        sWidth: sRectangle width
+        sHeight: sRectangle height
+        rop: aRopConstant.
+    srcPen graphicsMedium isBitmap
+        ifTrue: [ srcPen graphicsMedium deselect ].
+    isMemDC
+        ifTrue: [ graphicsMedium deselectFromAuxDC: hPrevious ].!
+   
+handle
+        "Answer the receiver's deviceContext handle."
+    deviceContext isNil
+        ifTrue: [
+            graphicsMedium isWindow
+                ifTrue: [ self setHandle: graphicsMedium getDC ]
+                ifFalse: [
+                    graphicsMedium isBitmap
+                        ifTrue: [ self setHandle: Bitmap memoryContext ] ] ].
+    ^deviceContext.! !
+
+!Icon class methods !
+   
+fromBitmap: aBitmap
+        "Private - Answer a new instance of Icon copied from aBitmap."
+
+    | andMask icon |
+    andMask := Bitmap extent: self iconSize.
+    andMask pen fill: andMask boundingBox rule: Blackness.
+    icon := self fromBitmap: aBitmap andMask: andMask.
+    andMask release.
+    ^icon!
+ 
+fromFile: fileName
+        "Answer an instance of Bitmap copied from fileName.
+         fileName must have a '.ico' extension."
+
+    | file icon |
+    file := (File pathName: fileName) asByteFileStream.
+    icon := self fromFileStream: file.
+    file close.
+    ^icon!
+
+fromFileStream: stream
+        "Answer an instance of Icon from stream."
+    | icon |
+    icon := self  new.
+    icon readOnly: false.
+    icon fromFileStream: stream.
+    ^icon!
+
+fromModule:aFileName id: anId
+        "Answer an Icon object. aFileName is a DLL file name
+        anId can be a string or an Integer"
+    ^self new fromModule: aFileName id: anId!
+ 
+getAllInstances
+        "Private - Answer all instances of Icon and its subclasses ( if any )."
+    | icons iconClasses |
+    iconClasses := self withAllSubclasses.
+    icons := Array new.
+    Smalltalk unusedMemory.     "force a garbage collect."
+    iconClasses do: [ :each |
+        icons := icons, each allInstancesPrim ].
+    ^icons!
+  
+purgeUnusedIcons
+        "Private - Purge unused icons from the system."
+    |handles all allReadOnly icons iconObjects iconLibraries hLibrary refCount bag|
+    all := IconHandleTable keys.
+    allReadOnly := self getAllReadOnlyHandles.
+    IconHandleTable := Dictionary new.
+    IconHandleReadOnlyTable := Dictionary new.
+    icons := self getAllInstances.
+    iconObjects := icons select: [ :each | each readOnly not ].
+    iconObjects := iconObjects select: [ :each | each privateHandle notNil ].
+    handles := iconObjects collect: [ :each | each handle ].
+    all do: [:each |
+        (handles includes: each) ifFalse: [
+            UserLibrary destroyIcon: each ]].
+    iconObjects do: [ :each |
+        IconHandleTable at: each handle put: each].
+
+    iconLibraries := icons select: [:each | each readOnly ].
+    iconLibraries := iconLibraries select: [ :each | each privateHandle notNil ].
+    handles := iconLibraries collect: [ :each | each handle ].
+    allReadOnly do: [:each |
+        (handles includes: each)
+            ifFalse: [
+                refCount := IconLibraryTable at: each ifAbsent: [].
+                refCount notNil ifTrue: [
+                    KernelLibrary freeLibrary: refCount key asParameter.
+                    refCount value: refCount value - 1.
+                    refCount value = 0 ifTrue:[IconLibraryTable removeKey: refCount key ifAbsent: [] ]]]].
+    iconLibraries do: [:each |
+            (bag := IconHandleReadOnlyTable at: each handle ifAbsent: []) isNil
+                ifTrue:[
+                    IconHandleReadOnlyTable at: each handle put: (Bag with:each) ]
+                ifFalse: [ bag add:each ]].! !
+
+!Icon methods !
+
+asParameter
+        "Answer the receiver in a form suitable for
+         passing as a parameter to a procedure call."
+    ^self handle!
+  
+createIcon
+    "Modified by OSI - Included Digitalk's changes"
+        "Private - Create a WINDOWS icon from the receiver."
+    | temp bitsPixel planes bitCount |
+    readOnly ifTrue:[ ^self ].
+    bitsPixel := GDILibrary getDeviceCaps: Display pen handle
+        index: Bitspixel.
+    planes := GDILibrary getDeviceCaps: Display deviceContext
+        index: Planes.
+    bitCount := bitsPixel * planes.
+    bitCount = xorMask bitCount
+        ifTrue: [temp := xorMask]
+        ifFalse: [                "create a bitmap compatible with the device."
+            temp := Bitmap width: xorMask width height: xorMask height planes: 1 bitCount: bitCount.
+            temp pen copyBitmap: xorMask
+                from: xorMask boundingBox
+                at: 0@ 0 ].
+
+    hIcon := UserLibrary createIcon: WIN hInstance
+        width: self extent x
+        height: self extent y
+        planes: temp planes
+        bitsPixel: temp bitCount
+        andBits: andMask getDDBits
+        xorBits: temp getDDBits.
+    hIcon = 0 ifTrue: [ ^self osError ].
+    IconHandleTable at: hIcon put: self.
+    bitCount = xorMask bitCount ifFalse: [ temp release ]!
+
+displayAt: aPoint with: aPen
+        "Display the receiver through aPen at the given location."
+    UserLibrary
+        drawIcon: aPen handle
+        x: aPoint x
+        y: aPoint y
+        hIcon: self handle.!
+
+findVGAImage: aStream
+        "Private - Position the stream to the beginning of the
+        VGA icon image, or report an error if not found."
+    | idCount bWidth bHeight bColorCount found i |
+    idCount := aStream nextUShort.
+    i := 0.
+    found := false.
+    [ found or: [ i > idCount ] ] whileFalse: [
+        i := i + 1.
+        bWidth := aStream nextByte.
+        bHeight := aStream nextByte.
+        bColorCount := aStream nextByte.
+        ( ( ( bWidth = 32 ) and: [ bHeight = 32 ] ) and: [ bColorCount = 16 ] )
+            ifTrue:[ found := true ]
+            ifFalse: [ aStream skip: 13 ] ].
+    found ifFalse: [ ^self error: 'Unsupported icon format' ].
+    aStream skip: 9.!
+   
+fromFileStream: stream
+        "Answer an instance of Bitmap from stream."
+    | type dibOffset pos |
+    pos := stream position.
+    type := stream nextUShort.
+    "First check for OS/2 icon format"
+    (#(16r4349 16r4943 16r5450 16r5043) includes: type)
+        ifTrue: [                     "OS/2 single version format."
+            stream skip: 12.          "skip file header."
+            ^self fromFileStreamOS2: stream]
+        ifFalse: [
+            type = 16r4142
+                ifTrue: [               "multiple versions format"
+                    stream skip: 12.    "skip bitmap array file header."
+                    type := stream nextUShort.
+                    (#(16r4349 16r4943 16r5450 16r5043) includes: type)
+                        ifTrue: [stream skip: 12]
+                        ifFalse: [^self error:'Resource is not an Icon'].
+                    ^self fromFileStreamOS2: stream]].
+
+    "Now check for Windows icon format."
+    (type = 0 and: [stream nextUShort = 1])
+        ifFalse: [^self error:'Resource is not an Icon'].
+    self findVGAImage: stream.
+    dibOffset := stream nextULong.
+    stream position: pos.
+    stream skip: dibOffset.
+
+    self readBitmapsFromFileStream: stream!
+ 
+fromFileStreamOS2: fileStream
+        "Private - Answer an instance of Icon read from aFileStream.
+         The icon stored in fileStream is an OS/2 icon."
+    | bitmap bitmapInfo clrBitmapInfo bits colorBits  |
+    bitmapInfo := Bitmap readBitmapInfo: fileStream.
+    fileStream skip: 14.    "Skip color bitmap file header."
+    clrBitmapInfo := Bitmap readBitmapInfo: fileStream.
+    bits := ByteArray new: (((bitmapInfo bitCount * bitmapInfo width) + 31) // 32) *
+        4 * bitmapInfo height * bitmapInfo planes.
+    fileStream getBytesFor: bits.
+
+    bitmap := Bitmap new.
+    bitmap bitmapInfo: bitmapInfo.
+    bitmap deviceContext: Bitmap memoryContext;
+        graphicsTool: (
+            Pen forDC: Bitmap memoryContext medium: bitmap).
+    bitmap createBitmap: bits.
+
+    "Read color bitmap bits"
+    colorBits := ByteArray new: (((clrBitmapInfo bitCount * clrBitmapInfo width) + 31) // 32) *
+        4 * clrBitmapInfo height * clrBitmapInfo planes.
+    fileStream getBytesFor: colorBits.
+
+    "Create XOR mask from color bits."
+    xorMask := Bitmap new.
+    xorMask bitmapInfo: clrBitmapInfo.
+    xorMask
+        deviceContext: (Bitmap memoryContext);
+        graphicsTool: (
+            Pen forDC: Bitmap memoryContext medium: xorMask).
+    xorMask createBitmap: colorBits.
+
+    "Create AND mask from bitmap."
+    andMask := Bitmap width: bitmap width height: bitmap height // 2.
+    andMask pen                                             "only copy AND mask portion."
+        copyBitmap: bitmap
+        from: (0 @ 0 extent: (
+                bitmap width @ (bitmap height // 2)))
+        at: 0 @ 0.
+
+    bitmap release!
+ 
+handle
+        "Private - Answer the receiver's handle."
+    self validate.
+    ^hIcon!
+  
+hasHandle
+        "Answer whether the handle is valid."
+    ^(hIcon notNil and: [hIcon ~= 0])!
+
+initHandle
+        "Private - the receiver has been released, set the handle to nil."
+    readOnly ifTrue: [ ^self releaseReadOnly ].
+    IconHandleTable removeKey: hIcon ifAbsent: [ nil ].
+    hIcon := nil.
+    self releaseBitmaps!
+   
+isValid
+        "Answer whether the receiver has a handle or bits."
+    ^self hasHandle or: [self andMask notNil]!
+
+outputToFile: aFileName
+        "Private - Output the receiver in DIB format to aFileName."
+    | file aFileStream |
+    file := File fromPath: aFileName.
+    file exists ifTrue: [ file remove ].
+    file create.
+    aFileStream := file asByteFileStream.
+    self outputToFileStream: aFileStream.
+    aFileStream close.!
+
+outputToFileStream: aFileStream
+        "Output the receiver in DIB format to aFileStream."
+    | bihXorBits andBits |
+    bihXorBits := xorMask getIconHeaderDIBits.
+    andBits := andMask getDIBits.
+    aFileStream
+        nextTwoBytesPut: 0;
+        nextTwoBytesPut: 1;
+        nextTwoBytesPut: 1;
+        nextBytePut: xorMask width;
+        nextBytePut: xorMask height;
+        nextBytePut: xorMask numberOfColors;
+        nextBytePut: 0;
+        nextTwoBytesPut: 0;
+        nextTwoBytesPut: 0;
+        nextFourBytesPut: bihXorBits size + andBits size ;
+        nextFourBytesPut: 22;
+        putBytesFrom: bihXorBits;
+        putBytesFrom: andBits.!
+  
+readBitmapsFromFileStream: aFileStream
+    "Private - read the xorMask and andMask bitmaps for the receiver
+      from aFileStream."
+
+    | andBitInfo xorBitInfo andMaskSize xorBits andBits |
+    xorBitInfo := Bitmap readBitmapInfo: aFileStream.
+    xorBitInfo height: xorBitInfo height // 2.
+    andMaskSize := xorBitInfo width / 8 * xorBitInfo width.
+    xorBitInfo sizeImage: xorBitInfo sizeImage - andMaskSize.
+
+    xorBits := ByteArray new: xorBitInfo sizeImage.
+    andBits := ByteArray new: andMaskSize.
+    aFileStream getBytesFor: xorBits.
+    aFileStream getBytesFor: andBits.
+
+    "Create AND and XOR bitmap objects but don't create
+      OS objects until needed. "
+    andMask := Bitmap new.
+    andBitInfo := WinBitmapInfo
+        width: xorBitInfo width
+        height: xorBitInfo height
+        planes: 1
+        bitCount: 1
+        size: ( WinBitmapInfo getCb: 1 ).
+    andBitInfo colorTable: (
+        (ByteArray with: 0 with: 0 with: 0 with: 0) , (
+        ByteArray with: 255 with: 255 with: 255 with: 0)).
+    andMask
+        bitmapInfo: andBitInfo;
+        archive: andBits;
+        deviceContext: Bitmap memoryContext;
+        graphicsTool: ( Pen for: Bitmap memoryContext medium: andMask ).
+
+    xorMask := Bitmap new
+        bitmapInfo: xorBitInfo;
+        archive: xorBits;
+        deviceContext: Bitmap memoryContext;
+        graphicsTool: ( Pen for: Bitmap memoryContext medium: xorMask )!
+   
+release
+        "Release the receiver's resources from memory."
+    readOnly ifTrue:[^self releaseReadOnly].
+    hIcon isNil ifTrue:[^self].
+    UserLibrary destroyIcon: self handle.
+    self initHandle!
+
+releaseBitmaps
+        "Private - Release the bitmaps of the receiver from the system."
+    andMask notNil ifTrue: [andMask saveBitmap].
+    xorMask notNil ifTrue: [xorMask saveBitmap]!
+
+validate
+        "Private - Validate the receiver by recreating
+          it from  the original parameters if necessary."
+    | refCount bag |
+    hIcon notNil ifTrue:[^hIcon].
+    readOnly
+        ifTrue:[
+            hIcon :=self handleReadOnly.
+            (bag := IconHandleReadOnlyTable at: hIcon ifAbsent:[]) isNil
+                ifTrue:[
+                    IconHandleReadOnlyTable at: hIcon
+                        put: (Bag with:self) ]
+                ifFalse:[ bag add:self ].
+            (refCount := IconLibraryTable at: hIcon ifAbsent:[]) notNil
+                ifTrue:[ refCount value: refCount value + 1 ]
+                ifFalse:[
+                    IconLibraryTable at: hIcon
+                        put: (Association key: hLibrary value: 1)].
+            ^hIcon]
+        ifFalse:[ self createIcon ].
+    ^hIcon! !
+
+!TopPane methods !
+
+wmPalettechanged: wParam with: lParam
+    "BEWARE - do not remove the palette message handlers  without first
+    removing the matching entry in WinEvents"
+    "Process WM_PALETTECHANGED message"
+     | hdc palette |
+    palette := self propertyAt: #palette ifAbsent: [ ^nil ].
+    wParam = ((self handle) asInteger)
+        ifFalse:[ hdc := self getDC.
+                      UserLibrary selectPalette: hdc
+                                                         with: palette handle forceBackground: false.
+                      ( UserLibrary realizePalette: hdc ) > 0
+                            ifTrue:  [ GDILibrary updateColors: hdc ].
+                      self releaseDC:  hdc
+                    ].
+    ^nil!
+ 
+wmQuerynewpalette:  wParam with: lParam
+    "BEWARE - do not remove the palette message handlers  without first
+    removing the matching entry in WinEvents"
+    "Process WM_QUERYNEWPALETTE message"
+       | hdc  palette |
+
+    palette := self propertyAt: #palette ifAbsent: [ ^0 ].
+    hdc := self getDC.
+    UserLibrary selectPalette:  hdc with:   palette handle  forceBackground: false.
+    ( UserLibrary realizePalette: hdc) > 0
+            ifTrue: [  self invalidateRect: self boundingBox].
+    self releaseDC:  hdc.
+    ^nil! !
+
+!WinBitmapFileHeader class methods !
+   
+inspectorFields
+        "Answer the names of the fields contained in this kind of definition."
+    ^self inspectorClass fields: #(
+        bfType
+        bfSize
+        reserved1
+        reserved2
+        offBits
+    )! !
+
+!WinBitmapFileHeader methods !
+ 
+bfSize
+    ^self uLongAtOffset: 2!
+ 
+offBits
+    ^self uLongAtOffset: 10!
+   
+reserved1
+    ^self uShortAtOffset: 6!
+ 
+reserved2
+    ^self uShortAtOffset: 8! !
+
+!WinBitmapInfo class methods !
+ 
+colorTableSize: bitCount
+        "Private - Answer the size of the color table."
+    bitCount <= 8
+        ifTrue: [  ^( 1 bitShift: bitCount ) * 4  ].
+    ( bitCount = 16 or: [ bitCount = 32 ] )
+        ifTrue: [ ^12 ].    "3 DWORD masks"
+    ^0     "No color table for 24 bitCount format."!
+  
+getCb: bitCount
+        "Private - Answer the size of the bitmapInfo struct ."
+    | count |
+    count := WinBitmapInfoHeader sizeInBytes.
+    bitCount <= 8
+        ifTrue: [  ^( count + ( 4 * ( 1 bitShift: bitCount )  ) ) ].
+    ( bitCount = 16 or: [ bitCount = 32 ] )
+        ifTrue: [ ^count + 12 ].    "3 DWORD masks"
+    ^count     "No color table for 24 bitCount format."!
+  
+inspectorFields
+        "Answer the names of the fields contained in this kind of definition."
+    ^super inspectorFields, #( colorTable )!
+   
+width: w height: h	planes: planes bitCount: bitCount
+        "Answer a new instance of the receiver with width of w,
+        height of h, planes of planes, bit count of bitCount and
+        size of bytes."
+
+    | bytes bitmapInfo |
+    bytes := self getCb: bitCount.
+    bitmapInfo := self new: bytes.
+    bitmapInfo
+        biSize: 40;
+        width: w;
+        height: h;
+        planes: planes;
+        bitCount: bitCount.
+    ( bitCount = 16 or: [ bitCount = 32 ] ) ifTrue: [
+        bitmapInfo
+            compression: 3; "BI_BITFIELDS"
+            clrUsed: 3;
+            uLongAtOffset: 40 put: 16r7C00;
+            uLongAtOffset: 44 put: 16r3E0;
+            uLongAtOffset: 48 put: 16r1F ].
+    ^bitmapInfo! !
+
+!WinBitmapInfoHeader class methods !
+
+inspectorFields
+        "Answer the names of the fields contained in this kind of definition."
+
+    ^self inspectorClass fields: #(
+        biSize
+        width
+        height
+        planes
+        bitCount
+        compression
+        sizeImage
+        xPelsPerMeter
+        yPelsPerMeter
+        clrUsed
+        clrImportant
+    )!
+
+width: w height: h  planes: planes bitCount: bitCount
+        "Answer a new instance of the receiver with width of w,
+        height of h, planes of planes and bit count of bitCount."
+
+    | bitmapInfoHeader |
+    bitmapInfoHeader := self new.
+    bitmapInfoHeader
+        biSize: 40;
+        width: w;
+        height: h;
+        planes: planes;
+        bitCount: bitCount.
+    ( bitCount = 16 or: [ bitCount = 32 ] ) ifTrue: [
+        bitmapInfoHeader
+            compression: 3; "BI_BITFIELDS"
+            clrUsed: 3 ].
+    ^bitmapInfoHeader! !
+
+!WinBitmapInfoHeader methods !
+
+biSize
+    ^self uLongAtOffset: 0!
+ 
+biSize: bmInfoSize
+        "Private - Set the number of bytes in the receiver."
+    self uLongAtOffset: 0 put: bmInfoSize!
+
+clrUsed
+    ^self uLongAtOffset: 32!
+   
+compression
+    ^self uLongAtOffset: 16!
+   
+yPelsPerMeter
+    ^self uLongAtOffset: 28! !
+
+!WinBitmapStruct class methods !
+   
+inspectorFields
+        "Answer the names of the fields contained in this kind of definition."
+    ^self inspectorClass fields: #(
+        bmType
+        width
+        height
+        byteWidth
+        planes
+        bitsPixel
+    )! !
+
+!WinBitmapStruct methods !
+   
+bmType
+    ^self shortAtOffset: 0! !
+
+!Window class methods !
+
+disablePaletteMessages
+    " Window disablePaletteMessages "
+    WinEvents at:783 put:  nil.
+    WinEvents at:785 put:  nil!
+ 
+enablePaletteMessages
+    " Window enablePaletteMessages "
+    ( GDIDLL canUnderstand: #updateColors: ) ifFalse: [ ^self error: 'Better not do this' ].
+    ( self canUnderstand: #wmQuerynewpalette:with: )
+        ifTrue: [ WinEvents at:783 put:  #wmQuerynewpalette:with: ].
+    ( self canUnderstand: #wmPalettechanged:with: )
+        ifTrue: [ WinEvents at:785 put:  #wmPalettechanged:with: ]! !
+
+!Window methods !
+  
+wmPalettechanged: wParam with: lParam
+    "BEWARE - do not remove the palette message handlers  without first
+    removing the matching entry in WinEvents"
+    ^nil!
+
+wmQuerynewpalette:  wParam with: lParam
+    "BEWARE - do not remove the palette message handlers  without first
+    removing the matching entry in WinEvents"
+    ^nil! !
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.03 Bitmap Fixes'.
+package makeCurrent;
+    organize: ApplicationWindow methodsFor: '' include: #( 
+        saveImageFile 
+    );
+    organize: Bitmap class methodsFor: '' include: #( 
+        aboutToSaveImage bitBlt:x:y:width:height:srcDC:xSrc:ySrc:rop: 
+        createBitmap:height:planes:bitCount:bits: createCompatibleDC: 
+        createDIBitmap:bitmapInfo:init:bits:usage: createDIBitmap:bitmapInfo:init:externalBits:usage: 
+        fromDLLFile:name: fromFile:in: fromFileStream: fromHandle:clipWidth:clipHeight: 
+        fromHandle:offset:extent: fromModule:id: initialize purgeUnusedBitmaps 
+        readBitmapHeader: readBitmapInfo: width:height:bits: 
+    );
+    organize: Bitmap methodsFor: '' include: #( 
+        archive archive: asParameter bitmapHandle changeSize: 
+        clone createBitmap createBitmap: createDIBPalette deselect 
+        deselectFromAuxDC: displayAt:with: displayIn:with: extent: 
+        fileInActivate: fileOutSurrogate: fromModule:id: fromSysID: 
+        getCb: getDIBits handle initHandle initPenWidth:height:planes:bitCount:forDC: 
+        isValid outputToFile: outputToFileStream: palette release 
+        restoreBitmap saveBitmap select selectToAuxDC setDIBits: 
+        setDIBits:using: validate width:height:planes:bitCount: 
+    );
+    organize: DIB class methodsFor: '' include: #( 
+        fromFile: fromFile:in: fromFileStream: 
+    );
+    organize: DIB methodsFor: '' include: #( 
+        asDIB bitCount bitmapInfo bitmapInfo: bits bits: createDIBPalette 
+        displayWith:from:to:rule: fromStream: numberOfColors 
+    );
+    organize: GraphicsTool methodsFor: '' include: #( 
+        copy:from:at:rule: copy:from:to:rule: handle 
+    );
+    organize: Icon class methodsFor: '' include: #( 
+        fromBitmap: fromFile: fromFileStream: fromModule:id: 
+        getAllInstances purgeUnusedIcons 
+    );
+    organize: Icon methodsFor: '' include: #( 
+        asParameter createIcon displayAt:with: findVGAImage: 
+        fromFileStream: fromFileStreamOS2: handle hasHandle initHandle 
+        isValid outputToFile: outputToFileStream: readBitmapsFromFileStream: 
+        release releaseBitmaps validate 
+    );
+    organize: TopPane methodsFor: '' include: #( 
+        wmPalettechanged:with: wmQuerynewpalette:with: 
+    );
+    organize: WinBitmapFileHeader class methodsFor: '' include: #( 
+        inspectorFields 
+    );
+    organize: WinBitmapFileHeader methodsFor: '' include: #( 
+        bfSize offBits reserved1 reserved2 
+    );
+    organize: WinBitmapInfo class methodsFor: '' include: #( 
+        colorTableSize: getCb: inspectorFields width:height:planes:bitCount: 
+    );
+    organize: WinBitmapInfoHeader class methodsFor: '' include: #( 
+        inspectorFields width:height:planes:bitCount: 
+    );
+    organize: WinBitmapInfoHeader methodsFor: '' include: #( 
+        biSize biSize: clrUsed compression yPelsPerMeter 
+    );
+    organize: WinBitmapStruct class methodsFor: '' include: #( 
+        inspectorFields 
+    );
+    organize: WinBitmapStruct methodsFor: '' include: #( 
+        bmType 
+    );
+    organize: Window class methodsFor: '' include: #( 
+        disablePaletteMessages enablePaletteMessages 
+    );
+    organize: Window methodsFor: '' include: #( 
+        wmPalettechanged:with: wmQuerynewpalette:with: 
+    );
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'BMPMTH.203';
+    comments:
+'"Bitmap Fixes for Smalltalk Express v2.0
+
+    Description:
+
+        This package adds hi-color bitmap and display adapter support to Smalltalk Express v2.0,
+        updating the image to v2.03. This package is a combination of the fixes that Digitalk provided
+        in their Smalltalk/V v2.02 patch upgrade and work done by Didier Besset.
+
+        Support is provided for TopPane-specific color palettes, although it must be enabled explicitly
+        by Do''ing:
+
+            Window enablePaletteMessages
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+"';
+    fileTime: ( Time fromSeconds: 36037 )
+          on: ( Date fromDays: 35103 );
+    takeCurrent;
+    yourself    !

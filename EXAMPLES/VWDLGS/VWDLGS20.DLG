@@ -1,0 +1,78 @@
+
+COMPRESSINGSOURCE DIALOG 101, 32, 152, 88
+STYLE WS_POPUP | WS_VISIBLE | WS_DLGFRAME
+BEGIN
+    LTEXT           "Compressing Source File", 256, 36, 8, 88, 10, NOT 
+                    WS_GROUP
+    LTEXT           "Please do not interrupt this process with", 258, 12, 40, 
+                    136, 10, NOT WS_GROUP
+    CTEXT           "CAUTION:", 257, 36, 24, 78, 10, NOT WS_GROUP
+    LTEXT           "Control-Break because this will make the", 259, 12, 53, 
+                    136, 10, NOT WS_GROUP
+    LTEXT           "source file inconsistent with the image.", 260, 12, 64, 
+                    136, 10, NOT WS_GROUP
+END
+
+COMPRESSINGCHANGE DIALOG 101, 32, 152, 88
+STYLE WS_POPUP | WS_VISIBLE | WS_DLGFRAME
+BEGIN
+    LTEXT           "Compressing Change Log", 256, 36, 8, 88, 10, NOT 
+                    WS_GROUP
+    LTEXT           "Please do not interrupt this process with", 258, 12, 41, 
+                    136, 10, NOT WS_GROUP
+    CTEXT           "CAUTION:", 257, 36, 24, 78, 10, NOT WS_GROUP
+    LTEXT           "Control-Break because this will make the", 259, 12, 53, 
+                    136, 10, NOT WS_GROUP
+    LTEXT           "change log inconsistent with the image.", 260, 12, 65, 
+                    136, 10, NOT WS_GROUP
+END
+
+FINDREPLACE DIALOG 18, 37, 196, 116
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Find/Replace"
+BEGIN
+    LTEXT           "Find:", 276, 4, 4, 16, 8, NOT WS_GROUP
+    EDITTEXT        278, 8, 16, 180, 12, ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "&Find", IDOK, 4, 36, 24, 12
+    PUSHBUTTON      "&Cancel", IDCANCEL, 40, 36, 28, 12
+    GROUPBOX        "Direction", 283, 92, 32, 96, 24
+    CONTROL         "Forward", 280, "Button", BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP, 96, 40, 41, 12
+    CONTROL         "Backward", 281, "Button", BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP, 140, 40, 44, 12
+    LTEXT           "Replace With:", 277, 4, 56, 52, 8, NOT WS_GROUP
+    EDITTEXT        279, 8, 68, 180, 12, ES_AUTOHSCROLL
+    PUSHBUTTON      "Replace &All", 284, 4, 92, 44, 12
+    CONTROL         "Confirm", 286, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 
+                    56, 92, 36, 12
+    GROUPBOX        "Replace At", 222, 92, 84, 96, 24
+    CONTROL         "Pattern", 287, "Button", BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP, 96, 92, 40, 12
+    CONTROL         "Column", 288, "Button", BS_AUTORADIOBUTTON | WS_TABSTOP, 
+                    141, 92, 44, 12
+END
+
+NEWCLASS DIALOG 52, 26, 140, 128
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Add a Subclass"
+BEGIN
+    LTEXT           "Class Hierarchy Browser", 7, 12, 18, 116, 8, NOT 
+                    WS_GROUP
+    LTEXT           "New Class:", 256, 6, 32, 48, 8, NOT WS_GROUP
+    EDITTEXT        8, 14, 46, 116, 12, ES_AUTOHSCROLL
+    GROUPBOX        "Indexed", 13, 14, 67, 52, 36
+    CONTROL         "Yes", 4, "Button", BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP, 22, 75, 28, 12
+    CONTROL         "No", 3, "Button", BS_AUTORADIOBUTTON | WS_TABSTOP, 22, 
+                    87, 28, 12
+    GROUPBOX        "Contains", 14, 78, 67, 52, 36
+    CONTROL         "Pointer", 5, "Button", BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP, 86, 75, 36, 12
+    CONTROL         "Bytes", 6, "Button", BS_AUTORADIOBUTTON | WS_TABSTOP, 
+                    86, 87, 28, 12
+    DEFPUSHBUTTON   "OK", IDOK, 22, 111, 24, 12
+    PUSHBUTTON      "Cancel", IDCANCEL, 88, 110, 28, 12
+    LTEXT           "Superclass:", 257, 6, 6, 44, 8, NOT WS_GROUP
+END
+
+

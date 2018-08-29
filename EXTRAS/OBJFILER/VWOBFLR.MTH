@@ -1,0 +1,122 @@
+"
+VWObFlr.mth - ObjectFiler support methods in base system classes
+Last edited by Lewis on 07-Apr-92 - VW 2.0 beta 4 (drop Float>>repFTWS)
+Last edited by Lewis on 24-Feb-92 - VW 1.2 beta 2
+Filed out on Oct 30, 1991 15:39:22 for VW 1.2 beta 1
+"!
+
+
+!Object methods !
+   
+fileInActivate: anObjectFiler
+        " Activate instance which has just been loaded.
+         Default is to do nothing.
+        To notify user of non-fatal problem send:
+                anObjectFiler recordInfoMessage: 'info message'
+                anObjectFiler recordWarningMessage: 'warning message'
+        "
+    ^self! !
+
+
+
+!Object methods !
+  
+fileOutSurrogate: anObjectFiler
+        " Answer surrogate for object filing after performing any
+        dump preprocessing.  Default is to do nothing.
+        To notify user of non-fatal problem send:
+                anObjectFiler recordInfoMessage: 'info message'
+                anObjectFiler recordWarningMessage: 'warning message'
+        "
+    ^self! !
+
+
+
+!Bitmap methods !
+  
+fileInActivate: anObjectFiler
+        " Activate instance which has just been loaded. "
+    deviceContext notNil ifTrue: [^self].  " already activated "
+    self
+        " VPM version: 
+        deviceContext: self class context.
+        "
+        "DISABLE: validate."  " MikeT change in LAF image "
+        " VW version: "
+        deviceContext: OldMemoryContext; 
+        restoreBitmap.   "ISSUE: Necessary on VW??"
+    ^self! !
+
+
+
+!Bitmap methods !
+  
+fileOutSurrogate: anObjectFiler
+        " Answer surrogate for object filing.
+          Save bitmap in archive; don't store DC, pen, or bitmapHandle. "
+    | surrogate instVarNames |
+    self saveBitmap. 
+    surrogate := self copy.
+    instVarNames := surrogate class allInstVarNames.
+    surrogate   " clear system resource handles to nil "
+        instVarAt: (instVarNames indexOf: 'deviceContext') put: nil;
+        instVarAt: (instVarNames indexOf: 'graphicsTool') put: nil;
+        instVarAt: (instVarNames indexOf: 'bitmapHandle') put: nil.
+    ^surrogate! !
+
+
+
+!File methods !
+
+fileInActivate: anObjectFiler
+        " Activate instance which has just been loaded. "
+    self open.  " check if directory and file still exist?? "
+    ^self! !
+
+
+
+!File methods !
+
+fileOutSurrogate: anObjectFiler
+        " Answer surrogate for object filing. "
+    ^(self copy) fileId: nil! !
+
+
+!Font methods !
+  
+fileOutSurrogate: anObjectFiler
+        " Answer surrogate for object filing.
+          Smash hFont handle; gets recreated automatically when
+          font is referenced after reloading. "
+    | surrogate |
+    surrogate := self copy. 
+    surrogate fontHandle: nil.
+    ^surrogate! !
+
+
+
+!WinHandle methods !
+
+fileOutSurrogate: anObjectFiler
+        " Answer surrogate for object filing if not null or desktop. "
+    | surrogate |
+    (self = NullHandle) ifTrue: [^self].
+    anObjectFiler recordWarningMessage:
+            'a ', self class name,
+            ' dumped as null handle, won''t be bound when loaded.'.
+    surrogate := (self class basicNew: self size)
+            replaceFrom: 1 to: self size
+            with: NullHandle
+            startingAt: 1.
+    ^surrogate! !
+
+
+
+!WinLogicalObject methods !
+ 
+fileOutSurrogate: anObjectFiler
+        " Answer surrogate for object filing.  Zap handle. "
+    | surrogate |
+    surrogate := self copy.
+    surrogate handle: nil.
+    ^surrogate! !

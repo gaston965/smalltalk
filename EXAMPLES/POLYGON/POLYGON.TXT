@@ -1,0 +1,68 @@
+"This file installs the polygon demo which shows how to use
+ ViewManager to control multiple views of an application.
+ In this demo, the PolygonView manages three views: the
+ first one is a ListBox window showing text descriptions of eash
+ polygon; the second one is a GraphPane window showing each
+ polygon in its graphics form; and the third one is a non-visual
+ view which sounds bells as many times as the number of
+ sides in a polygon.  You can use the 'option' menu in the
+ first window to add or delete a polygon.  To install the
+ demo, do the following:
+
+        (File pathName: 'examples\polygon\polygon.txt') fileIn; close
+
+ To start the demo, do
+                                  
+        
+PolygonView new open
+"!
+
+Object subclass: #Polygon
+  instanceVariableNames: 
+    'numberOfSides sideLength '
+  classVariableNames: ''
+  poolDictionaries: ''   !
+
+
+!Polygon class methods ! !
+
+
+
+!Polygon methods !
+ 
+displayWith: aPen
+        "Draw polygon with aPen."
+    | angle origin |
+    angle := 360 // numberOfSides.
+    origin := aPen location.
+    (numberOfSides - 1) timesRepeat: [
+        aPen go: sideLength;
+            turn: angle].
+    aPen goto: origin "to avoid rounding error"!
+ 
+height
+        "Answer the approximate height."
+    ^(numberOfSides / 3) ceiling * sideLength!
+
+length: anInteger
+        "Set the length of each edge to anInteger."
+    sideLength := anInteger!
+
+printString
+        "Answer a description of the polygon."
+    ^numberOfSides printString, ' sides of ',
+        sideLength printString, ' pixels each'!
+ 
+sides: anInteger
+        "Set the number of sides to anInteger."
+    numberOfSides := anInteger!
+  
+sound
+        "Ring the bell the same number of times
+         as the number of sides."
+    numberOfSides timesRepeat: [
+        Terminal bell]! !
+
+(File pathName: 'examples\polygon\plygnsnd.cls') fileIn; close.
+(File pathName: 'examples\polygon\polygnvw.cls') fileIn; close.
+!

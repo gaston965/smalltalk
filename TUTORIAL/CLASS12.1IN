@@ -1,0 +1,60 @@
+ViewManager subclass: #SalesCom
+  instanceVariableNames:
+    'replyStream '
+  classVariableNames: ''
+  poolDictionaries:
+    'SalesStrategy ' !
+
+!SalesCom methods ! 
+
+initWindowSize
+        "Answer the initial window extent."
+    ^(Display boundingBox insetBy: 16@16) extent!
+
+input: inputPane
+        "Initialize inputPane with a temporary input string."
+    inputPane contents: 'This is a test.'!
+
+inputMenu: inputPane
+        "Answer a Menu for the input Pane."
+    inputPane setMenu: ((Menu
+        labels: 'Play Selection\Play All' withCrs
+        selectors: #(playSelection playAll))
+        title: 'Habitat')!
+ 
+open
+        "Create a SalesCom window with a Network
+         as its marketing strategy."
+    | inputPane |
+    self label: 'SalesCom'.
+    self addSubpane:
+         (replyStream := TextPane new
+             owner: self;
+             when: #getContents perform: #reply: ;
+             framingRatio: (Rectangle leftTopUnit
+                  extentFromLeftTop: 2/3 @ (1/4) ) ).
+    self addSubpane:
+        (GraphPane new
+            owner: self;
+            when: #getContents perform: #picture: ;
+            framingRatio: (Rectangle leftBottomUnit 
+                 extentFromLeftBottom: 2/3 @ (3/4) ) ).
+    self addSubpane:
+        (inputPane := TextPane new
+            owner: self;
+            when: #getMenu perform: #inputMenu: ;
+            when: #getContents perform: #input: ;
+            framingRatio: ((Rectangle leftTopUnit rightAndDown: 2/3 @ 0) 
+                extentFromLeftTop: 1/3 @ 1) ).   
+    self openWindow!
+
+picture: graphPane
+        "Draw the network in graphPane."
+    StratNet drawOn: graphPane!
+
+reply: replyPane
+        "Initialize reply pane with an
+         empty String."
+    replyPane contents: String new! !
+
+

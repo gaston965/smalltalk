@@ -1,0 +1,11 @@
+[Files]
+puzzle15.rtf
+vwhelp.rtf
+
+[Options]
+TITLE=Puzzle 15
+INDEX=contents
+
+[MAP]
+#include <helpmap.h>
+#include <vwhelp.h>

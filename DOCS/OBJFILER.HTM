@@ -1,0 +1,459 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>ObjectFiler Information</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00FFFF" alink="#FF0000">
+<h1 align=center><a name="top"><font color="#0000FF">OBJECTFILER</font></a></h1>
+<hr>
+<pre>The ObjectFiler provides a mechanism in Smalltalk/V Windows for persistent object storage and object
+interchange between images.  While it has always been possible to store and exchange code by filing out
+the source code of classes and methods, there has not been an equivalent mechanism available for storing
+and exchanging the data represented by objects in your image.</pre>
+<pre>An object can be thought of as the root node of a directed graph in which each node is an object and each
+arc in the graph is an instance variable whose value is a pointer to another object.  Consequently,
+following the instance variable pointers from a complex object generates a set containing all the objects
+which are reachable from the root object at which you started.  You can generate a textual description of a
+reasonably simple object by sending the storeString message to it.  The resulting ASCII description is a
+sequence of Smalltalk expressions describing the set of reachable objects.  By storing this textual
+description in a file, you can save the object and recreate it in the future simply by evaluating the
+storeString description.</pre>
+<pre>The storeString ASCII description lets you save and exchange simple objects.  However, it is inefficient
+for large objects.  More seriously, it does not properly describe shared references within a complex
+collection of objects.  The ObjectFiler solves this problem by generating an efficient binary representation
+of a complex object which retains object identities within the set of reachable objects.  Circular object
+structures and shared references within a network of objects are detected when generating the binary
+object description and reconstructed properly when you load the filed object at a later time.
+</pre>
+<h2>The ObjectFiler and Object Libraries</h2>
+<pre>There are many similarities between ObjectFiler files and object libraries.  Both allow you to separate
+objects from your image and store them permanently in a file.  Both support exchanging objects between
+images by allowing you to install filed objects into a new image.  However, there are also some significant
+differences:</pre>
+<pre>    Object libraries are primarily intended for use as an application delivery mechanism.  They
+    support delivery of both class code and data resources.  The ObjectFiler is primarily intended
+    for storing and exchanging data objects.  It does not support filing out methods, since it is
+    possible to exchange code using existing mechanisms (such as by filing out the source of a
+    method or an entire class).</pre>
+<pre>    The ObjectFiler can be used to dump and load objects in a runtime application, whereas
+    building object libraries requires the development environment.</pre>
+<pre>    The ObjectFiler is a &quot;lighter weight&quot; mechanism for easily transferring working data to a
+    coworker or into a different image.</pre>
+<pre>    Storing an object with the ObjectFiler allows objects to be transferred between different
+    versions of Smalltalk/V by installing cross-loaders which can read the filed object descriptions
+    of a different version.  In contrast, object libraries can be used only with the Smalltalk/V
+    platform that produced them.</pre>
+<pre>When you load a filed object that you stored at some previous time or which has been given to you by
+someone else, it is possible for the environment in the loading image to be significantly different from the
+environment from which the original object was stored.  The class of an object being loaded may not exist
+or its definition may have been changed since the object was filed out.  The ObjectFiler detects missing
+classes and differences in class definitions between the source image from which an object was dumped
+and the target image into which an object is being loaded.  When a discrepancy is detected, the
+ObjectFiler opens an interactive dialog in which you can indicate how to proceed, or cancel loading until
+you resolve the situation.</pre>
+<pre>ObjectFiler supports a protocol for class-specific dump preprocessing and 
+load postprocessing.  By
+implementing a dump or load method in a class, you can control the 
+contents and form of the set of
+objects which are filed.
+</pre>
+<h2>Installing the ObjectFiler</h2>
+<pre>The ObjectFiler consists of two new classes, ObjectFiler and ObjectLoadDialog, and new methods
+in several system classes, such as File and Bitmap, to implement dump/load methods.
+To install the ObjectFiler, file in &quot;vwobjflr.st&quot; file from the &quot;extras\objfiler&quot; directory.</pre>
+<pre><strong>Note</strong>: the ObjectFiler has already been installed in Smalltalk Express.
+</pre>
+<h2>Using the ObjectFiler</h2>
+<pre>You can perform three basic operations with the ObjectFiler: dump an object, load an object, and produce
+a report describing a binary filed object.
+</pre>
+<pre>Dumping an Object</pre>
+<pre>There are three ways to dump an object.</pre>
+<pre>    To open a dialog to interactively obtain a file name:
+    ObjectFiler dump: anObject</pre>
+<pre>    To create or overwrite a specified file:
+    ObjectFiler dump: anObject newFile: aPathName</pre>
+<pre>    To append to a stream:
+    ObjectFiler dump: anObject on: aStream</pre>
+<pre>The set of objects that are reachable from the given root object is determined by recursively enumerating
+the contents of each object, starting at the root, until a terminal object is encountered.  A terminal object is
+either:</pre>
+<pre>    a primitive data value (nil, true, false, Integer, Character, Symbol, or an object represented by
+    indexed bytes)</pre>
+<pre>    a singular object (objects representing unique system resources which exist in all VWindows
+    images)</pre>
+<pre>    a Behavior (a class or metaclass)
+    The singular objects that terminate an enumeration are MetaClass, Smalltalk, SymbolTable, Notifier,
+    Processor, Clipboard, Windows, and Display.
+</pre>
+<pre>Loading an Object</pre>
+<pre>There are three ways to load an object.  Execute one of the following expressions, entering your own
+object name, path name and stream.</pre>
+<pre>    To open a dialog to interactively obtain a file name:
+    ObjectFiler load</pre>
+<pre>    To read a specified file:
+    ObjectFiler loadFromPathName: aPathName</pre>
+<pre>    To read from the current position:
+    ObjectFiler loadFrom: aStream</pre>
+<pre>Before loading, the ObjectFiler checks that the classes of all objects in the filed object exist and are
+consistent with the instance representation of the filed objects.  An interactive dialog is opened if any
+discrepancies are detected.  You can direct the ObjectFiler to proceed or to cancel loading the object until
+you have decided how to resolve the discrepancy.
+</pre>
+<pre>Class Resolution</pre>
+<pre>When a missing class is detected, a prompter dialog box displays that tells you the name of the class and
+asks you for a new name.  There are two reasons why you might encounter this situation:</pre>
+<pre>    You might be loading an object whose class you have forgotten to install in your image.  If
+    you have a definition of the class available,you can file it in at this time and then select OK to
+    resume loading.  If you want to install the class but do not have a definition available, select
+    Cancel to abort object loading.  After you have located and installed the class, you can retry
+    object loading.</pre>
+<pre>    You have renamed a class after filing out instances under the old class name.  In this case,
+    you enter the new name of your class and select OK to resume object loading.  All instances of
+    the old class in the filed object will become instances of the new class when they are loaded.
+    This capability allows you to use the ObjectFiler as a mutator.</pre>
+<pre>When a change in class layout is detected, the ObjectFiler Class Resolution Window opens.
+This allows you to graphically indicate how filed instance variable values are to be loaded
+into the new class layout.  The name of the class displays at the top of the window and two columns of
+instance variable names are shown.  On the left is a list of the instance variables of the filed class, with a
+triangular plug symbol next to name.  On the right is a list of the instance variables now defined for the
+class, with a socket-shaped symbol next to each name.</pre>
+<pre>By default, instance variables with the same name are connected.  A connecting line between a plug
+symbol and a socket symbol indicates that the filed instance variable will provide the value to load into a
+matching slot in the new class.</pre>
+<pre>If a filed variable in the left-hand column has no connecting line to a load socket in the right-hand
+column, its value will be dropped when the object is loaded.  If an instance variable in the right-hand
+loading column has no connecting line back to a socket in the left-hand column, its value will be nil when
+the object is loaded.  Instance variables that connect between a filed object and a loading slot are displayed
+in green.  Instance variables that have no connection are displayed in red to attract your attention.</pre>
+<pre>These are factors to be aware of as you inspect the default the load mapping:</pre>
+<pre>    a new instance variable has been added to the class being loaded.  This situation appears as a
+    load socket with no connecting line to plug in a value.  The new variable will be nil after
+    loading. If you wish, you can connect a filed value to fill this slot.  You can also implement a
+    fileInActivate: instance method in this class if you wish to initialize it with some other value.</pre>
+<pre>    an instance variable has been dropped from the class being loaded  This situation appears as a
+    filed plug with no connecting line to a loading socket.  The filed value will be dropped.</pre>
+<pre>    an instance variable name has been changed.  In this case, you should connect the filed plug
+    of the old instance variable name to the loading socket of its new name.
+</pre>
+<pre>To add a connecting line, perform the following steps:</pre>
+<pre>    1.Select a filed variable plug (on the left) by clicking over it with the left mouse button.  Your
+    mouse movements are now tracked until you select the loading socket into which this value is
+    to be loaded.</pre>
+<pre>    2.Choose a loading socket symbol in the right-hand column to connect it to.  Drag the mouse
+    pointer to the right, and click the left mouse button over the loading socket symbol.  A new
+    connecting line appears and the plug and socket symbols turn from red to green.  If you decide
+    not to make a connection, simply click the left mouse button over the white space between the
+    two columns.</pre>
+<pre>You can also define a connecting line in the opposite direction.   First click on the loading socket that you
+want to fill and then select the filed value that you want to put in it.  To remove a connection, select the
+loading socket symbol and then connect it to nothing by clicking the left mouse button over the white
+space between the columns.</pre>
+<pre>When you are satisfied with the connections displayed in the window, select OK to accept the load map
+and resume object loading.  If you are not sure what the correct mapping should be, or if you want to take
+some action such as writing a fileInActivate: method to initialize new instance variables, you can select
+Cancel to cancel the loading.
+</pre>
+<pre>Describing a Filed Object</pre>
+<pre>There are three ways to get a text report describing a filed object.  Execute one of the following
+expressions, entering your own source and destination path name and stream.</pre>
+<pre>    To open a dialog to interactively obtain a file name:
+    ObjectFiler describe</pre>
+<pre>    To describe the contents of a specified file and create or overwrite a destination path name:
+    ObjectFiler describeFromPathName: &lt;srcPathName&gt; newFile:
+    &lt;dstPathName&gt;</pre>
+<pre>    To read or write from the current position of a stream:
+    ObjectFiler describeFrom: &lt;srcStream&gt; to: &lt;dstStream&gt;
+</pre>
+<pre>Dump Preprocessing and Load Postprocessing</pre>
+<pre>Some system objects require dump pre-processing and load post-processing.  For example, Bitmap objects
+must have null Windows handles substituted before dumping and require special processing to restore the
+instance after loading.</pre>
+<pre>The ObjectFiler allows you to transform such objects both upon dumping to a file and after loading from a
+file.  It sends a message to each object to prepare it for dumping or restore it to a valid state after loading.
+Class Object implements dump and load methods which simply answer self, so that no special processing
+is done in the normal case.  These methods are reimplemented in certain system classes in order to
+properly save and restore objects which represent Windows resources.</pre>
+<pre>You can do this for your own classes.  In order to perform dump pre-processing, you implement an
+instance method called fileOutSurrogate: for the object.  An object&#146;s fileOutSurrogate: method is
+invoked when the object is first encountered during the dump enumeration, before its contents are
+inspected by the ObjectFiler.  The method returns the object whose contents are to be filed out to represent
+the receiver.  This dump surrogate may be one of the following:</pre>
+<pre>    the original object (possibly with changed values in instance variables)</pre>
+<pre>    a copy of the original object (which allows changes to instance variables without disturbing
+    the original object)</pre>
+<pre>    an instance of a different class, which is a suitable representative for the original filed object</pre>
+<pre>A fileOutSurrogate: method can be used to implement user-controlled decisions on where to terminate
+the enumeration of the set of objects reachable from the root object of a dump.  To accomplish this, return
+a surrogate object with alternate values for any instance variables which are not to be included in the
+object dump (for example, nil or an instance of some placeholder class which can be used to restore a
+connection to the referenced object).</pre>
+<pre>To perform any post-processing necessary to restore a loaded object to a useful state, you implement an
+instance method called fileInActivate: for the object.  This method must return the activated object,
+which may be either of the following:</pre>
+<pre>    the receiver (possibly with changed values in instance variables)</pre>
+<pre>    a different object, which the receiver represented in the filed-out object</pre>
+<pre>An object&#146;s fileInActivate: method is invoked after all objects pointed to by the root object have been
+loaded, in reverse order from the order in which the objects were dumped.  In general, this means that an
+object is restored before other objects which reference it get restored.  However, the ordering cannot be
+guaranteed when there are circular references within the set of filed-out objects.</pre>
+<pre>A fileInActivate: method can be used to initialize an instance that has been loaded into a class with a
+different instance variable layout than that with which it was filed.  This is useful when the class&#146;s
+instance variable definitions have changed or when you are using the ObjectFiler to convert instances to a
+different class.</pre>
+<pre>The argument value supplied to both fileOutSurrogate: and fileInActivate: is anObjectFiler.  If you
+wish to notify the user of a non-fatal error that you detect in your dump or load processing, your method
+should include an expression of the form:</pre>
+<pre>    anObjectFiler warning: &#145;description of problem encountered&#146;</pre>
+<pre>Your warning message will be recorded and a MessageBox will be opened when the dump or load
+operation is completed which informs the user that problems were encountered.
+</pre>
+<pre>Usage Notes</pre>
+<pre>The ObjectFiler does not dump code objects or objects that represent execution states (such as methods,
+blocks, or processes).  In general, it also does not dump objects that represent Windows resources (such as
+handles, windows, or graphics tools), since such objects are only meaningful in the context of a single Windows
+session.  You will be notified if the ObjectFiler encounters an object which it knows that it cannot dump or
+load properly.</pre>
+<pre>A SortedCollection contains a block that defines the sort order of the entries in the collection.  Because
+the ObjectFiler does not support dumping and loading of blocks, you cannot file out a SortedCollection in
+its original form.  If the ObjectFiler encounters a SortedCollection, you will be asked whether you want to
+dump it as an OrderedCollection.  This allows you to store the contents of the collection in a form that
+retains the current ordering of the entries.</pre>
+<hr>
+<h2>Addendum</h2>
+<pre>This section describes additions and changes made in the ObjectFiler for Smalltalk/V Windows
+Release 2.0 and Smalltalk/V OS/2 Release 2.0.</pre>
+<pre>Bug Fixes</pre>
+<pre>If a class shape change is detected and the class has too many instance variables to display them all in
+the object load dialog (which doesn't supported scrolling and is thus limited by the screen size to the
+number of instance variables it can display), a message box is now displayed explaining the problem to
+the user and the load is aborted.  To load such a class when its shape has changed, supply a load map
+dictionary specifying the instance variable mapping (see &quot;Non-Interactive Object Load Map
+Specification&quot; description).</pre>
+<pre>Improved Performance</pre>
+<pre>The performance of object dumping is significantly improved.  The dump operation uses a new class
+called LargeIdentityDictionary, which has different size characteristics and a different hashing
+algorithm than the IdentityDictionary class of the base system.   The performance improvement will be
+most noticable when dumping large numbers of objects with fairly similar hash values.</pre>
+<pre>Attaching Client Context to an ObjectFiler Operation</pre>
+<pre>Two new instance methods have been added to ObjectFiler to allow the client of an ObjectFiler dump
+or load operation to atach client-specific context information to the operation.  This allows context-
+dependent fileOutSurrogate: and fileInActivate: methods to be written in application classes.</pre>
+<pre>clientContext
+        &quot; Answer the client context associated with
+        the current dump or load operation.
+        Can be accessed in fileInSurrogate: and
+        fileOutActivate: methods to provide
+        context-dependent behavior. &quot;</pre>
+<pre>clientContext: anObject
+        &quot; Store anObject on behalf of the client.
+        The client context can be accessed in
+        fileOutSurrogate: and fileInActivate: methods
+        to allow context-dependent behavior. &quot;
+
+</pre>
+<pre>To use the client context feature, you must invoke the ObjectFiler using an instance method.  You
+register your client context object before initating the dump or load operation.
+Example
+    | aFileStream |
+    aFileStream := File newFile: 'SomeObj.obj'.
+    ObjectFiler new
+        clientContext: Dictionary new;
+        dump: anObject on: aFileStream.
+    aFileStream close.</pre>
+<pre>Client Handling of ObjectFiler Warning Messages</pre>
+<pre>A new instance method has been added to ObjectFiler to allow the client of an ObjectFiler dump or
+load operation to control how information and warning messages are presented to the user.  The
+standard behavior of the ObjectFiler is to open a text window and display the messages in that window
+when messages are reported during a dump or load operation.  Installing your own message handler
+allows you to present the information differently or to filter the messages that are displayed (or even
+suppress them entirely, if you so desire!).</pre>
+<pre>clientMessageHandler: aHandler
+        &quot; Register a client message handler.
+        aHandler is a two-argument block or message
+        which is invoked when a problem is
+        encountered during object loading or dumping.
+        The first argument is this ObjectFiler.
+        The second argument is an assoc
+        with key =&gt; value information:
+            'info' =&gt; an information message (string)
+            'warning' =&gt; a warning message (string)
+            'abort' =&gt; a fatal error message (string)
+            'summary' =&gt; number of messages recorded
+                (Dictionary of integers indexed by above key strings)
+        The 'summary' notification is sent at operation
+        completion when warnings were encountered
+        (allows client to do sumary or termination processing). &quot;
+</pre>
+<pre>To use the client warning handler feature, you must invoke the ObjectFiler using an instance method.
+You register your warning message handler before initiating an object dump or load operation.</pre>
+<pre>Example
+Suppose you have a class named Foo which manages filing in and out of objects for your application.
+You have decided that you want to log any ObjectFiler messages about loading and dumping objects
+into a file, rather than having them displayed in a window, with a message box informing the user when
+messages were encountered.  To do this, you would implement a message-handler method in Foo.  For
+this example, assume that Foo has an instance variable named warningStream, on which the messages
+which be recorded.</pre>
+<pre>When you invoke the ObjectFiler, you will register your message handler before initiating the dump or
+load operation.  For example, the method which dumps your objects might look like the following:
+</pre>
+<pre>storeOn: aFileName
+    | myHandler objectStream |
+    myHandler:= Message new
+        receiver: self;
+        selector: #messageHandler:message:.
+    objectStream := File newFile: aFileName.
+    ObjectFiler new
+        warningHandler: myHandler;
+        dump: self on: objectStream.
+    objectStream close.</pre>
+<pre>Your message-handler method in Foo might look something like:</pre>
+<pre>messageHandler: anObjectFiler message: assoc
+    | msg |
+    (assoc key = 'summary')
+        ifFalse: [  &quot; info or warning message &quot;
+            warningStream isNil
+                ifTrue: [warningStream :=
+                    File newFile: 'Foo.log'.]
+            warningStream nextPutAll: assoc value; cr]
+        ifTrue: [  &quot; summary count of messages &quot;
+            msg := assoc value printString,
+                ' messages reported while storing ',
+                self printString.
+            warningStream nextPutAll: msg, cr.
+            warningStream close.
+            MessageBox warning: msg, '  (See Foo.log)'.
+            ].
+</pre>
+<pre>Non-Interactive Object Load Map Specification</pre>
+<pre>The ObjectFiler allows you to load filed objects when the original class is missing, such as after you
+have renamed the class.  This is referred to as loading a &quot;missing class&quot;.  You can also load an object
+when the class definition of the instance layout has changed.  A class &quot;shape change&quot; occurs when an
+object is loaded into a Smalltalk image in which the instance variables in its class definition are
+different than the instance variables which were defined for that object when it was dumped.  A shape
+change can occur for many reasons and is a normal event in the lifetime of an evolving class.  For
+example, you may add or remove instance variables from a class or change the name of an instance
+variable.</pre>
+<pre>When the ObjectFiler detects a missing class during loading, a dialog box is displayed asking you to
+enter the name of the class to use.  This allows you to load objects into a renamed class.   When the
+ObjectFiler detects a class shape change during loading, a dialog box is displayed in which you can
+graphically specify the mapping from the instance variables of the filed object into the currently defined
+instance variables of the class.  For a very large class or for repeatedly loading objects of a changed
+class, interactively specifying the new class name or the instanve variable load mapping each time can
+be tedious.  To simplify this process, the VW 2.0 ObjectFiler allows you to provide a dictionary
+containing load map specifications for one or more classes to the object load operations.
+
+</pre>
+<pre>Three new class methods have been added to ObjectFiler for load map specification:</pre>
+<pre>loadAllFromPathName: aPathName loadMaps: loadMapsDict
+        &quot;  Answer a collection containing all the objects
+        stored in the file specified by aPathName. The
+        loadMapsDict defines mappings for loading classes
+        whose shape has changed. &quot;</pre>
+<pre>loadFrom: aStream loadMaps: loadMapsDict
+        &quot; Answer the filed object stored at the current
+        position on aStream.   The loadMapsDict
+        defines mappings for loading classes
+        whose shape has changed. &quot;</pre>
+<pre>loadFromPathName: aPathName loadMaps: loadMapsDict
+        &quot; Answer the first object stored in the file
+        specified by aPathName.  The loadMapsDict
+        defines mappings for loading classes
+        whose shape has changed. &quot;</pre>
+<pre>One new instance method has been added to ObjectFiler for load map specification:</pre>
+<pre>loadFrom: aStream loadMaps: loadMapsDict
+        &quot; Answer the object encoded on aStream at
+        aStream's current position.  The loadMapsDict
+        defines mappings for loading classes whose
+        shape has changed.  The loadMapsDict key
+        is the name of a filed class.  The value is an
+        assoc whose key is the name of the class into
+        which to load the filed instances and whose
+        value is a collection of assoc's defining the instance
+        variable mappings.  The key of an inst var map assoc
+        is the name of the instance variable to be loaded
+        and the value is the name of the filed inst var to
+        load into its slot in the restored object.  An inst var
+        is loaded with nil if there is no mapping for it. &quot;</pre>
+<pre> If you wish to bypass the interactive dialog box which is normally displayed when either a missing class
+or a class shape change is detected during object loading,  you should provide a load map dictionary.
+The load map dictionary specification will be used if available.  If a missing or changed class is
+encountered for which there is no entry in the dictionary, the usual dialog box will still be displayed.</pre>
+<pre>The key in the load map dictionary that you provide is a String which is the name of a filed class.  The
+value of an entry is an Association whose key is a String which is the name of the class into which the
+instances of the filed class should be loaded.  The load class name can be the same as the filed class
+name or it can be the name of a different class, which allows you to load a &quot;missing class&quot; into a
+renamed class.  The value in the Association entry is a collection of Association instances which define
+the mapping from filed instance variables into the instance variables of the loading class.  The instance
+variable mapping associations allow you to prespecify the load map for loading changed classes.  The
+key of an instance variable mapping Association is the name of an instance variable in the loading
+class.  The value is the name of the filed instance variable whose value should be loaded into this slot.
+Any instance variables in the load class which do not have a mapping entry will be set to nil; any filed
+variable which is not associated with an instance variable in the loaded class will be ignored.  (This is
+the same as having a filed instance variable not connected to a load instance variable and vice versa in
+the interactive load map dialog window.)</pre>
+<pre>Example
+Suppose you have a class named Foo which is defined as:
+    Object subclass: #Foo
+    instanceVariableNames:
+        'this that theOtherThing'
+    classVariableNames: ''
+    poolDictionaries: ''</pre>
+<pre>Using the ObjectFiler, you dump several instances of Foo.  Sometime later, you decide that the class is
+badly named and the instance variables aren't quite right, so you change the class definition to:
+    Object subclass: #BetterFoo
+    instanceVariableNames:
+        'this theOther somethingNew'
+    classVariableNames: ''
+    poolDictionaries: ''</pre>
+<pre>To load the Foo instances that you previously dumped, you can use a load map dictionary to prespecify
+the class name change and the instance variable mappings.
+    | loadMapDict instVarMapping |
+    loadMapDict := Dictionary new.
+    instVarMapping := OrderedCollection new
+        &quot; instance variable 'this' is still named 'this' &quot;
+        add: (Association key: 'this' value: 'this');
+        &quot; load renamed inst var 'theOther' from 'theOtherThing' &quot;
+        add: (Association key: 'theOther' value: 'the OtherThing');
+        &quot; somethingNew is loaded with nil &quot;
+        &quot; filed instance variable 'that' is dropped &quot;
+        yourself;
+     loadMapDict
+        at: 'Foo'
+        put: (Association key: 'BetterFoo' value: instVarMapping).
+    ^ObjectFiler
+        loadFromPathName: 'OldFoos.obj'
+        loadMaps: loadMapDict</pre>
+<pre>When you execute the above expression, the filed Foo objects will automatically be loaded as instances
+of your renamed class BetterFoo.  The filed values for obsolete instance variable 'that' will be dropped,
+because you did not specify an instance variable into which to load them, while the renamed instance
+variable 'theOther' will be loaded with the filed values of 'theOtherThing' and the new instance variable
+'somethingNew' that you have have added is left nil.
+</pre>
+<pre>Filed Object Class Report</pre>
+<pre>The ObjectFiler can now generate a text report describing the classes in a filed object.  All classes in
+the set of filed objects are listed, with the instance variable layout listed.  This is useful for analyzing the
+contents of a filed object or shape change issues, without having to generate a complete dump with all
+the instances described.</pre>
+<pre>Three new class methods have been added to ObjectFiler for the class report:</pre>
+<pre>describeClasses
+        &quot; Describe the classes in a filed object. &quot;</pre>
+<pre>describeClassesFrom: srcStream to: dstStream
+        &quot; Describe the classes in the filed object at the current
+        position in the srcStream on dstStream. &quot;</pre>
+<pre>describeClassesFromPathName: srcPathName newFile: dstPathName
+        &quot; Describe the classes in the filed object in the
+        file specified by srcPathName on file dstPathName. &quot;</pre>
+<pre>One new instance method has been added to ObjectFiler for the class report:</pre>
+<pre>describeClassesFrom: srcStream to: dstStream
+        &quot; Describe the classes in the filed object on
+        srcStream in a text report on dstStream. &quot;
+
+[<a href="#top">top</a>] [<a href="index.htm">index</a>]</pre>
+</body>
+
+</html>

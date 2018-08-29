@@ -1,0 +1,102 @@
+| f g resto cociente |
+
+f:= ( Prompter prompt: 'Ingrese dividendo  ' default:'') asInteger.
+g:= ( Prompter prompt: 'Ingrese divisor' default:'') asInteger.
+resto:=0.
+[f > g] whileTrue:[
+  f:= f  - g.
+ resto:= resto + 1.
+
+
+
+].
+ MessageBox message:'el cociente es: ',f asString , ' el resto es: ' ,resto asString. 
+                                                                                 
+                                                                                                             
+| f g suma |
+
+f:= (Prompter prompt:'Ingrese multiplicando ' default:'' ) asInteger.
+g:= (Prompter prompt:'ingrese multiplicador' default:'') asInteger.
+suma:=0.
+ 1 to: ( g ) do:[:i |  suma:=suma + f. ].
+MessageBox message:'el producto es: ', suma asString.   
+
+
+
+| ingreso prueba sum |
+
+ingreso:=(Prompter prompt:'ingrese un numero para determinar si es primo o no' default:'') asInteger.
+sum:=0.
+1 to: (ingreso) do:[:i| prueba:= (ingreso \\ i). (prueba=0) ifTrue:[ sum:= sum + 1].].
+(sum=2) ifTrue:[ MessageBox message:'el numero ',ingreso asString  , 'es primo']
+               ifFalse:[ MessageBox message:' el numero ' , ingreso asString , ' no es primo'].     
+                                                                                                                                        
+                                                                                                                                                     
+| ingreso prueba |
+
+ingreso:= ( Prompter prompt:' Ingrese un numero para determinar si es par o no' default:'') asInteger.
+((ingreso \\ 2)=0) ifTrue:[MessageBox message:'el numero', ingreso asString, ' es par']
+                           ifFalse:[MessageBox message:'el numero', ingreso asString, 'no es par'].   
+
+
+
+| ingreso prueba lista|
+
+ingreso:= ( Prompter prompt: 'Ingrese un numero para determinar sus multiplos' default:'') asInteger.
+lista:= Set new.
+
+1 to: (ingreso) do:[:i| prueba:= (ingreso \\ i). ( prueba=0) ifTrue:[ lista add: i ].].
+MessageBox message:'los multiplos son', lista asString.       
+
+8.
+
+| lista2 lista3 lista5 lista7 seguir prueba2 prueba3 prueba5 prueba7 |
+
+ lista2:= 0.
+  lista3:= 0.
+ lista5:= 0.
+ lista7:= 0.
+
+
+[ seguir ~= 0 ] whileTrue:
+[
+
+    seguir:=( Prompter prompt:'ingrese un numero o para terminar escriba no ' default:'')  asInteger.
+    prueba2:= seguir  \\ 2.  prueba3:= seguir   \\ 3.      prueba5:= seguir   \\ 5.      prueba7:= seguir  \\ 7.
+
+    (prueba2==0) ifTrue:[ lista2 := lista2 + 1 ].
+     (prueba3=0) ifTrue:[ lista3 := lista3 + 1  ].
+      (prueba5=0) ifTrue:[ lista5 := lista5 + 1  ].
+       (prueba7=0) ifTrue:[ lista7 :=lista7 +1  ].                                        ].^lista2
+
+                         
+                                                                        
+9. | ingreso prueba suma lista |
+
+ingreso:=(Prompter prompt:'ingrese un numero o para terminar escriba no' default:'') asInteger.
+lista:= OrderedCollection new.
+suma:=0.
+
+ 1 to: ingreso do:[:i| prueba:= (ingreso \\ i ). (prueba=0) ifTrue:[ lista add: i ].].
+  1 to: ( ( lista size ) - 1 ) do:[:i| suma:= suma + ( lista at:i ). ].
+  (suma = ingreso) ifTrue:[ MessageBox message:' el numero  ', ingreso asString , ' es perfecto' .]
+                              ifFalse:[ MessageBox message:' el numero ', ingreso asString, 'no es perfecto'].   
+
+10. | ingreso1 ingreso2   prueba suma lista |
+
+ingreso1:=(Prompter prompt:'ingrese un numero o para terminar escriba no' default:'') asInteger.
+ingreso2:=(Prompter prompt:'ingrese un numero o para terminar escriba no' default:'') asInteger.
+lista:= OrderedCollection new.
+suma:=0.
+
+1 to: ingreso1 do:[:i| prueba:= (ingreso1 \\ i ). (prueba=0) ifTrue:[ lista add: i ].].
+  1 to: ( ( lista size ) - 1 ) do:[:i| suma:= suma + ( lista at:i ). ].
+  (suma = ingreso2)  ifTrue:[ MessageBox message:' los numeros  ', ingreso1 asString , ' y' ,  ingreso2 asString , ' son amigos' .]
+                              ifFalse:[ MessageBox message:' los numeros  ', ingreso1 asString , ' y' ,  ingreso2 asString , ' no  son amigos' .].
+
+                              
+
+                 
+
+
+

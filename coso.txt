@@ -1,0 +1,134 @@
+5 + 6 11
+20 factorial 2432902008176640000
+'Esto es una prueba' size 18
+#( 1 3 5 7 ) at:2 3
+'Paradigmas' isArray false
+5*7 35 
+5 // 2 2
+4 \\ 3 1
+2 / 6 1/3
+1.5 + 6.3e2 631.5
+Array new ()
+Date today Nov 25, 2017    
+Time now 20:24:42
+
+
+2. Evalue los siguientes mensajes unarios
+
+#('arreglo' 'de' 'string')size 3
+'hoy es jueves' asUpperCase 'HOY ES JUEVES'
+'hola aqui estoy'reversed 'yotse iuqa aloh'
+#(4 'cinco' 6 7 ) reversed (7 6 'cinco' 4)
+$A asciiValue 65
+65 asCharacter $A
+'Cual es la longitud de esta oracion' size 35
+
+3. Evalua los siguientes mensajes binarios  
+
+'hola', 'aqui estoy' 'holaaqui estoy'
+#(1 2 3),#(4 5 6) (1 2 3 4 5 6)
+4=5 false
+#(1 2 $a), #($b 'cd') (1 2 $a $b 'cd')
+
+4. Evalue los siguientes mensajes de palabra clave
+'Esto es una prueba' at:3 $t
+'Hola' includes: $o true
+'hola' at:1 put:$H $H
+'Paradigmas de Programacion' copyFrom: 4 to: 9 'adigma'
+#(9 8 7 6 5) at:3 7
+#( 1 ( 2 3 ) 4 5 ) includes: #( 2 3 ) true
+#( 9 8 7 6 5) copyFrom: 1 to:2 (9 8)
+Array new:10 (nil nil nil nil nil nil nil nil nil nil)
+
+5. Mensajes anidados.Evaluarlos y de ser necesario,  colocar parentesis 
+para mostrar de que manera ST evalua las expresiones.
+
+'hola' size + 4  8
+'ahora' size + #( 1 2 3 4 ) size 9
+#( 1 12 24 36 ) includes: 4 factorial true
+3 + 4  *  2 14 
+3 + ( 4 * 2 ) 11 
+4 factorial between: 3 + 4 and: 'hola' size * 7 true
+'hola' at: ( #( 5 3 1 ) at:2 )  $l
+6 + 9 asString
+Array with: 1 with: 'hola' with: (1/3) (1 'hola' 1/3)
+
+
+Display a Screen
+Transcript a MDITranscript
+Debug
+Disk a Directory on: 'Z:\home\GAST~A5J\DESC~2OO\STEXPRES\'
+Distancia
+Distancia:= 15
+
+
+7. Comparando objetos
+
+3 < 4  true
+#( 1 2 3 4 ) = #( 1 2 3 4) true
+'hola' <= 'adios'
+5 = 2 + 3       
+5 = ( 2 + 3 ) true 
+
+8. Bloques de codigo
+[ $a isVowel ] value true
+[ $b isVowel ] value false
+[ 3 + 4.'hola'  asUpperCase ] value 'HOLA'
+| bloque |
+bloque := ['Hola' , 'Como estas?'].
+   ^bloque value 'HolaComo estas?'      
+
+[ :c | c isVowel ] value: $a true
+[ :c | c isVowel ] value: $b false  
+
+| bloque resp |
+  bloque:=[ :a :b | a , b ].
+  resp:= bloque value: 'hola'  value: 'como estas?'.
+  ^resp      'holacomo estas?'
+
+
+
+9. Expresiones Booleanas
+5 < 2 or: [ $a isVowel ] true
+5 < 2  false
+( 5 < 2 ) not true
+5 < 2 and: [$a isVowel] false
+( 5 < 2 ) not and: [ $a isVowel ] true
+( 5 < 2 ) not or: [ 'hola' size < 2 and: [ $a isVowel ] ] true
+
+10 como sabemos a que clase pertenece cada objeto? Evalue las expresiones
+
+#(Francesca Jackie Marisa Bree) class Array      
+'Rakesh Vijay Charles Daniel Tyler' class String
+5 class SmallInteger
+(1/2) class Fraction
+5.2 class Float
+
+
+11 Mensajes en cascada, llamamos asi al conjunto de mensajes que enviamos a un mismo objeto. 
+Verifica estas dos expresiones y explica la diferencia.
+
+3 factorial; factorial ; factorial 6
+3 factorial factorial factorial 2601218943565795100204903227081043611191521875016945785727541837850835631156947382240678577958130457082619920575892247259536641565162052015873791984587740832529105244690388811884123764341191951045505346658616243271940197113909845536727278537099345629855586719369774070003700430783758997420676784016967207846280629229032107161669867260548988445514257193985499448939594496064045132362140265986193073249369770477606067680670176491669403034819961881455625195592566918830825514942947596537274845624628824234526597789737740896466553992435928786212515967483220976029505696699927284670563747137533019248313587076125412683415860129447566011455420749589952563543068288634631084965650682771552996256790845235702552186222358130016700834523443236821935793184701956510729781804354173890560727428048583995919729021726612291298420516067579036232337699453964191475175567557695392233803056825308599977441675784352815913461340394604901269542028838347101363733824484506660093348484440711931292537694657354337375724772230181534032647177531984537341478674327048457983786618703257405938924215709695994630557521063203263493209220738320923356309923267504401701760572026010829288042335606643089888710297380797578013056049576342838683057190662205291174822510536697756603029574043387983471518552602805333866357139101046336419769097397432285994219837046979109956303389604675889865795711176566670039156748153115943980043625399399731203066490601325311304719028898491856203766669164468791125249193754425845895000311561682974304641142538074897281723375955380661719801404677935614793635266265683339509760000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+12 ST tiene una ventana llamada inspector que permite ver y cambiar las variables de instancia de un objeto. Evalua este codigo y di que observas
+
+
+| a | 
+a := #( 1 2 sam 'joe' ( 4 5 ) ).
+a at: 2 put: 3 / 4.
+a inspect (1 3/4 sam 'joe' (4 5))     
+
+13 Condicionales. Verifica estas expresiones 
+
+
+a. 3 > 4 ifTrue: [ ' el bloque verdadero ' ]
+             ifFalse: ['el bloque falso' ]        'el bloque falso'
+                                                                                             
+b. ( 5 > 2 ) ifTrue:[ ^ '5 es mayor que 2 ']
+                 ifFalse:[^ '5 es menor que 2'].    '5 es mayor que 2 '     
+
+c. $b isVowel ifTrue:[^'es una vocal']
+                      ifFalse:[^'es una consonante'].
+                                                                          'es una consonante'
+

@@ -1,0 +1,13 @@
+Scott := CalendarApp new open
+Calendar addHolidayFromString: '8/22/92'
+Calendar addHolidayFromString: '8/30/92'
+Calendar addHolidayFromString: '1/1/92'
+Calendar addHoliday: ((Date today) addDays: 5)
+Calendar addHoliday: ((Date today) subtractDays: 5)  
+
+
+
+
+
+
+                              

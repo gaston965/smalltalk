@@ -1,0 +1,205 @@
+"make sure classes needed by this package exist"
+#( 
+    CompositePane DialogTopPane Object OrderedCollection WBToolBar 
+    WinAddress WinDialogInfo WindowHandle WinLong 
+)
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+ 
+"WindowBuilder Runtime Fixes - Smalltalk Express v2.0.4
+
+    Description:
+
+        This package updates the WindowBuilder runtime in Smalltalk Express v2.0.3
+        to v2.0.4.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/7/97
+"!
+
+!CompositePane methods !
+
+defaultStyle
+        "Private - Answer an Integer with appropriate styles in it."
+    ^0! !
+
+!DialogTopPane methods !
+   
+buildItems
+    "Modified by OSI to support framing parameters
+        and support extra dialog item template data."
+        "Private - Build the control items within
+         the dialog box.  Answer an array of item
+         templates."
+    | answer rect text extraData |
+    #modifiedByOSI.
+    answer := OrderedCollection new.
+    children do: [ :subpane |
+        subpane style isNil ifTrue: [ subpane style: subpane getStyle ].
+        "OSI - replaced #isKindOf: tests for SubPane and Rectangle"
+        (subpane isSubPane) ifTrue: [
+            (rect := subpane framingBlock) isRectangle not
+                ifTrue: [rect := rect value: (0@0 extent: rectangle extent)].
+            text := subpane initialText.
+            text isString ifFalse:[
+                text := nil].
+            answer add: (
+                (extraData := subpane extraDialogItemData) isNil
+                    ifTrue: [
+                        WinDialogInfo
+                            itemTemplateStyle: subpane style
+                            x: rect left
+                            y: rect top
+                            cx: rect extent x
+                            cy: rect extent y
+                            id: subpane id
+                            className: subpane winClass
+                            text: text ]
+                    ifFalse: [
+                        WinDialogInfo
+                            itemTemplateStyle: subpane style
+                            x: rect left
+                            y: rect top
+                            cx: rect extent x
+                            cy: rect extent y
+                            id: subpane id
+                            className: subpane winClass
+                            text: text
+                            extraData: extraData ] ).
+            subpane initSize: rect ]].
+    ^answer!
+ 
+buildWindow: aParentWindow
+        "Private - Create the dialog window for the receiver."
+
+    | winDlgTemplate items winDlgFontInfo tempByteArray m pDlgTemplate|
+
+    "Modified by OSI to add #initWindow code, to
+    avoid parent being nil for framingblock, and to
+    add #sizeWindow call."
+    #modifiedByOSI.
+
+    style isNil ifTrue: [ style := self getStyle ].
+    framingBlock isNil
+        ifTrue: [
+            rectangle := self initSize.
+            framingBlock := rectangle]
+        ifFalse: [rectangle := framingBlock value: (parent isNil ifFalse: [ parent rectangle] ifTrue: [ Display boundingBox ]) ].
+
+    NewWindow notNil ifTrue: [
+        NewWindow := nil.
+        Terminal bell.
+        ^self ].
+    NewWindow := self.
+    winDlgTemplate := WinDialogInfo
+        dialogTemplateStyle: style
+        itemCount: 0
+        x: rectangle origin x
+        y: rectangle origin y
+        cx: rectangle extent x
+        cy: rectangle extent y
+        menuName: nil
+        className: nil
+        text: label.
+    winDlgFontInfo := WinDialogInfo         "not used yet"
+        fontPointSize: 0 typeFaceName: nil.
+    items := self buildItems.
+    winDlgTemplate byteAtOffset: 4 put: items size.
+    tempByteArray := winDlgTemplate contents.
+    items do: [ :i |
+        tempByteArray := tempByteArray, i contents ].
+    winDlgTemplate contents: tempByteArray.
+
+    "OSI - Folded in fix made by Digitalk"
+    pDlgTemplate := WinAddress copyToNonSmalltalkMemory: winDlgTemplate contents.
+    handle := WindowHandle fromInteger: (
+        UserLibrary
+            createDialogIndirect: WIN hInstanceExe
+            dialogTemplate: pDlgTemplate asParameter
+            parent: parent asParameter
+            dialogFunction:
+                (WinLong fromBytes: DialogProcInstance) asParameter).
+    pDlgTemplate free.
+
+    handle = NullHandle ifTrue: [^self error: 'Dialog creation error'].
+    self initGraphics.
+    self receiveMessages.
+    NewWindow := nil.
+    self buildDialogItems.
+    children do: [ :subpane | subpane validate ].
+
+    owner initWindow.
+    self sizeWindow.
+
+    m := UserLibrary
+            getSystemMenu: self asParameter
+            revert: 0.
+    self propertyAt: #sysMenu put: m.
+    PoppedModelessWindows add: handle.
+    self showWindow.! !
+
+!Object methods !
+
+dialogTemplate
+    "Added by OSI"
+    #addedByOSI.
+    ^nil!
+ 
+dialogTemplate: ignore
+    "Added by OSI"
+    #addedByOSI.
+    ^self! !
+
+!WBToolBar methods !
+  
+affectsFreeClientArea
+    "Private - Answer whether the receiver reduces the amount of
+    free client area in its parent for the receiver's siblings."
+
+    ^self isMDISupportPane!
+
+isMDISupportPane
+        "Answer true if receiver is a support pane for MDI."
+    ^self tpStyle == #mdiToolBar! !
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.0.4 WindowBuilder Runtime Fixes'.
+package makeCurrent;
+    organize: CompositePane methodsFor: '' include: #( 
+        defaultStyle 
+    );
+    organize: DialogTopPane methodsFor: '' include: #( 
+        buildItems buildWindow: 
+    );
+    organize: Object methodsFor: '' include: #( 
+        dialogTemplate dialogTemplate: 
+    );
+    organize: WBToolBar methodsFor: '' include: #( 
+        affectsFreeClientArea isMDISupportPane 
+    );
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'WBRUN.204';
+    comments:
+'"WindowBuilder Runtime Fixes - Smalltalk Express v2.0.4
+
+    Description:
+
+        This package updates the WindowBuilder runtime in Smalltalk Express v2.0.3
+        to v2.0.4.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/7/97
+"';
+    fileTime: ( Time fromSeconds: 78408 )
+          on: ( Date fromDays: 35131 );
+    takeCurrent;
+    yourself  !

@@ -1,0 +1,289 @@
+TUTORIAL EXAMPLES FOR CHAPTER 12 -
+APPLICATION DEVELOPMENT - CASE STUDY
+
+"Getting There in Half the Time: Recycling Code"
+
+"You will be reusing the Network, NetworkNode and
+ AnimalHabitat classes from earlier tutorials.  If
+ these classes already exist in your image, skip this
+ class creation step.  Otherwise select and evaluate: "
+
+    Object subclass: #NetworkNode
+        instanceVariableNames: 
+            'name position'
+        classVariableNames: ''
+        poolDictionaries: 'WinConstants '
+
+"Then evaluate:"
+
+    Object subclass: #Network
+        instanceVariableNames: 
+            'connections'
+        classVariableNames: ''
+        poolDictionaries: ''
+
+"Then evaluate:"
+
+    Object subclass: #AnimalHabitat
+        instanceVariableNames:
+            'animals scriptString script browser '
+        classVariableNames: ''
+        poolDictionaries: ''
+
+"And: "
+
+    ViewManager subclass: #AnimalHabitatWindow
+        instanceVariableNames:
+            'habitat replyStream inputPane '
+        classVariableNames: ''
+        poolDictionaries: ''
+
+
+"If you have been working through the tutorials,
+ you can skip this step, too.  Otherwise, select
+ and evaluate the following."
+
+    (File pathName: 'tutorial\network9.st') fileIn; close.
+    (File pathName: 'tutorial\nodes9.st') fileIn; close.
+    (File pathName: 'tutorial\class10.st') fileIn; close.
+    (File pathName: 'tutorial\animal10.st') fileIn; close.
+    (File pathName: 'tutorial\window4.st') fileIn; close.
+    (File pathName: 'tutorial\window5.st') fileIn; close
+
+
+"Reworking the Network of Nodes"
+
+"Create a new pool dictionary to hold the network and the nodes
+ we will create by evaluating the following.  We make two new 
+ pool variables, one for the new network and the other a dictionary 
+ of all of the nodes."
+
+    SalesStrategy := Dictionary new.
+    SalesStrategy
+        at: 'StratNet'   put: Network new initialize;
+        at: 'StratNodes' put: Dictionary new
+
+
+"Evaluate the following with Do it to create the new ComEvent class."
+
+    (File pathName: 'tutorial\comevent.cls') fileIn; close
+
+
+"To initialize the state-transition network, evaluate with Do it :"
+
+    #(('Kick-off Ltr'   180 20)
+      ('Fol-Up Ltr'     180 120)
+      ('Phone Call'     180 180)
+      ('Wake Up Ltr'    295 180)
+      ('Exit Seminar'   57 240)
+      ('Exit Dead Leads' 280 240))
+        do: [ :nodeInfo |
+            ComEvent new initialize;
+                name: (nodeInfo at: 1) position:
+                    ( nodeInfo at: 2 ) @ ( nodeInfo at: 3 ) ].
+     ( SalesStrategy at: 'StratNet' ) initialize.
+    ComEvent
+         connect: 'Kick-off Ltr'    to: 'Fol-Up Ltr';
+         connect: 'Kick-off Ltr'    to: 'Exit Seminar';
+         connect: 'Fol-Up Ltr'      to: 'Phone Call';
+         connect: 'Fol-Up Ltr'      to: 'Exit Seminar';
+         connect: 'Phone Call'      to: 'Wake Up Ltr';
+         connect: 'Phone Call'      to: 'Exit Seminar';
+         connect: 'Phone Call'      to: 'Exit Dead Leads'
+
+
+"Draw the SalesCom marketing strategy diagram."
+
+     (SalesStrategy at: 'StratNet') draw
+
+            
+"To make networks draw on a form, add the method 
+ drawOn: aWindow  to the class Network.  Here is the new method."
+
+drawOn: aWindow                 "** changed **"
+        "Draw the network.  For each node, it draws
+         all the arcs and then the node.  All the
+         nodes visited are remembered to avoid double
+         drawing."
+    | visited pen |
+    pen := aWindow pen.        "** changed **"
+    pen erase.                       
+    visited := Set new.
+    pen drawRetainPicture: [
+        connections keys do: [ :nodeA |
+            visited add: nodeA.
+            (connections at: nodeA) do: [ :nodeB |
+                (visited includes: nodeB)
+                    ifFalse: [
+                        pen place: nodeA position;
+                            goto: nodeB position] ].
+            nodeA drawWith: pen] ]   "** changed **"
+
+
+"To test the new method, evaluate the following with Do it."
+
+   | graphPane |
+   graphPane := GraphPane openWindow: 'StratNet'.
+    (SalesStrategy at: 'StratNet') drawOn: graphPane
+                     
+
+"Raiding the Animal Habitat"
+
+"Next create the SalesCom application model class.
+ Evaluate with Do it:"
+
+    ViewManager subclass: #SalesCom
+        instanceVariableNames: ''
+        classVariableNames: ''
+        poolDictionaries: 'SalesStrategy'
+
+
+"Note: You are encouraged to work through the 'cut and paste'
+ procedures described in Chapter 12 to better appreciate
+ the practical techniques of Smalltalk/V development.
+ However, if you don't have time or seem to have gone
+ astray, evaluate the following to have your SalesCom
+ application consistent with the system described in the
+ manual at the start of section, Customers and Events:
+ A Matter of State... "
+
+    (File pathName: 'tutorial\class12.1in') fileIn; close
+
+
+"To see the SalesCom application at its first stage of
+    prototype development, evaluate with Do it:"
+
+    Test := SalesCom new.
+    Test open
+                                
+
+"Customers and Events, A Matter of State"
+
+"To create some initial customer records in a dictionary,
+ evaluate with Do it."
+
+    Customers := Dictionary new.
+
+    Customers
+        at: 'ABC Inc.' put: #(        "Key is company name"
+            'Fred Smith'                "Field 1 is Contact Name."
+            '123 Maple St.'           "Field 2 is Address."
+            'Boston MA 02055'     "Field 3 is City State and Zip."
+            '555-4321'                   "Field 4 is Phone."
+            'Kick-off Ltr'                 "Field 5 is Current Event scheduled."
+            'Feb 14, 1980'             "Field 6 is Prep Date for Current Event."
+            ( ) );                              "Field 7 is an array for the contact history."
+        at: 'DEF Co.' put: #(
+            'Jane Doe'
+            '321 Poplar Terr.'
+            'Hicksville MD 21202'
+            '555-3476'
+            'Fol-Up Ltr'
+            'Feb 15, 1980'
+            ( 'Kick-off Ltr: Feb 7, 1980' ) );
+        at: 'GHI Ltd.' put: #(
+            'Clive Davies'
+            '999 Oak Ave.'
+            'Tustin CA 92680'
+            '555-7890'
+            'Kick-off Ltr'
+            'Feb 14, 1980'
+            ( ) );
+        at: 'JKL Inc.' put: #(
+            'Bert Jenks'
+            '667 Sycamore St.'
+            'Irvine CA 92680'
+            '555-4734'
+            'Kick-off Ltr'
+            'Feb 14, 1980'
+            ( ) );
+        at: 'MNO Co.' put: #(
+            'Bill Rasp'
+            '345 Apple Ave.'
+            'New Vista CA 93232'
+            '555-5678'
+            'Fol-Up Ltr'
+            'Feb 20, 1980'
+            ( 'Kick-off Ltr: Feb 6, 1980' ) );
+        at: 'PQR Corp.' put: #(
+            'Ellie Small'
+            '423 Sassafras Ave.'
+            'Tustin CA 92680'
+            '555-2064'
+            'Phone Call'
+            'Feb 20, 1980'
+            ( 'Kick-off Ltr: Feb 1, 1980' 'Fol-up Ltr: Feb 8, 1980' ) )
+
+
+"To see your mini-database of Customers, evaluate with Do it:"
+
+    Customers inspect
+
+
+"Evaluate the following with Do it to file in the data for each of the nodes."
+
+    (File pathName: 'tutorial\comevnts.in') fileIn; close
+
+
+"Evaluate the following with Do it to poke around the communication 
+ event database."
+
+    (SalesStrategy at: 'StratNodes') inspect
+
+
+"Methods and Messages: Bringing the Prototype to Life"
+
+"To bring SalesCom up to speed through the end of the
+ second stage of prototype development, evaluate the
+ following with Do it (although you will be much better off if
+ you have gotten to this stage by way of working
+ through the tutorial exercise in Chapter 12):"
+
+    Test := nil.
+    (File pathName: 'tutorial\class12.2in') fileIn; close.
+    SalesCom new open
+
+
+"Paste these new versions of the customers: and
+ viewCust: methods into the SalesCom class."
+
+customers: customerPane
+        "Set the contents of the customer pane to the keys
+         of the Customers dictionary as a Sorted Collection."
+    customerPane contents: Customers keys asSortedCollection
+
+viewCust: aCust
+        "Change: method response for the Customer List pane. 
+         When the Customer List pane is selected, the Customer
+         Detail pane is updated to show the currently selected customer."
+    | custData custHist prepDate |
+    curCust := aCust.
+    custData := Customers at: curCust.
+    custDetInfo := WriteStream on: String new.     
+    1 to: custData size - 1 do: [ :index | "Don't print the history array."
+         custDetInfo
+              nextPutAll: (custData at: index);
+              cr].
+    custHist := custData at: 7.  "Print the history line by line after a header."
+    custDetInfo nextPutAll: '---------HISTORY----------'; cr.
+    1 to: custHist size do: [ :index |
+         custDetInfo 
+              nextPutAll: (custHist at: index); 
+              cr].              
+    self changed: #custDet:
+                                      
+
+"Evaluate the following with Do it to see the latest version."
+
+    SalesCom new open
+
+
+"It's Getting Better All the Time: Evolutionary Development"
+
+"Evaluate the following with Do it."
+
+    (File pathName: 'tutorial\class12.3in') fileIn; close.
+    SalesCom new open
+
+
+

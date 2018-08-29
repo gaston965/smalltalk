@@ -1,0 +1,312 @@
+TUTORIAL EXAMPLES FOR CHAPTER 7 - STREAMS AND COLLECTIONS
+ 
+"Streams"
+      
+"Evaluate the following with Show it."
+
+     "Replace occurrences of % with the date today"
+     | input output char dateStamp |
+     dateStamp := Date today printString.
+     input := ReadStream on: 'The date today is %'.
+     output := WriteStream on: String new.
+     [input atEnd] 
+         whileFalse: [
+             (char := input next) = $%
+                 ifTrue: [output nextPutAll: dateStamp]
+                 ifFalse: [ output nextPut: char ] ].
+     ^output contents         
+                    
+
+"Evaluate the following with Show it."
+
+     "Compute several factorials"
+     | input output |
+     input := ReadStream on: #( 1 5 10 20 ).
+     output := WriteStream on: Array new.
+     [input atEnd]
+         whileFalse: [
+             output nextPut: input next factorial].
+     ^output contents     
+                         
+                 
+"Dictionaries"
+            
+"Evaluate the following with Do it."
+
+     PhoneBook := Dictionary new
+                                                       
+
+"Evaluate the following with Do it."
+                
+     PhoneBook
+         at: 'Marisa' put: '645-1082';
+         at: 'Francesca' put: '555-1212';
+         at: 'Jackie' put: '392-481-5000';
+         at: 'Rakesh' put: '645-1083';
+         at: 'Vijay' put: '645-1083'  
+
+
+"Evaluate the following with Show it."
+
+     PhoneBook at: 'Marisa'                        
+                         
+
+"Evaluate the following with Show it."
+                        
+     (PhoneBook includesKey: 'Aaron')
+         ifTrue: [PhoneBook at: 'Aaron']
+         ifFalse: ['Not in phone book']       
+               
+
+"Evaluate the following with Show it."
+
+     PhoneBook at: 'Aaron' ifAbsent: ['Not in phone book']
+
+
+"Evaluate the following with Do it." 
+
+     PhoneBook inspect
+              
+
+"Bags"
+    
+"Evaluate the following with Show it."
+
+     | input answer f c |
+     input := File pathName: 'tutorial\chapter.7'.
+     answer := WriteStream on: String new.
+     f := Bag new.
+     [input atEnd]
+         whileFalse: [
+             (c := input next) isLetter
+                 ifTrue: [ f add: c asLowerCase ] ].
+     0 to: 25 do: [ :i |
+         c := ($a asciiValue + i) asCharacter.
+         answer 
+            cr; nextPut: c; space; 
+            nextPutAll: (f occurrencesOf: c) printString].
+     ^answer contents  
+                                     
+   
+"Sets"
+    
+"Evaluate the following with Show it."
+
+     | set1 set2 |
+     set1 := Set new.
+     set2 := Set new.
+     (File pathName: 'tutorial\chapter.7') do: [:c| set1 add: c].
+     (File pathName: 'tutorial\chapter.6') do: [:c| set2 add: c].
+     ^set1 reject: [ :c | set2 includes: c]  
+           
+   
+"Blocks as Objects"
+      
+"Evaluate the following with Show it."
+
+     'Now is the time' asSet select: [ :c | c isVowel ]
+             
+
+"Patterns"
+    
+"Evaluate the following with Show it."
+
+     "Compute occurrences of a phrase in a file"
+     | pattern count input word |
+     count := 0.
+     ( pattern := Pattern new: #( 'now' 'is' 'the' ) ) 
+         matchBlock: [ count := count + 1 ].
+     input := File pathName: 'tutorial\chapter.7'.
+     [ ( word := input nextWord) isNil ]
+         whileFalse: [ pattern match: word asLowerCase ].
+     ^count      
+             
+     
+"Computing Letter Pair Frequencies"
+         
+"Evaluate the following with Do it."
+
+     "compute letter pair frequencies"
+     | last pair |
+     Pairs := Bag new.
+     last := Space.
+     (File pathName: 'tutorial\chapter.7') do: [ :c |
+         (last isLetter and: [ c isLetter] )
+             ifTrue: [
+                 (pair := String new: 2)
+                     at: 1 put: last;
+                     at: 2 put: c.
+                 Pairs add: pair asLowerCase].
+         last := c]. 
+     Pairs elements inspect 
+       
+     
+"Evaluate the following with Do it."
+
+     "Print letter pair frequencies greater than 60
+     in the Smalltalk/V Transcript window."
+     | frequent |
+     Transcript cr.
+     frequent := Pairs asSet select: [ :pair |
+         (Pairs occurrencesOf: pair) > 60 ].
+     frequent asSortedCollection do: [:pair |
+         Transcript
+             nextPutAll: pair; 
+             tab;
+             nextPutAll: (Pairs occurrencesOf: pair) 
+                 printString;     
+             cr] 
+   
+
+"Animals Revisited"
+          
+"Animal Habitat"
+         
+"Class definition for AnimalHabitat.  You can either
+edit the template using the Class Hierarchy Browser and
+save, or, since the class definition is a Smalltalk
+expression, you can evaluate the following expression
+with Do it."
+
+     Object subclass: #AnimalHabitat 
+         instanceVariableNames:
+           'animals scriptString script browser '
+         classVariableNames: ''
+         poolDictionaries: ''   
+      
+
+"Evaluate the following with Do it."
+
+    (File pathName: 'tutorial\habitat7.st') fileIn; close
+
+
+"Evaluate the following with Do it."
+
+    Habitat := AnimalHabitat new
+              
+
+"Animal Knowledge"
+           
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\animal7.st') fileIn; close
+        
+
+"Using the Habitat"
+       
+"Evaluate the following with Do it."
+
+    Snoopy := Dog new.
+    Snoopy name: 'Snoopy'.
+    Polly := Parrot new.
+    Polly name: 'Polly'.
+    Habitat 
+         add: Snoopy;
+         add: Polly
+
+
+"Evaluate the following with Do it."
+
+     Habitat script: 
+         'Snoopy is upset about the way that Polly is 
+          behaving.  It is as if whenever anyone asks
+          Polly to talk, Polly will be nasty.  Maybe if
+          instead of Snoopy barking at Polly when he
+          wants Polly to talk, Snoopy quietly asks Polly
+          to be pleasant for a change, things would go
+          better.  Now maybe Snoopy barking quietly will 
+          not make Polly nasty.'     
+   
+
+"Evaluate the following with Do it."
+
+     Snoopy 
+         learn: 'barking' action: [Snoopy talk];
+         learn: 'quietly' action: [Snoopy beQuiet; talk];
+         learn: 'is upset' action: [Snoopy beNoisy; talk].
+     Polly  
+         learn: 'to be pleasant' action:
+             [Polly vocabulary: 'Have a nice day'; talk];
+         learn: '* nasty' action: 
+             [Polly vocabulary: 'Why are you bothering me';
+                talk]
+                            
+
+"Evaluate the following with Do it."
+
+     Habitat play      
+                
+
+"A Network of Nodes"
+    
+"Network"
+        
+"Class definition for class Network.  Evaluate with Do it."
+
+     Object subclass: #Network
+         instanceVariableNames:
+             'connections'
+         classVariableNames: ''
+         poolDictionaries: ''
+                                  
+
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\network7.st') fileIn; close
+         
+
+"Network Nodes"
+         
+"Class definition for class NetworkNode.  Evaluate with Do it."
+
+     Object subclass: #NetworkNode
+         instanceVariableNames:
+             'name position'
+         classVariableNames: ''
+         poolDictionaries: 'WinConstants'
+                                    
+
+"Evaluate the following with Do it."
+
+     (File pathName: 'tutorial\nodes7.st') fileIn; close     
+                             
+
+"Building a Network"
+     
+"Evaluate the following with Do it."
+
+     Net := Network new initialize
+              
+
+"Evaluate the following with Do it."
+                
+     N1 := NetworkNode new name: 'one' position: 100 @ 100.
+     N2 := NetworkNode new name: 'two' position: 150 @ 150.
+     N3 := NetworkNode new name: 'three' position: 200 @ 120.
+     N4 := NetworkNode new name: 'four' position: 50 @ 50.
+     N5 := NetworkNode new name: 'five' position: 125 @ 220.
+     N6 := NetworkNode new name: 'six' position: 260 @ 120.
+     Net
+         connect: N1 to: N2;
+         connect: N2 to: N3;
+         connect: N4 to: N5;
+         connect: N5 to: N1;
+         connect: N3 to: N6;
+         connect: N3 to: N5;
+         connect: N3 to: N1
+
+
+"Evaluate the following with Show it."
+
+     Net      
+                                                                       
+
+"Evaluate the following with Show it."
+
+     Net pathFrom: N1 to: N5 avoiding: Set new             
+                    
+ 
+"Evaluate the following with Show it."
+      
+     Net pathFrom: N1 to: N5 avoiding: (Set with: N3)
+         

@@ -1,0 +1,52 @@
+
+
+! Date class methods !
+
+initialize
+        "Private - Initialize the class dictionary variables
+         DayNames that contain the associations between
+         the day name as symbols and the day indices.
+         MonthNames that contain the associations between
+         the month names as symbols and the month indices."
+        "This is one time code so it is commented --
+    DayNames := Dictionary new.
+    DayNames
+        at: #Mon put: 1;
+        at: #Monday put: 1;
+        at: #Tue put: 2;
+        at: #Tuesday put: 2;
+        at: #Wed put: 3;
+        at: #Wednesday put: 3;
+        at: #Thr put: 4;
+        at: #Thursday put: 4;
+        at: #Fri put: 5;
+        at: #Friday put: 5;
+        at: #Sat put: 6;
+        at: #Saturday put: 6;
+        at: #Sun put: 7;
+        at: #Sunday put: 7.
+    MonthNames := Dictionary new.
+    MonthNames
+        at: #Jan put: 1;
+        at: #January put: 1;
+        at: #Feb put: 2;
+        at: #February put: 2;
+        at: #Mar put: 3;
+        at: #March put: 3;
+        at: #Apr put: 4;
+        at: #April put: 4;
+        at: #May put: 5;
+        at: #Jun put: 6;
+        at: #June put: 6;
+        at: #Jul put: 7;
+        at: #July put: 7;
+        at: #Aug put: 8;
+        at: #August put: 8;
+        at: #Sep put: 9;
+        at: #September put: 9;
+        at: #Oct put: 10;
+        at: #October put: 10;
+        at: #Nov put: 11;
+        at: #November put: 11;
+        at: #Dec put: 12;
+        at: #December put: 12.--"! !

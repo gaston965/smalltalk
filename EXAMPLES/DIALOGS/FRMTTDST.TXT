@@ -1,0 +1,81 @@
+FormattedStaticText
+----------------------------
+
+The FormattedStaticText class shows the static
+text's value formated.   Before the static text's 
+value is shown, it is formated by evaluating the 
+accept block that was set with #acceptBlock: 
+method.
+
+Another level of abstraction is provided by set of
+methods that sets the accept block to predefined 
+blocks.  These methods are:
+
+    #formatAsDate
+    #formatAsDollar
+    #formatAsPhoneNumber
+
+
+Inherits From:
+    StaticText
+
+Inherited By:
+    (None)
+
+Named Instance Variables:
+
+    acceptBlock
+        Contains a block with one argument.  Every time
+        the static text gets a new value, (i.e. the value of
+        the field gets updated), this block is evaluated 
+        with the new value as the argument.  If the new 
+        value is accepted, the block should return the 
+        value as formated output.  If the new value is 
+        not accepted, this block should just return the 
+        new value.
+
+    formatedOutput
+        contains the formated output of the entry field.
+
+
+Class Variables:
+    (None)
+
+
+Pool Dictionaries:
+    (None)
+
+
+Class Methods:
+    (None)
+
+
+Instance Methods:
+
+    acceptBlock: aBlock
+        Set accept block to aBlock.  When FormattedStaticText
+            get a new value, aBlock is evaluated with the new
+            value as the argument.  If the new value is accepted,
+            aBlock should return the new value as formated output.
+            If the new value is not accepted, aBlock should 
+            just return the new value.
+
+    contents: newValue
+        Set the String associated with this control.
+
+    formatAsDate
+        Sets the FormattedStaticText to format its contents
+        as date.
+
+    formatAsDollar
+        Sets the FormattedStaticText to format its contents
+        as dollar currency.
+
+    formatAsPhoneNumber
+        Sets the FormattedStaticText to format its contents
+        as phone number.
+
+    formatedOutput
+        Answers formated output string of the FormattedEntryField.
+
+

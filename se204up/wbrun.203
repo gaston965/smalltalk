@@ -1,0 +1,257 @@
+"make sure classes needed by this package exist"
+#( 
+    CompositePane File FileDialog GraphicsTool MessageBox Number 
+    Object Point Rectangle Stream String Window 
+)
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+ 
+"WindowBuilder Runtime Fixes for Smalltalk Express v2.0
+
+    Description:
+
+        This package supplies several methods that were omitted from the WindowBuilder
+        runtime and/or development fileins supplied with Smalltalk Express v2.0.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+"!
+
+!CompositePane methods !
+  
+contents
+    "Answer the value of the receiver.
+    This should be overriden in subclasses"
+    ^nil!
+
+contents: anObject
+    "Set the value of the receiver.
+    This should be overriden in subclasses"!
+   
+isMDISupportPane
+        "Answer true if receiver is a support pane for MDI."
+    | cpStyle |
+    ^(cpStyle := self cpStyle) == #mdiToolBar or: [
+        cpStyle == #mdiToolBarBordered]! !
+
+!File class methods !
+   
+findOrPromptFileName: fileName
+    "Answer the full path of the file named fileName.
+    Search the current search path, and if not found
+    then prompt the user."
+
+    | answer dialog |
+    (answer := self findFileName: fileName) notNil ifTrue: [ ^answer ].
+    dialog := FileDialog new
+        title: 'Where is "', fileName, '" ?';
+        fileSpec: fileName;
+        hideReadonly.
+    dialog open.
+    (answer := dialog file) notNil ifTrue: [
+        (self exists: answer) ifFalse: [
+            MessageBox message: '"', answer fileNameLessPath, '" does not exist'.
+            answer := nil ] ].
+    ^answer! !
+
+!GraphicsTool methods !
+  
+setBackgroundModeOpaque
+    "Set the background mode."
+    self setBackgroundMode:  2. "(GraphicsConstants at: 'BackgroundMixOpaque')"!
+   
+setBackgroundModeTransparent
+        "Set the background mode."
+    self setBackgroundMode: 1. "(GraphicsConstants at: 'BackgroundMixTransparent')"! !
+
+!Number methods !
+   
+distanceDown: aNumber
+        "Answer the distance between the receiver and aNumber
+            where right and down are positive."
+
+    ^(aNumber - self) * Rectangle topBottomUnit!
+   
+distanceLeft: aNumber
+        "Answer the distance between the receiver and aNumber
+            where right and down are positive."
+
+    ^aNumber distanceRight: self!
+  
+distanceRight: aNumber
+        "Answer the distance between the receiver and aNumber
+            where right and down are positive."
+
+    ^(aNumber - self) * Rectangle leftRightUnit!
+  
+distanceUp: aNumber
+        "Answer the distance between the receiver and aNumber
+            where right and down are positive."
+
+    ^aNumber distanceDown: self! !
+
+!Object methods !
+  
+maxWindowSize
+    "Added by OSI"
+    #addedByOSI.
+    ^nil! !
+
+!Point methods !
+
+distanceLeftAndDown: aPoint
+        "Answer the distance between the receiver and aPoint
+            where left and down are positive."
+
+    ^(x distanceLeft: aPoint x) @ (y distanceDown: aPoint y)!
+  
+distanceLeftAndUp: aPoint
+        "Answer the distance between the receiver and aPoint
+            where left and up are positive."
+
+    ^(x distanceLeft: aPoint x) @ (y distanceUp: aPoint y)!
+
+distanceRightAndDown: aPoint
+        "Answer the distance between the receiver and aPoint
+            where right and down are positive."
+
+    ^(x distanceRight: aPoint x) @ (y distanceDown: aPoint y)!
+   
+distanceRightAndUp: aPoint
+        "Answer the distance between the receiver and aPoint
+            where right and up are positive."
+
+    ^(x distanceRight: aPoint x) @ (y distanceUp: aPoint y)! !
+
+!Rectangle class methods !
+ 
+leftRightUnit
+        "Answer the signed unit from left to right."
+    ^1!
+
+topBottomUnit
+        "Answer the signed unit from top to bottom."
+    ^1! !
+
+!Stream methods !
+ 
+skipToWhitespace
+        "Advance the receiver position beyond the next
+         occurrence of whitespace, or if none, to the end of
+         stream.  Answer true if whitespace occurred, else
+         answer false."
+
+    [self atEnd]
+        whileFalse: [
+            self next isWhitespace
+                ifTrue: [^true]].
+    ^false!
+  
+skipWhitespace
+        "Advance the receiver position beyond the next
+         occurrence of whitespace, or if none, to the end of
+         stream.  Answer true if whitespace occurred, else
+         answer false."
+
+    [self atEnd]
+        whileFalse: [
+            self peek isWhitespace ifFalse: [^true].
+            self next].
+    ^false!
+
+upToWhitespace
+        "Answer the contents from the current position
+        to the next white space."
+
+    ^self
+        copyFrom: self position + 1
+        to: (self skipToWhitespace
+            ifTrue: [self position - 1]
+            ifFalse: [self position])! !
+
+!String methods !
+ 
+mnemonicChar
+
+    "Added by OSI.  Scan for the mnenomic character (&), and
+     answer the character following it.  If no mnemonic, answer nil."
+
+    | index |
+    #addedByOSI.
+    index := (self indexOf: $& ifAbsent: [ self size ]) + 1.
+    index > self size ifTrue: [
+        ^nil
+    ].
+
+    ^(self at: index) asUpperCase! !
+
+!Window methods !
+
+hasTransparentStyle
+        "Answer whether the receiver has the transparent style."
+
+    ^(self propertyAt: #transparent) = true! !
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.03 WindowBuilder Runtime Fixes'.
+package makeCurrent;
+    organize: CompositePane methodsFor: '' include: #( 
+        contents contents: isMDISupportPane 
+    );
+    organize: File class methodsFor: '' include: #( 
+        findOrPromptFileName: 
+    );
+    organize: GraphicsTool methodsFor: '' include: #( 
+        setBackgroundModeOpaque setBackgroundModeTransparent 
+    );
+    organize: Number methodsFor: '' include: #( 
+        distanceDown: distanceLeft: distanceRight: distanceUp: 
+    );
+    organize: Object methodsFor: '' include: #( 
+        maxWindowSize 
+    );
+    organize: Point methodsFor: '' include: #( 
+        distanceLeftAndDown: distanceLeftAndUp: distanceRightAndDown: 
+        distanceRightAndUp: 
+    );
+    organize: Rectangle class methodsFor: '' include: #( 
+        leftRightUnit topBottomUnit 
+    );
+    organize: Stream methodsFor: '' include: #( 
+        skipToWhitespace upToWhitespace 
+    );
+    organize: Stream methodsFor: 'skipping over white space' include: #( 
+        skipWhitespace 
+    );
+    organize: String methodsFor: '' include: #( 
+        mnemonicChar 
+    );
+    organize: Window methodsFor: 'window styles' include: #( 
+        hasTransparentStyle 
+    );
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'WBRUN.203';
+    comments:
+'"WindowBuilder Runtime Fixes for Smalltalk Express v2.0
+
+    Description:
+
+        This package supplies several methods that were omitted from the WindowBuilder
+        runtime and/or development fileins supplied with Smalltalk Express v2.0.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+"';
+    fileTime: ( Time fromSeconds: 62709 )
+          on: ( Date fromDays: 35101 );
+    takeCurrent;
+    yourself  !

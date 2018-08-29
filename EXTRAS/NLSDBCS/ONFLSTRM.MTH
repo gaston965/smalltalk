@@ -1,0 +1,12 @@
+
+
+!FileStream class methods !
+
+on: aFile
+        "Answer a new instance of a file stream on aFile."
+    ^((NationalLanguage isDoubleByteCp
+        ifTrue: [MixedFileStream] ifFalse: [self])
+            new)
+        setCollection: aFile;
+        setLimits! !
+

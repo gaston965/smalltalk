@@ -1,0 +1,80 @@
+Icon Editor
+----------------- 
+
+This file contains a brief explanation and user's guide 
+for the Icon Editor, a window which lets you create icons
+and change icons of Smalltalk/V executables.  A mouse
+is required.  To install into your system, evaluate the
+following expression: 
+
+    (File pathName: 'examples\iconedit\iconedit.st') fileIn; close.
+
+To open an Icon Editor window, evaluate the following 
+expression: 
+
+    IconEditor new  open
+
+
+
+The Icon Editor has three menus. The file, edit and
+color menus.
+
+The File menu has the following additional menu items.
+    Open Icon ...       : Loads the icon from a file.  A dialog
+                                box prompts the user for the file name.
+    Save Icon           : Saves changes to the icon to a file.
+                                If necessary, a dialog box prompts the
+                                user for the file name.
+    Save Icon As ...   : Saves changes to the icon to a
+                                a new file.  A dialog box prompts the 
+                                user for the file name.
+    Write Icon To Module : Writes the icon to the module
+                                (DLL or EXE) from which the icon has been
+                                loaded. If this is a Smalltalk/V
+                                executable file,  This changes the icon 
+                                of the executable as well as the window.
+                                (During startup, if Smalltalk detects that
+                                it's running a runtime version, then it
+                                replaces the class icon with the icon 
+                                in the exe.)
+
+The Edit Menu has the following menu items.
+    Clear               : Sets all the bits in the work area to
+                            screen color.
+    Fill                   : Fills the bounded region with the
+                            selected color.
+    Copy                : Copies the icon's bitmap to clipboard.
+    Paste               : Pastes bitmap from clipboard.
+
+The Color Menu lets you change the selected color.
+
+
+
+Icon Editor Public Methods:
+
+open
+        "Open an IconEditor window with a new Icon."
+
+openOn: aWinIcon
+        "Open an IconEditor window for aWinIcon object."
+
+openOnFile: aFileName
+        "Open an IconEditor window for aFileName icon file ."
+
+
+
+Icon Editor Files:
+
+- IconEdit.st    Smalltalk code to install Icon Editor.
+- IconEdit.txt   This file.
+- Icon.cls       Icon class.
+- BitEditr.cls   BitEditor class.
+- IconEdtr.cls   IconEditor class.
+
+
+
+Limitations:
+    Currently only supports 32x32 pixel 16 colors (VGA) icons.
+    Can't change screen or inverse color.  Screen color
+    is set to cyan and inverse color is set to dark red.
+

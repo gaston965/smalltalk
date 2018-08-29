@@ -1,0 +1,311 @@
+"make sure classes needed by this package exist"
+#( 
+    MDIChild MDIClient MDISystem Process StatusPane ToolPane 
+    WinAddress WinClientCreateStruct WindowHandle WinMdiCreateStruct 
+    WinStructure 
+)
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+ 
+"MDI Fixes - Smalltalk Express v2.0.4
+
+    Description:
+
+        This package corrects several MDI issues in Smalltalk Express v2.0.3 and
+        updates the image to v2.0.4
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/7/97
+
+    Details:
+
+        *  Corrected problems with updates to MDIClient when MDIChild windows
+            are opened and closed.
+"
+
+MDIChild
+    removeSelector: #hideWindow.
+MDIClient
+    removeSelector: #buildWindow:;
+    removeSelector: #buildControl:.!
+
+!MDIChild methods !
+ 
+buildWindow
+        "Private - Create the document for the receiver."
+        "see Microsoft online Q70080 Creating a Hidden MDI Child Window."
+
+    | mdiCreate answer max winaddress m |
+    max := self frame mdiIsMaximized.
+    NewWindow notNil ifTrue: [ ^nil ].
+    self frame isActive ifFalse: [
+        self frame makeActive.
+        self frame updateWindow ].
+
+    "Prevent redraw during creation of child window so that child window will
+    not flash on screen when it is created then hidden."
+    self parent noRedraw: true.
+
+    style isNil ifTrue: [ style := self getStyle ].
+    mdiCreate:=WinMdiCreateStruct new.
+    mdiCreate szTitle: self label.
+    mdiCreate szClass: self winClass.
+    mdiCreate hOwner: self dsHandle.
+    mdiCreate x: rectangle origin x asInteger.
+    mdiCreate y: rectangle origin y asInteger.
+    mdiCreate cx: rectangle width asInteger.
+    mdiCreate cy: rectangle height asInteger.
+    mdiCreate style: style.
+    mdiCreate lParam: NullHandle.
+    winaddress := WinAddress copyToNonSmalltalkMemory: mdiCreate asParameter.
+    NewWindow := self.
+    answer := WinStructure fromBytes:
+        (UserLibrary
+            sendMessage: self parent asParameter
+            msg: WmMdicreate
+            wparam: 0
+            lparam: winaddress asParameter).
+    NewWindow := nil.
+    mdiCreate free.
+    winaddress unlockAndFree.
+    handle := WindowHandle fromInteger: (answer uShortAtOffset: 0).
+    handle = NullHandle ifTrue: [
+        self panicWmMdiCreate.
+        ^nil].
+    self frame renumber: self.
+    "Set the size of the frame window."
+    rectangle := self rectangle.
+
+    m := UserLibrary
+            getSystemMenu: self asParameter
+            revert: 0.
+    self propertyAt: #sysMenu put: m.
+
+    self activeTextPane: self searchForDefaultTextPane.
+
+    "Prevent redraw during creation of child window so that child window
+    will not flash on screen when it is created then hidden."
+    self frameWindow handle hideWindow.
+
+    (max and: [ self isHidden not ]) ifTrue: [ self showMaximizedWindow ].!
+ 
+closeView
+        "Private - Close the receiver and all its children."
+
+    | answer active max |
+    self isHandleOk ifFalse: [ ^self ]. "already closed"
+
+    "Temporarilly prevent the MDIClient from redrawing
+    while we close the receiver. This prevents an annoying flicker when the
+    receiver is maximized and the next MDIChild in sequence is maximized
+    to take its place. This code was previously in #hideWindow where it had
+    ill side-effects (documented therein). In addition, it did not even work
+    correctly to prevent the aforementioned flicker."
+    (max := self frame mdiIsMaximized) ifTrue: [
+            self parent noRedraw: true ].
+
+    answer := super closeView.
+    answer isNil ifTrue: [ ^nil ].
+
+    "Modified by DMZ, OSI 2/27/97 to only disconnect the
+    receiver from its owner if there is a single, master view
+    manager that is in charge of the main MDI window and
+    its children. If the receiver has its own manager, we want
+    the manager's connection to remain so it can perform any
+    necessary cleanup in its #closed handler. Note, that non-MDI
+    multi-view ViewManagers do not have their view automatically
+    disconnected when they close."
+    #modifiedByOSI.
+    "owner removeView: self."
+    (owner == self frame owner and: [ owner respondsTo: #removeView: ])
+        ifTrue: [ owner removeView: self ].
+
+    self frame childClose.
+    self frame renumber: self.
+    active :=self frame mdiGetActive.
+    active isNil ifTrue: [ self setInitMenu ].
+    max ifTrue: [ self updateClient ].
+    ^answer!
+
+updateClient
+        "Private- Update the MDI client."
+    | active |
+    self parent noRedraw: false.
+    "The MDIClient has redraw disabled, both when the
+    receiver is initially created by #buildWindow, and when the receiver
+    is closed. In the former case, this method is called when the receiver
+    is validated and in the latter case, after the receiver is destroyed. The
+    purpose is to reenable and refresh the MDIClient with its new contents.
+    Under these circumstances, we need to refresh the following:
+
+        1. The MDIClient's client area. This is particularlly important when the
+            receiver is being closed.
+        2. The receiver's complete client and non-client areas when the receiver
+            is being built.
+        3. The non-client areas of all of the other MDI children. This ensures
+             that the active and inactive children have their title bars painted properly."
+
+    "Force a repaint of the MDIClient's client area."
+    self parent invalidateRect: nil.
+
+    "Force a repaint of the receiver's complete client and
+    non-client areas."
+    self isHandleOk ifTrue: [
+        UserLibrary
+            redrawWindow: self asParameter
+            rectangle: nil
+            region: nil
+            redraw: RdwInvalidate | RdwErase | RdwFrame | RdwAllchildren ].
+
+    "Update each sibling's non-client area."
+    active := self frame mdiGetActive.
+    self frame mdiChildren do: [ :each |
+        (each ~~ self and: [ each isHandleOk ]) ifTrue: [
+            UserLibrary
+                sendMessage: each asParameter
+                msg: WmNcactivate
+                wparam: (each == active ifTrue: [ 1 ] ifFalse: [ 0 ])
+                lparam: 0 ]].!
+   
+validate
+        "Private - Create or recreate the window for the receiver."
+    | old answer |
+    self parent isHandleOk ifFalse: [ ^nil ].
+
+    "Do not want to receive messages in MDIClient while in buildWindow"
+    old :=  Process enableInterrupts: false.
+
+    answer := super validate.
+    answer notNil ifTrue: [
+        self isHidden ifFalse: [
+            self frame mdiActivate:self ]].
+    self updateClient.
+
+    Process enableInterrupts: old.
+    answer isNil ifTrue: [ ^nil ].
+
+    self systemMenuItemClose
+        ifFalse: [ self  disableSysMenu:6 ].
+    MDISystem mdiSelected: true.! !
+
+!MDIClient methods !
+ 
+basicStyle
+        "Private - Answer an Integer with appropriate styles in it."
+    ^WsHscroll
+        | WsVscroll
+        | WsChild
+        | WsClipsiblings
+        | WsClipchildren
+        | WsVisible
+        | MdisAllchildstyles!
+
+create: className
+    title: nameString
+    style: styleInteger
+    rectangle: aRectangle
+    parent: parentWindow
+        "Private - Create a window in the host system whose parent is
+         parentWindow with aTitleString and aFrameStyle.
+         The receiver's handle is set to the
+         resulting client window."
+
+    | result parentHandle menuHandle clientCreateStruct addrClassName addrTitleName addrStruct |
+    parentWindow notNil ifTrue: [ parentHandle := parentWindow handle ].
+    (styleInteger bitAnd: WsChild) ~= 0 ifTrue: [ menuHandle := self id ].
+    clientCreateStruct := WinClientCreateStruct new.
+    clientCreateStruct hMenu: parentWindow menuWindow asParameter.
+    clientCreateStruct idFirstChild: 100.
+    addrClassName := WinAddress copyToNonSmalltalkMemory: className asParameter.
+    nameString notNil ifTrue:[
+        addrTitleName := WinAddress copyToNonSmalltalkMemory: nameString asParameter ].
+    addrStruct:=WinAddress copyToNonSmalltalkMemory: clientCreateStruct asParameter.
+    result := UserLibrary
+        createWindow: addrClassName asParameter
+        name: addrTitleName asParameter
+        style: styleInteger
+        x: aRectangle origin x
+        y: aRectangle origin y
+        width: aRectangle width
+        height: aRectangle height
+        parent: parentHandle
+        menu: menuHandle
+        instance: self dsHandle
+        param: addrStruct asParameter.
+    handle := WindowHandle fromInteger: result.
+
+    addrStruct unlockAndFree.
+    addrClassName unlockAndFree.
+    addrTitleName notNil ifTrue: [
+        addrTitleName unlockAndFree ].
+    result = 0 ifTrue: [ ^nil ].
+    UserLibrary setWindowWord: self parent asParameter index: 0 word: self asParameter.! !
+
+!StatusPane methods !
+ 
+defaultStyle
+        "Private - Answer an Integer with appropriate styles in it."
+     ^WsChild |
+        WsClipchildren |
+        WsClipsiblings! !
+
+!ToolPane methods !
+ 
+defaultStyle
+        "Private - Answer an Integer with appropriate styles in it."
+     ^WsChild |
+        WsClipsiblings |
+        WsBorder! !
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.0.4 MDI Fixes'.
+package makeCurrent;
+    organize: MDIChild methodsFor: '' include: #( 
+        buildWindow closeView updateClient validate 
+    );
+    organize: MDIClient methodsFor: '' include: #( 
+        basicStyle create:title:style:rectangle:parent: 
+    );
+    organize: StatusPane methodsFor: '' include: #( 
+        defaultStyle 
+    );
+    organize: ToolPane methodsFor: '' include: #( 
+        defaultStyle 
+    );
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'MDI.204';
+    comments:
+'"MDI Fixes - Smalltalk Express v2.0.4
+
+    Description:
+
+        This package corrects several MDI issues in Smalltalk Express v2.0.3 and
+        updates the image to v2.0.4
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 3/7/97
+
+    Details:
+
+        *  Corrected problems with updates to MDIClient when MDIChild windows
+            are opened and closed.
+"
+
+MDIChild
+    removeSelector: #hideWindow.
+MDIClient
+    removeSelector: #buildWindow:;
+    removeSelector: #buildControl:.';
+    fileTime: ( Time fromSeconds: 40764 )
+          on: ( Date fromDays: 35132 );
+    takeCurrent;
+    yourself  !

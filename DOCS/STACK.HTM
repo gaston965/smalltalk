@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>Smalltalk and Memory</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00FFFF" alink="#FF0000">
+<h1 align=center><font color="#0000FF">Smalltalk and </font><a name="top"><font color="#0000FF">Memory</font></a></h1>
+<hr>
+<p>WHAT A SMALLTALK STACK LOOKS LIKE </p>
+<pre>The Smalltalk execution stack is made up of 32-bit pointers. These pointers 
+contain an offset word followed by a segment word. Each method that is 
+executed builds a stack frame which is a group of about 5 to 10 pointers. 
+Every stack frame contains a 2-word frame link which is a pointer to the next 
+stack frame. This frame link actually has the format of a SmallInteger &quot;pointer&quot; 
+(i.e., 'integer segment'). Its segment value is the SmallInteger segment 
+(which varies at runtime) while its &quot;small integer value&quot; is actually the offset 
+into the stack of the start of the next frame. </pre>
+<pre>Segments that are allocated to Smalltalk, when represented as hexadecimal, 
+usually end in either 7 or F (5 or D in Windows 3.0). So in the Smalltalk execution 
+stack, every other word ends in either 7 or F because the execution stack is one 
+32-bit pointer followed by another. When Smalltalk calls an API (which uses the 
+same stack but is not written in Smalltalk), the stack no longer follows this pattern 
+of contiguous 32-bit pointers.</pre>
+<h2>EXAMINING A STACK AFTER A CRASH</h2>
+<pre>The consistent pattern of a Smalltalk execution stack actually makes it easy to 
+find Smalltalk frames after a crash in an API call.  At the Codeview command line type:</pre>
+<pre>    dw ss:sp &lt;return&gt;</pre>
+<pre>This will dump the stack in word format. The actual Smalltalk portion of the 
+execution stack may be farther down the stack (look for the contiguous 
+'offset segment' pairs). To see more of the stack you have to type one or 
+more times:</pre>
+<pre>    dw &lt;return&gt;</pre>
+<h2>A SIMPLE EXAMPLE</h2>
+<pre>Here is an example of an actual crash, and how it is traced. What is typed 
+is inside brackets [] . </pre>
+<pre>[dw ss:sp]
+ </pre>
+<pre>817:6A10    B6DA 122F 012C 0001 0006 11C7 339A 1FC7
+817:6A20    DEF0 26B8 6A3C 0000 001B 11C7 9914 1E97
+817:6A30    5032 1F5F 012C 11C7 5032 1F5F 6A5C 11C7
+817:6A40    9914 1E97 98EC 1E97 006D 11C7 11BF 11BF
+817:6A50    3636 1FF7 98EC 1E97 82F0 1E97 6A94 11C7</pre>
+<pre>The values on the left, 817:6AXX, are the addresses that are being dumped, 
+and to the right are the contents. We see from the stack dump that the first 
+line of contiguous 32-bit pointers is at offset 6A30. It should be noted that the 
+segment values are not always in the even columns, as they are here; they 
+may be in the odd columns. Always remember that the offset word for a given 
+segment is on the left. We look for the first Smalltalk frame by searching for 
+the frame link chain as described above. So, we begin looking at line 6A30 
+for an offset value slightly larger than 6A30.  At the end of the line, at offset 
+6A3C, we find &quot;6A5C 11C7&quot;. To verify that this is a frame link, look at address 
+&quot;6A5C 817&quot; in the stack dump. That value is &quot;6A94 11C7&quot;, which is another 
+frame link. We can also see now that 11C7 is the SmallInteger segment. To 
+verfify that 6A3C is the top of the Smalltalk execution stack, search upward 
+in the dump from the link looking for a link to this address (6A3C). At offset 
+6A24, we find &quot;6A3C 0000&quot;.  While this points to the right place, it is not a 
+Smalltalk frame link because the segment part of it is 0, instead of 11C7 
+like the others. </pre>
+<pre>Now that we are convinced the Smalltalk execution stack starts at &quot;817:6A3C&quot; 
+we can look at this frame. We consider the frame link pointer to be the first 
+pointer in the frame. The third pointer in the frame, in this case &quot;98EC 1E97&quot;, 
+is to the compiled method. To find out what method it is, dump the pointer 
+in word format. </pre>
+<pre>[dw 1E97:98EC L10]</pre>
+<pre>1E97:98EC   02F8 98EC 0000 0004 0007 5800 9914 1E97
+1E97:98FC   11BF 11BF 3636 1FF7 027A 110F 51CA 1FE7</pre>
+<pre>The pointer to the selector object is the 5th and 6th words on the second line. 
+Dump this as ascii characters.</pre>
+<pre>[da 110F:27A L30]</pre>
+<pre>110F:027A   ............Doit..  .  .4 ........</pre>
+<pre>The first 12 bytes constitute the object header, so the selector was Doit.
+If we wanted to know where this came from (i.e., who sent the message), we 
+could repeat the process of dumping the method and the selector from the next 
+frame in the stack, starting at &quot;817:6A5C&quot;, and the next, until the stack base 
+is reached. The base's frame link offset is 0.</pre>
+<pre>In the example just described, an expression in the Transcript had been 
+evaluated with a bad API call (this evaluation always creates a Doit method). 
+Notice it does not tell us which API, so if there were multiple APIs in the same 
+method, further investigation would be needed.</pre>
+<h2>EXAMINING THE ARGUMENTS</h2>
+<pre>To find out what arguments were passed to the API call, we must find the return 
+address back to Smalltalk. The offset is always around B68A (but can vary 
+slightly with each release). The segment value always ends in 7 or F (5 or D), 
+and is greater than 0900. Normally, it is less than 3000; in fact, it usually has 
+a value in the 1000-1800 range. If we look at our sample stack, we can see that 
+such a value is right on top of the stack. This is very unusual, but it just means 
+that the crash occurred immediately after entering the API call. Deciphering the 
+parameters is different every time, and you must know the types of the parameters 
+to do it. In this case, the last evaluated expression had just one API call with 
+just one argument, a USHORT. So we see that just before the return address 
+the value 12C is what was passed to the API. </pre>
+<pre>As another example, if your method was:</pre>
+<pre>myMethod: int1 with: int2 with: aString
+	&lt;api: MYMETHOD ushort ushort struct none&gt;</pre>
+<pre>You would see a portion of the stack similar to:</pre>
+<pre>B6DA 122F 9868 1347 0005 0003 0652 01C7</pre>
+<pre>The arguments are pushed left to right, so this means the arguments are:</pre>
+<pre>aString (passed as a struct, or pointer) 1347:9868
+int2    (passed as a ushort)             0005
+int1    (passed as a ushort)             0003</pre>
+<pre><hr></pre>
+<p>[<a href="#top">top</a>] [<a href="index.htm">index</a>]</p>
+</body>
+
+</html>

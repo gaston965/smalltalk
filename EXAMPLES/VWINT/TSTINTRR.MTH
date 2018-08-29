@@ -1,0 +1,10 @@
+
+
+
+!Process class methods !
+  
+testInterrupt
+        "Implement user interrupt."
+    MessageBox message:'Timed out'.
+    self enableInterrupts: true.! !
+

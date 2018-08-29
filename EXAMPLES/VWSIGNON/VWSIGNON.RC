@@ -1,0 +1,6 @@
+#include "windows.h"
+#include "vwsignon.h"
+Balloon ICON balloon.ico
+#include "vwsignon.dlg"
+
+

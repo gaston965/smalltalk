@@ -1,0 +1,59 @@
+
+DDETestClient/DDETestServer Demo
+
+"To install DDETestClient class application evaluate the 
+ following expression:
+
+    (File pathName: 'examples\dde\ddetstcl.cls') fileIn; close.
+
+
+ To install DDETestServer class application evaluate the 
+ following expression:
+
+    (File pathName: 'examples\dde\ddetstsr.cls') fileIn; close.
+
+
+
+To see DDETestClient act as a dashboard client, evaluate the
+following expression:
+
+    DDETestClient new openDashboard
+
+Dashboard must be already open.
+
+
+To see DDETestClient act as a Microsoft Excel client, 
+with Excel open, evaluate the following expression:
+    DDETestClient new openExcel
+
+Changes to R1C1, R1C2 and R1C3 of 'Sheet1' in that 
+file will be displayed on DDETestClient.
+
+
+To see DDETestClient act as a DDETestServer client, 
+do the following:
+    1. Open DDETestServer by evaluating: 
+       DDETestServer new open
+
+    2. Open DDETestClient by evaluating:
+       DDETestClient new openTestServer
+
+
+
+Smalltalk Expression Evaluator Server
+
+Smalltalk/V Windows contains a Smalltalk Expression 
+Evaluator Server.  This feature lets any Windows 
+application with DDE capability evaluate Smalltalk
+expressions.  To see a demo of this feature, open
+Microsoft Word with the supplied VWINDDE.DOC.  
+Install the Word macros as explained in the 
+VWINDDE.DOC document.  After installation, Word 
+will 'Show It', 'Do It', 'Inspect It', or 
+'File it in' on the current selection.
+ 
+DDETestClient classddetstcl.cls
+ddetstsr.cls
+vwindde.doc
+
+

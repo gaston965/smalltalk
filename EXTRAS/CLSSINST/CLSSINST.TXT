@@ -1,0 +1,11 @@
+Class Instance Variable Support
+
+The file CLSSINST.ST will add class instance variable
+support to a clean Smalltalk Express image. Standard
+class variables are shared by a class and all of its
+subclasses. Class instance variables are similar to
+class variables except that each subclass gets its own 
+copy.
+
+Special thanks to Hal Hildebrand [CIS:76234,1311] for 
+contributing the code to make this feature possible.

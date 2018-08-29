@@ -1,0 +1,14 @@
+#define SysMenu         10000
+#define ScSize          10001
+#define ScMove          10002
+#define ScMinimize      10003
+#define ScMaximize      10004
+#define ScNextWindow    10005
+#define ScClose         10006
+//#define ScVscroll       10007
+//#define ScHscroll       10008
+#define ScRestore       10009
+#define ScTasklist      10010
+#define zoom            10101
+#define setFonts        10102
+#define MDISysMenu      10103

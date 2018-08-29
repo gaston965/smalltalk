@@ -1,0 +1,66 @@
+<HTML>
+<HEAD>
+<TITLE>Icons</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z">
+</HEAD>
+<BODY BGCOLOR="#ffffff" TEXT="#000000" LINK="#0000ff" VLINK="#00ffff">
+<H1><CENTER><A NAME="top"><FONT SIZE=6 COLOR=#0000FF>Icons</FONT></A></CENTER>
+</H1>
+<HR>
+<P>
+<FONT SIZE=1>The Icon class allows the ability to associate a
+unique icon for each ApplicationWindow. The Icon class supports
+only VGA Windows icons.</FONT>
+<P>
+Example
+<P>
+<TT>TopPane new</TT>
+<P>
+<TT>owner:self;</TT>
+<P>
+<TT>icon: (Icon fromFile:'test.ico'); </TT>
+<P>
+<FONT SIZE=1>or</FONT>
+<P>
+TopPane new
+<P>
+owner:self;
+<P>
+icon: (Icon fromModule:'vwicons.dll' id:'DiskBrowser'); <BR>
+<HR>
+<H2>Programming Interface</H2>
+<P>
+<FONT SIZE=1>ViewManager&gt;&gt;icon: anIcon</FONT>
+<P>
+<FONT SIZE=1>&quot;Set the receiver's icon&quot;</FONT>
+<P>
+<FONT SIZE=1>ApplicationWindow&gt;&gt;icon: anIcon</FONT>
+<P>
+<FONT SIZE=1>&quot;Set the receiver's icon&quot;</FONT>
+<P>
+Icon class &gt;&gt;fromModule:aFileName id:anId
+<P>
+<FONT SIZE=1>&quot;Answer an Icon object. aFileName is a DLL file
+name</FONT>
+<P>
+<FONT SIZE=1>anId can be a string or an Integer&quot;</FONT>
+<P>
+Icon class&gt;&gt;fromFile: fileName
+<P>
+<FONT SIZE=1>&quot;Answer an instance of Icon copied from fileName.
+fileName must have a '.ico' extension.&quot;</FONT>
+<P>
+Icon&gt;&gt;release
+<P>
+<FONT SIZE=1>&quot;Release the receiver's resources from memory.&quot;
+</FONT>
+<P>
+Icon&gt;&gt;displayWith: aPen
+<P>
+<FONT SIZE=1>&quot;Display the receiver through aPen.&quot;</FONT>
+<HR>
+<P>
+<A HREF="#top" >[top]</A><A HREF="index.htm" >[index]</A>
+</BODY>
+</HTML>

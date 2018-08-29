@@ -1,0 +1,11 @@
+[Files]
+mdidemo.rtf
+vwhelp.rtf
+
+[Options]
+TITLE=MDIDemo
+INDEX=contents
+
+[MAP]
+#include <mdidemo.h>
+#include <vwhelp.h>

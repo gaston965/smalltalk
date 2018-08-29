@@ -1,0 +1,26 @@
+| ingreso coso |
+ingreso:=(Prompter prompt:'Ingrese texto' default:'') .
+
+ ingreso asUpperCase.
+                                                            
+                  
+|ingreso coso |
+ingreso:=(Prompter prompt:'ingrese texto' default:'').
+coso:=   OrderedCollection new.
+
+1 to: ( ingreso size)  do:[:i| ( (ingreso at:i) isLowerCase)ifTrue:[ coso add: ( ( ingreso at:i) asUpperCase).].
+                                           ( (ingreso at:i) isUpperCase)ifTrue:[ coso add: ( ( ingreso at:i) asLowerCase).].].^coso
+
+                       
+                     
+
+| ingreso coso cont |
+
+ingreso:= (Prompter prompt:'ingrese texto' default:'').
+cont:=0.
+1 to: (ingreso size) do:[:i| ( ( ingreso at:i) isVowel) ifTrue:[ cont:=cont + 1. ].].^cont
+
+        
+
+                                  
+               

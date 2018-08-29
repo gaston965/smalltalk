@@ -1,0 +1,279 @@
+SalesCom removeSelector: #input:. "Housecleaning to get rid of unneeded"
+SalesCom removeSelector: #inputMenu:.  "methods from Animal Habitat."
+
+SalesStrategy                      "Create a pool variable to toggle"
+    at: 'AllTodayFlag' put: 'All'. "a customers or today's only."
+
+
+! !SalesCom methods !
+
+allTodayFocus
+        "Toggle the AllTodayFlag global variable"
+    AllTodayFlag = 'All'
+        ifTrue: [AllTodayFlag := 'Today']
+        ifFalse: [AllTodayFlag := 'All']. 
+    (StratNodes at: curEvent) drawOn: stratPane.  
+    self 
+        changed: #customers:;
+        changed: #custDet:;        
+        changed: #picture:!
+
+callMenu: notesPane
+        "Answer a Menu for the Phone Notes window."
+    | menu |
+    menu := Menu
+        labels: 'YES - to Seminar\NO - to Dead Leads\WAIT - to Wake Up\NO CONTACT - Hold Here'
+        withCrs
+        lines: #(1)
+        selectors: #(callYes callNo callWait callNoContact).
+    menu title: 'Call'.
+    notesPane setMenu: menu!
+
+callNo
+        "After a NO to a phone call, perform all required data updating to:
+            * advance Customer to the Dead Leads Bin,
+            * update ComEvent node info field for YTD counter,
+            * do display updates to reflect data changes."
+    | custData curNode curNodeInfo custHist newYTD curDate |
+    Transcript
+        nextPutAll: '---PHONE CALL REPORT---'; cr.
+    Transcript
+        nextPutAll: curEventMessage withCrs printString; cr.
+    curNode := StratNodes at: curEvent.
+    curNodeInfo := curNode info.
+    custData := Customers at: curCust.
+    custHist := (custData at: 7) asBag.
+    custData at: 5 put: 'Exit Dead Leads'.   "Send customer to Dead Leads."
+    custData at: 6 put: ((Date today addDays: (Date today daysLeftInMonth))
+        printString).
+    custHist add: curNode nameAndDateToday.
+    custData at: 7 put: custHist asArray.
+    Customers at: curCust put: custData.
+    newYTD := (curNodeInfo at: '7.YTD') + 1.
+    curNodeInfo at: '7.YTD' put: newYTD!
+
+callNoContact
+        "After a NO CONTACT to a phone call, don't do much of anything:
+            * leave Customer at the Phone Call event,
+            * update ComEvent node info field for YTD counter,
+            * do display updates to reflect data changes."
+    | custData curNode curNodeInfo custHist newYTD curDate |
+    Transcript
+        nextPutAll: '---PHONE CALL REPORT---'; cr.
+    Transcript
+        nextPutAll: curEventMessage withCrs printString; cr.
+    curNode := StratNodes at: curEvent.
+    curNodeInfo := curNode info.
+    custData := Customers at: curCust.
+    custHist := (custData at: 7) asBag.
+    custHist add: curNode nameAndDateToday.
+    custData at: 7 put: custHist asArray.
+    Customers at: curCust put: custData.
+    newYTD := (curNodeInfo at: '7.YTD') + 1.
+    curNodeInfo at: '7.YTD' put: newYTD!
+
+callWait
+        "After a WAIT to a phone call, perform all required data updating to:
+            * advance Customer to the Wake Up Letter event,
+            * update ComEvent node info field for YTD counter,
+            * do display updates to reflect data changes."
+    | custData curNode curNodeInfo custHist newYTD curDate |
+    Transcript
+        nextPutAll: '---PHONE CALL REPORT---'; cr.
+    Transcript
+        nextPutAll: curEventMessage withCrs printString; cr.
+    curNode := StratNodes at: curEvent.
+    curNodeInfo := curNode info.
+    custData := Customers at: curCust.
+    custHist := (custData at: 7) asBag.
+    custData at: 5 put: 'Wake Up Ltr'.   "Send customer to Wake Up Letter."
+    custData at: 6 put: ((Date today addDays: 7) printString).
+    custHist add: curNode nameAndDateToday.
+    custData at: 7 put: custHist asArray.
+    Customers at: curCust put: custData.
+    newYTD := (curNodeInfo at: '7.YTD') + 1.
+    curNodeInfo at: '7.YTD' put: newYTD!
+
+callYes
+        "After a YES to a phone call, perform all required data updating to:
+            * advance Customer to the Seminar communication event by updating
+                customer's curEvent field as well as doing date math to
+                schedule seminar attendance based on delay specified in
+                the ComEvent info field,
+            * update ComEvent node info field for YTD counter,
+            * do display updates to reflect data changes."
+    | custData curNode curNodeInfo custHist newYTD curDate |
+    Transcript
+        nextPutAll: '---PHONE CALL REPORT---'; cr.
+    Transcript
+        nextPutAll: curEventMessage withCrs printString; cr.
+    curNode := StratNodes at: curEvent.
+    curNodeInfo := curNode info.
+    custData := Customers at: curCust.
+    custHist := (custData at: 7) asBag.
+    custData at: 5 put: 'Exit Seminar'.  "Send customer to the Seminar."
+    custData at: 6 put: ((Date today addDays: (8 - Date today dayIndex))
+        printString).
+    custHist add: curNode nameAndDateToday.
+    custData at: 7 put: custHist asArray.
+    Customers at: curCust put: custData.
+    newYTD := (curNodeInfo at: '7.YTD') + 1.
+    curNodeInfo at: '7.YTD' put: newYTD!
+
+customers: customerPane
+        "Set the contents of the customer pane to the keys
+         of the Customers dictionary as a Sorted Collection."
+    | todaysCusts |
+    customerPane contents: (AllTodayFlag = 'All'
+        ifTrue: [Customers keys asSortedCollection]
+        ifFalse: [todaysCusts := Customers select: [ :custRecord |
+                custRecord includes: (Date today printString)].
+                todaysCusts keys asSortedCollection])!
+
+editMessages
+        "Open a generic inspector on the StratNodes dictionary."
+    StratNodes inspect!
+
+ltrMenu: letterPane
+        "Answer a Menu for the Outgoing Letter Window."
+    | menu |
+    menu := Menu
+        labels: 'print' withCrs
+        lines: #()
+        selectors: #(ltrToPrinter).
+    menu title: 'Letter'.
+    letterPane setMenu: menu!
+
+ltrToPrinter
+        "Simulate printing by sending output to System Transcript.  After
+        printing the letter, perform all required data updating to:
+            * advance Customer to next communication event by updating
+                customer's curEvent field of the info dictionary instance
+                variable as well as doing date math to schedule next event
+                based on delay specified in the ComEvent info field,
+            * update ComEvent node info field for YTD counter,
+            * do display updates to reflect data changes."
+    | custData curNode curNodeInfo custHist newYTD |
+    Transcript
+        nextPutAll: curEventMessage withCrs printString; cr.
+    curNode := StratNodes at: curEvent.
+    curNodeInfo := curNode info.
+    custData := Customers at: curCust.
+    custHist := (custData at: 7) asBag.
+    custData at: 5 put: (curNodeInfo at: '4.Next Step').
+    custData at: 6 put: ((Date today addDays: (curNodeInfo at: '5.Days Til NS')) printString).
+    custHist add: curNode nameAndDateToday.
+    custData at: 7 put: custHist asArray.
+    Customers at: curCust put: custData.
+    newYTD := (curNodeInfo at: '7.YTD') + 1.
+    curNodeInfo at: '7.YTD' put: newYTD!
+
+makeCall
+    "Merge the Customer info with the Current Event Message and
+        print to a new textpane window."
+    | previewPane phoneStream curNodeInfo |
+    curNodeInfo := (StratNodes at: curEvent) info.
+    'P' = (curNodeInfo at: '2.Type')
+        ifFalse: []
+        ifTrue: [previewPane := ViewManager new label: 'Phone Call Notes'.
+            previewPane addSubpane:
+                (TextPane new
+                owner: self;
+                when: #getContents perform: #prnLtr: ;
+                when: #getMenu perform: #callMenu:).
+            previewPane open ]!
+
+open
+        "Create a SalesCom window with a Network
+         as its marketing strategy."
+    | topPane |
+    curEvent := curEventMessage := curCust := nil.
+    StratNodes do: [:node | node active: false].
+    AllTodayFlag := 'All'.  "Reset Customers List pane to All."
+    custDetInfo := WriteStream on: String new.
+        "Define the SalesCom window and its panes."
+    self label: ('SalesCom: ' , Date today printString).
+    self addSubpane:
+         (custsPane := ListPane new
+             owner: self;
+             when: #getContents perform: #customers: ;
+             when: #select perform: #customerSelected: ;
+             when: #getMenu perform: #custsMenu: ;
+             framingRatio: (Rectangle leftTopUnit 
+                extentFromLeftTop: 2/3 @ (1/4))).
+    self addSubpane:
+        (stratPane := GraphPane new
+            owner: self;
+            when: #getContents perform: #picture: ;
+            when: #getMenu perform: #pictureMenu: ;
+            framingRatio: (Rectangle leftBottomUnit
+                extentFromLeftBottom: 2/3 @ (3/4))).
+    self addSubpane:
+        (custDetPane := TextPane new
+            owner: self;
+            when: #getMenu perform: #custDetMenu: ;
+            when: #getContents perform: #custDet: ;
+            framingRatio: ((Rectangle leftTopUnit rightAndDown: (2/3 @ 0)) 
+                extentFromLeftTop: 1/3 @ 1)).
+    self openWindow!
+
+printDetail
+        "Simulate printing the contents of the custDetPane."
+    Transcript
+        nextPutAll: (custDetPane contents)!
+
+printLetter
+    "Merge the Customer info with the Current Event Message and
+        print to a new textpane window."
+    | previewPane ltrStream curNodeInfo |
+    curNodeInfo := (StratNodes at: curEvent) info.
+    'L' = (curNodeInfo at: '2.Type')
+        ifFalse: []
+        ifTrue: [previewPane := ViewManager new label: 'Outgoing Letter'.
+        previewPane addSubpane:
+            (TextPane new
+                owner: self;
+                when: #getContents perform: #prnLtr: ;
+                when: #getMenu perform: #ltrMenu: ).
+        previewPane open]!
+
+prnLtr: textPane
+        "Set the body of the merged letter figured out in the
+        viewcust: method each time a new customer name is selected in
+        the Customer List pane."
+   textPane contents: curEventMessage withCrs!
+
+
+viewCust: aCust
+        "Change: method response for the Customer List pane.
+         When the Customer List pane is selected, the Customer
+         Detail pane is updated to show the currently selected customer."
+    | custData custHist prepDate |
+    curEvent isNil ifFalse: [
+        (StratNodes at: curEvent) active: false].
+    curCust := aCust.
+    custData := Customers at: curCust.
+    curEvent := custData at: 5.
+    curEventMessage := '\' , Date today printString , '\' ,
+        '\' , (custData at: 1) , '\' , curCust , '\' ,
+        (custData at: 2) ,  '\' , (custData at: 3) , '\',
+        (StratNodes at: curEvent) message.
+    custDetInfo := WriteStream on: String new.
+    1 to: custData size - 1 do: [ :index |  "Don't print the history array."
+         custDetInfo
+              nextPutAll: (custData at: index);
+              cr].
+    custHist := custData at: 7.  "Now print the history line by line after a header."
+    custDetInfo nextPutAll: '---------HISTORY----------'; cr.
+    1 to: custHist size do: [ :index |
+        custDetInfo
+             nextPutAll: (custHist at: index);
+             cr.].
+    (StratNodes at: curEvent) active: true.
+    self
+        changed: #custDet: ;
+        changed: #picture:! !
+
+
+
+

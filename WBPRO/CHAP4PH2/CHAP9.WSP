@@ -1,0 +1,14 @@
+"If debug message appeared saying: 
+CalendarApp has Instances 
+execute the following line then Install filemein again"
+CalendarApp allInstances do:[:each | each become: String new]. 
+
+"Execute the following line if you have not converted Holidays to a
+ Dictionary"
+Calendar newHolidays
+
+Scott := CalendarApp new open
+
+
+
+

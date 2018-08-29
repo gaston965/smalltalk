@@ -1,0 +1,143 @@
+"This file installs the control demo application.  To install
+ this application evaluate the following expression:
+
+    (File pathName: 'examples\dialogs\contrldm.txt') fileIn; close.
+
+ This application demonstrates how various Windows controls
+ can be used in a Smalltalk/V window to interact with each other.
+
+ To open the control demo, evaluate the following expression:
+
+    ControlDemo new open
+
+"!
+
+
+ViewManager subclass: #ControlDemo
+  instanceVariableNames:
+    'msgs myListBox '
+  classVariableNames: ''
+  poolDictionaries: ''    !
+
+
+!ControlDemo class methods ! !
+
+
+
+!ControlDemo methods !
+
+aCheck: aPane
+        "aPane has been clicked, show the status in 'msg2' field."
+    aPane selection
+        ifTrue: [( self paneAt: 'msg2' ) contents: 'Checked.' ]
+        ifFalse: [ ( self paneAt: 'msg2' ) contents: 'Unchecked.' ]!
+
+aChoice: aPane
+        "A choice has been made in the list box or combo box,
+        aPane, show the selected item in 'msg1' field."
+    ( self paneAt: 'msg1' ) contents: ( aPane selectedItem )!
+
+aPress: aPane
+        "A push button or owner-drawn button has been clicked,
+         show a message in 'msg1' field."
+    ( self paneAt: 'msg1' ) contents: 'Not so hard next time!!'!
+
+initWindowSize
+        "Answer the initial window size."
+    ^450 @ 400!
+
+open
+         "Open a control test window."
+     | aBMap offsetX width |
+     aBMap := Bitmap screenWidth: 40 height: 40.
+     aBMap pen up; goto: 20 @ 20; down; mandala: 5 diameter: 40.
+     offsetX := 1/32.
+     width := (1/2) - (2/32).
+     self label: 'Xyzzy';
+         addSubpane: (
+             Button new    "auto push button"
+                 owner: self;   "need owner to receive #aPress: message"
+                 when: #clicked perform: #aPress:;
+                 contents: 'Push Me.';    "set button label"
+                 framingRatio: ( offsetX @ 0 extent: width @ (1/8) )
+         );
+         addSubpane: (
+             ( StaticText new
+                 centered;
+                 setName: 'msg1';   "need name so it can be told to
+                                                  change contents."
+                 contents: 'What me worry?';
+                 framingRatio: ( offsetX @ (1/8) extent: width @ (3/32) ) )
+         );
+         addSubpane: (
+             ( StaticText new
+                 setName: 'msg2';
+                 contents: 'Unchecked.';
+                 framingRatio: ( offsetX @(5/8) extent: width @(1/8) ) )
+         );
+         addSubpane: (
+             ( StaticGraphic new
+                 framingRatio: ( offsetX @(6/8) extent: width @(1/8) ) )
+         );
+         addSubpane: (
+             (DrawnButton new
+                 owner: self;
+                 drawAnisotropic;
+                 when: #clicked perform: #aPress:;
+                 contents: aBMap;
+                 framingRatio: ( offsetX @(7/8) extent: width @(1/8) ) )
+         );
+         addSubpane: (
+             RadioButton new
+                 contents: 'the lady';
+                 framingRatio: ( (1/16)@(9/32) extent: (3/8)@(3/32) )
+             );
+         addSubpane: (
+             RadioButton new
+                 contents: 'the tiger';
+                 framingRatio: ( (1/16) @(12/32) extent: (3/8)@(3/32) )
+             );
+         addSubpane: (
+             GroupBox new
+                 contents: 'Radios';
+                 framingRatio: ( offsetX @(7/32) extent: width @(9/32) )
+             );
+        addSubpane: (
+             myListBox := ListBox new
+                 ownerDrawFixed;
+                 height: 40;
+                 owner: self;
+                 when: #select perform: #aChoice:;
+                 contents: #( 'do' 're' 'mi' 'fa' 'sol' 'la' 'ti' );
+                 draw: aBMap for: 'mi';
+                 framingRatio: ( (1/2)@0 extent: width @(1/2) );
+                setHorizontalExtent: 300
+            );
+        openOthers;
+        openWindow!
+
+openOthers
+        "Create the rest of the controls."
+    self
+         addSubpane: (
+             CheckBox new
+                 owner: self;
+                 contents: 'Check it out!!';
+                 when: #clicked perform: #aCheck:;
+                 framingRatio: ( (1/16)@(1/2) extent: (6/16)@(1/8) )
+             );
+         addSubpane: (
+             ComboBox new
+                 owner: self;
+                 when: #select perform: #aChoice:;
+                 contents: #( 'a' 'b' 'c' 'd' 'e' 'f' 'g' );
+                 framingRatio: ( (1/2)@(17/32) extent: (1/2)@(1/2) )
+         );
+         addSubpane: (
+             MultipleSelectListBox new
+                 owner: self;
+                 when: #select perform: #aChoice:;
+                 contents: #( 'yksi' 'kaksi' 'kolme' 'nelja' 'viisi' 'kuusi' 'seitseman' );
+                 framingRatio: ( (1/2)@(5/8) extent: (1/2)@(3/8) )
+         )! !
+

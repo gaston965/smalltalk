@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>Remote Windows Structures</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00FFFF" alink="#FF0000">
+<h1 align=center><a name="top"><font color="#0000FF">Remote WinStructures</font></a></h1>
+<pre><hr>Sometimes when interfacing with non-Smalltalk environments, you 
+will be given a C pointer to a struct.  That is, the bytes of the struct 
+are outside of Smalltalk memory, and all you have in Smalltalk is 
+the address of the bytes.  A common place you see this is when a 
+Win message (WM_xxx) passes a pointer to a struct in one of the 
+message arguments (wParam or lParam).</pre>
+<pre>Until now, the only way to access the fields of such a struct was to copy 
+the bytes to an instance of WinStructure using #fillFromAddress:.  If you 
+needed to change one of the fields, you would copy the bytes back to the 
+non-Smalltalk address using #copyToAddress:.</pre>
+<pre>This version of Smalltalk/V Win introduces the capability to directly 
+access the fields of a struct at its non-Smalltalk address.  To do this, 
+an instance of a subclass of WinStructure is still needed, but the contents 
+instance variable contains an instance of WinAddress (i.e., a pointer to the 
+C struct in non-Smalltalk memory) rather than a pointer to a Smalltalk object 
+containing a copy of the bytes of the C struct.</pre>
+<pre>To create such an object, we have added a class method #atAddress: to 
+WinStructure. It takes a WinAddress object and creates an instance of 
+a subclass of WinStructure that responds to all the usual access messages 
+such as #longAtOffset: and #shortAtOffset:put:, actually retrieving the value 
+from and storing the value to the non-Smalltalk memory pointed at by the WinAddress.
+<hr></pre>
+<p><a href="#top">[top]</a> <a href="index.htm">[index]</a></p>
+</body>
+
+</html>

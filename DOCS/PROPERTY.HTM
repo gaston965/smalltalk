@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>Windows Properties</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00FFFF" alink="#FF0000">
+<h1 align=center><a name="top"><font color="#0000FF">Window Properties</font></a></h1>
+<hr>
+<pre>Window properties are of interest to programs that define a new 
+subclass of either Window or one of its subclasses.  Window properties 
+are not of interest to programs that strictly use Window and its subclasses. 
+The most important thing to know about window properties is that an instance 
+variable has been added to class Window and some instance variables have 
+been removed from subclasses of Window (such as ApplicationWindow).</pre>
+<pre>An instance of window object can have an arbitrary number of properties
+associated with it.  A property is very much like an instance variable,
+but for those instances that do not have a particular property, there is
+no space &quot;wasted&quot; on an instance variable.  An example of a property
+is the background color of a subpane.  Usually, there is no background 
+color property for a subpane (the system color is assumed), but for those 
+subpanes that do have a particular color (the yellow ones in a debugger 
+window, for example) there is a color property for those subpane instances.</pre>
+<pre>Window properties are of interest only to subclasses of Window.  However, 
+to enable effective use of this new feature, two new public methods have 
+been added to class Window. If you have a subclass of Window or its 
+subclasses, you can make use of the new window properties facility as follows:</pre>
+<pre>    To set a property:
+        propertyAt: aSymbol put: anObject</pre>
+<pre>    Set the property identified by aSymbol to anObject.</pre>
+<pre>    To get a property:
+        propertyAt: aSymbol</pre>
+<pre>    Answer the property identified by aSymbol.  If there is no such
+    property, answer nil.</pre>
+<pre>There is a new instance variable in class Window named &quot;properties&quot; which 
+holds a dictionary if the window instance has any properties.  The keys of this 
+dictionary are symbols (the property &quot;names&quot;), and the values are the property 
+values.  In your subclass of Window, you should not refer directly to the 
+properties instance variable, but rather you should use the two methods 
+described above to set and get a property.  Furthermore, your subclass will 
+typically have public methods to get and set a property so that a user of your 
+class does not know whether you have used an instance variable for a particular 
+property or you have used the propertyAt: mechanism.</pre>
+<pre>The following property names are reserved for use by Smalltalk/V: backColor,
+characterTyped, font, foreColor, horizontalExtent, subclass,
+oldProc, and zoomed.</pre>
+<pre>Examples</pre>
+<pre>Suppose we have a window class that allows each instance to have a
+color, but in the usual case the color is simply the system-supplied
+color.  Your public methods might look like this:</pre>
+<pre>backColor: aColor
+        &quot;Set the background color of the receiver.&quot;
+    |aGraphicsTool|
+    self propertyAt: #backColor put: aColor.
+    self handle isValid ifFalse: [^self].
+    self graphicsToolBackColor: aColor.</pre>
+<pre>backColor
+        &quot;Answer the background color of the receiver.&quot;
+    |aBackColor|
+    aBackColor := self propertyAt: #backColor.
+    aBackColor isNil ifTrue:[
+        parent notNil ifTrue:[
+            aBackColor := parent backColor]
+            ifFalse:[ aBackColor := nil]].
+    ^aBackColor</pre>
+<pre>ApplicationWindow</pre>
+<pre>Class ApplicationWindow has no changes in its public protocol related to
+window properties.  However, the foreColor and backColor instance
+variables have been removed.</pre>
+<pre><hr></pre>
+<p><a href="file:///C:/VWIN/DOCS/property.htm">[top]</a> <a href="index.htm">[index]</a></p>
+</body>
+
+</html>

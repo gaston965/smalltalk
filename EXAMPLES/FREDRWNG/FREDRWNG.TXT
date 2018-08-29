@@ -1,0 +1,133 @@
+Free Drawing 
+----------- 
+
+This file contains a brief explanation and user's guide for 
+the Free Drawing, a window which lets you draw graphic images 
+by hand.  A mouse is required.  To install it into your 
+system, evaluate the following expression: 
+
+    (File pathName: 'examples\fredrwng\fredrwng.st') fileIn; close.
+
+To open a free drawing window, evaluate the following 
+expression: 
+
+    FreeDrawing new  open
+
+The Free Drawing is initially in draw mode with the cursor 
+shown as an arrow.  To draw, move the mouse around while 
+pressing the left mouse button.  
+                                                                                      
+The Free Drawing has three menus. The mode menu allows
+you to select the drawing mode. The options menu
+allows you to choose different drawing options. The Color
+menu allows you to choose a different color for the pen. 
+Initialy, the pen's color is the default foreground color.
+
+The modes menu allows the following drawing modes:
+
+    draw
+                    Free drawing mode.  This is the Free
+                    Drawing's default state.
+
+    line
+                    Line drawing mode.  Pressing the left
+                    mouse button, lines are drawn from the
+                    position of the pen to the point where
+                    the pen is when the mouse button is
+                    released.  If the mouse button is
+                    clicked, only a point is drawn.
+
+    rectangle
+                    Rectangle drawing mode.  Rectangles are
+                    drawn from the top left corner where the
+                    left mouse button is first pressed to
+                    the bottom right corner where it is
+                    released.
+
+    circle
+                    Circle drawing mode.  Circles are drawn
+                    with the center where the left mouse
+                    button is first pressed and a radius of
+                    the distance between this position and
+                    where the mouse button is released.
+
+    ellipse
+                    Ellipse drawing mode.  Ellipses are drawn
+                    with the center where the left mouse
+                    button is first pressed.  Where you
+                    release the mouse button determines the
+                    size and shape of the ellipse.
+
+    curve
+                    Curve drawing mode. Curves are drawn by first
+                    drawing a line between the two ends of the
+                    desired curve. Then as you press down the
+                    left mouse button and drag the mouse, the
+                    curve is drawn towards the cursor in a rubber-
+                    band fashion.
+    text
+                    Allows you to enter text. You can choose a
+                    different font by selecting Fonts from the Options
+                    menu. Freedrawing does not have text editing
+                    capabilities so you cannot back space to delete a
+                    a character or drag the mouse to select.
+
+    erase
+                    Erase mode.  With the left mouse button
+                    pressed, the pen erases rather than
+                    draws. The size of the eraser is 8 pixels.
+
+
+The options available on the Options menu are as follows: 
+
+    clear 
+                    Clears the drawing form.  
+
+    copy 
+                    Copy allows you to copy a portion of your 
+                    your drawing form to the clipboard.
+
+    paste 
+                    Paste allows you to paste a bitmap from the
+                    the clipboard to your drawing form.
+    
+    pen size
+                    Changes the size of the pen. Press the left
+                    mouse button and drag the mouse to choose
+                    the pen's size.
+    bit edit 
+                    Bit edit gives you a magnified view of a 
+                    selected portion of the form.  You are 
+                    prompted for the origin of the rectangle 
+                    desired.  Then the bit editor window is 
+                    presented showing the bit pattern of the 
+                    area.  In the upper left pane of the 
+                    window, you can see the original section 
+                    unmagnified.  Clicking the left mouse 
+                    button over a bit changes the its color
+                    to the default foreground color.  As you 
+                    work, you can see the effect of the 
+                    changes in the lower left pane. Only bits
+                    that lie in the grid can be edited. 
+
+                    Choosing save in the upper left pane 
+                    saves any changes you made using the bit 
+                    editor back to the original form.  Exit 
+                    allows you to return to the Free Drawing.  
+                    If you exit without saving first, your 
+                    changes are discarded.  
+
+     change font
+                    Changes the font of the text written in
+                    the form.  When selected, another menu
+                    will prompt for the font.
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,39 @@
+
+
+ClassDumper
+
+
+OVERVIEW
+--------
+ClassDumper is a tool which dumps a shapshot of the classes in the
+current image to a file.  This snapshot file is then used by the
+ClassComparisonTool to compare to another image.  For more information
+on the ClassComparisonTool, please read the file CLSCOMP.TXT in this
+directory.
+
+
+INSTALLATION
+------------
+To install the ClassDumper, install (file in) DUMPER.ST in
+this directory.
+
+
+INVOCATION
+----------
+To begin the dump of the classes in your current image, evaluate the
+following expression:
+
+    ClassDumper new startDumping
+
+You will be prompted for a filename in which to store the snapshot;
+this will be the 'Snapshot File' which the ClassComparisonTool asks you
+for.  You will also be prompted for a descriptive string.  The descriptive 
+string is a string you can specify to describe your image.  This can be 
+any string, but it is suggested you keep it less than 15 characters.
+
+
+KNOWN PROBLEMS
+--------------
+The method ClassCompareSourceString>>strippedOfComments has a bug in it,
+where if the method you are looking at has an unpaired quote (i.e. it
+has a $" in it somewhere), the resulting string will be incorrect.

@@ -1,0 +1,510 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>NLS an DBCS information</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00FFFF" alink="#FF0000">
+<h1 align=center><font color="#0000FF">NATIONAL </font><a name="top"><font color="#0000FF">LANGUAGE</font></a><font color="#0000FF"> SUPPORT 
+(NLS)</font></h1>
+<hr>
+<p><font size=1>This document describes how you can use Smalltalk/V Windows with the NLS features to develop applications that can be used 
+internationally without any change to the application source code. The application appears as if it is specifically written in the 
+language native to the country in which it is being used, with all presentation text and country-specific formatting of date and 
+time displayed correctly in the native language.</font> </p>
+<p><font size=1>The following NLS features are supported in Smalltalk/V Windows:</font> </p>
+<ul>
+<li><font size=1>cultural-dependent formatting of information such as time and date</font> </li>
+<li><font size=1>cultural-dependent text comparisons for sorting characters and strings</font> </li>
+<li><font size=1>full support for the double-byte character sets (DBCS) including the ability to program in languages such as Japanese, 
+Chinese, Korean, and others</font> </li>
+<li><font size=1>a method for separating language-specific text from the application code and loading at runtime</font> </li>
+</ul>
+<menu>
+<li><font size=1>This release of Smalltalk/V Windows 2.0 support languages </font></li>
+<li><font size=1>using both single-byte character set such as many of the latin-based </font></li>
+<li><font size=1>languages and also asian languages such as Japanese, Chinese, </font></li>
+<li><font size=1>Korean using double-byte character set. You can write programs </font></li>
+<li><font size=1>with class names, message selectors, variable names, etc, in the </font></li>
+<li><font size=1>native languages including those using double-byte character set.</font> </li>
+</menu>
+<p><font size=1>NOTE: If you want your code to be portable (code that can be compiled on any system irrespective of country or language 
+setting), the standard 7-bit ASCII characters should be used. </font></p>
+<h2>Host System Dependencies</h2>
+<hr>
+<p><font size=1>The Smalltalk/V Windows NLS feature is designed to work in association with the implementation of NLS on the Microsoft 
+Windows platform, available in Windows Release 3.0 and later. It makes the host platform capabilities and settings accessible to 
+the Smalltalk programmer. Aspects of the system behavior are controlled by the current country and language settings. This 
+national language configuration information is specified by user-selectable settings via the Windows Control panel and Windows 
+initialization files such as the WIN.INI profile definition. </font></p>
+<h2>Developing A Multinational Application</h2>
+<hr>
+<p><font size=1>When you are creating an application that will be used in different countries, you must design your application to accomodate 
+the translation of the text strings that you use into different languages. You must also be prepared to present and accept data in 
+country-dependent formats. The Smalltalk/V Windows NLS feature provides mechanisms which will assist you in developing a 
+translatable application. In order to develop a multinational application, the text strings that you use must be managed 
+separately from your application code. This language-specific application text is called the application translatable strings. 
+Separating the translatable strings into a separate data resource allows the text to be translated into different languages without 
+having to change the code that uses it.</font> </p>
+<p>The Smalltalk/V Windows NLS feature provides several mechanisms to support string separation. 
+The capability is based on the Smalltalk concept of pool variables. As you develop your 
+application, you can create one or more pool dictionaries that will contain your application 
+translatable strings. The text strings are defined as separate data resources using standard string 
+resource format. These string dictionaries are included as pool dictionaries in your application 
+classes wherever you need to use a translatable string, with the string referenced in your code by its 
+pool variable name. A string dictionary can be loaded at any time from either the text file defining 
+the string resources or from the compiled string resources in your application.It is quite common for 
+an application to present information that is a combination of predefined message text and data 
+values which are only known at execution time. When you create a translatable application, you 
+must be sensitive to the possibility that your application will be translated into a language with 
+different grammatical rules for constructing sentences than your own language. </p>
+<p>Consequently, you should avoid constructing messages in your code by concatenating fragments of 
+message text.To support translation, you should define a template for the message which contains 
+syntactic markers indicating where parameter values will be substituted at execution time. For 
+example, you can use the &quot;%s&quot; convention as parameter placeholders in your message template. 
+Your program can then construct the message at execution time by substituting the appropriate 
+values into the parameter slots in the message template. </p>
+<p>When a message is translated into a different language, it may result in text that is either longer or 
+shorter than the original text that you wrote in your own language. You must anticipate such 
+changes when you design the layout of your application windows. One approach is to statistically 
+design the window layout at development time by making the size and position of the elements in 
+your window large enough for all different translations that may be done. Another approach is to 
+write initialization logic in your application that dynamically computes an appropriate window layout 
+for the text strings which are in use at that time. </p>
+<p>The conventions for representing data values are different in many countries and languages than 
+what you may be familiar with. Data types with country-dependent formatting include dates, times, 
+numbers, and monetary amounts. The Microsoft Windows environment provides configuration 
+settings that indicate the appropriate formatting of such values. They are set in configuration files 
+and can be controlled by the user through the Control Panel. These Windows environment settings 
+are available in the Smalltalk environment through the global variable NationalLanguage. Classes 
+provided in the basic Smalltalk/V environment, such as Date and Time, use the current system 
+settings to control their representation in string form. You must be sensitive to these system settings 
+in your application classes that present or interpret such data values in string format. The concept of 
+national language is provided for in the Microsoft Windows environment by the installed language 
+module based on the country and language selected during installation or through the Control 
+Panel.. The language module define mapping of a set of characters onto ordinal values, called code 
+points. Most language module define the same code point assignments for the standard 7-bit 
+ASCII characters, but differ in their assignments of characters to code points in the range of 
+[128...255]. Most Latin-based languages are supported by a set of 256 characters, referred to as 
+the ANSI character set in Microsoft Windows. These are referred to as single-byte character set, 
+since every character can be encoded in a single byte. Certain languages such as Chinese, 
+Japanese, and Korean require more than 256 characters. These languages use a double-byte 
+character set, which assigns characters to code point values in the range [256...65535]. A 
+character with a code point value of 256 or greater is referred to as a double-byte character, since 
+it requires 2 bytes to encode its code point value. </p>
+<p>The Microsoft Windows environment always uses a current installed language module to determine 
+the mapping of keyboard keys into characters and of text string code point values into characters to 
+be displayed or printed. The installed language module also determines the collating sequence that 
+is used for string and character comparisons using the Smalltalk relational operators &lt;, &gt;, &lt;=, and 
+&gt;=. </p>
+<h2>Separating Text Strings From Application Code</h2>
+<hr>
+<p><font size=1>This section describes the procedure for developing an application with text that can be translated into different languages 
+without any change to the application source code. Further details on changes to Smalltalk/V classes and methods follow in the 
+section Programming Interface. hen an application is developed, one or more dictionaries can be created to contain the 
+application s translatable strings. Such a string dictionary is used as a pool dictionary by all application classes that require access 
+to the translatable text strings. Each entry in a pool dictionary has a string key which is the name of the pool variable. The 
+value of a string dictionary entry is the actual string that you will use in your application. Pool variable names must conform to 
+the Smalltalk syntax rules for global identifiers, that is, an uppercase letter followed by zero or more alphanumeric characters. 
+The pool variable name is then used in methods to reference the actual string. The specification of the translatable strings is 
+maintained separately from your application in the form of string resources. The application string dictionaries can be loaded 
+from either the text definition of the string resources or from compiled string resources in your application.</font> </p>
+<h2>The NLS Application Development Process</h2>
+<hr>
+<p><font size=1>The general process of developing a multinational application in Smalltalk/V Windows using NLS features is described in the 
+following steps. </font></p>
+<ol>
+<li><font size=1>Create a global Dictionary in your image that will contain the translatable text of your application and be used as a pool 
+dictionary in your application classes. </font></li>
+<li><font size=1>Create a text file containing the application text definitions in the standard resource string table format, as described 
+later in this chapter and in the Microsoft Windows programmer s reference manuals.</font> </li>
+<li><font size=1>Load the application text into your string dictionary using StringDictionaryReader.</font> </li>
+<li><font size=1>As you develop your application, declare your string dictionary as a pool dictionary in all the classes that need to 
+reference your application text. Rather than writing string literals in methods, refer to a translatable string using the 
+appropriate pool variable name. You can add new strings or change the existing text in the string dictionary at any time 
+during development, simply by editing the application text definition file and re-loading it. This allows you to maintain 
+a hardcopy of the current state of the application text and to associate comments describing each message s purpose to 
+aid its translation into a different language in the future.</font> </li>
+<li><font size=1>Translate the application text definition file for all the different languages that your application is to support.</font> </li>
+<li><font size=1>If you want to package the application text into resources either attached to your EXE or a DLL, compile all the text 
+resource definition files using the Resource Compiler and add the resulting data resources to your modules.</font> </li>
+<li><font size=1>Load the appropriate text resource into the string dictionary in your application image using StringDictionaryReader, 
+from either the text resource definition file or the compiled string resources, and save the image to create the 
+application for that language. Alternatively, you can add code to your application to dynamically load the application 
+strings when the application is started. The latter method allows separate string definitions in different languages to be 
+packaged with a single application EXE for application delivery to different countries.</font> </li>
+</ol>
+<h2>Managing Text Strings During Development</h2>
+<hr>
+<p>The text file defining your application s translatable strings can be created using any text editor. The 
+contents of the file must use the Resource Compiler format for string tables (refer to the Microsoft 
+Windows Programming Reference ). This is a standard, well-defined file format for which 
+translation editors can be built. By convention, resource definition files have .RC as their filename 
+extension. You can use any convention you want to define the file names themselves. It is useful to 
+follow a convention that indicates the name of the application to which these strings belong and the 
+language used for the string values in this file. </p>
+<p>The following is an example of an application string definition file: </p>
+<dl>
+<dd><tt>STRINGTABLE</tt></dd>
+<dd><tt>BEGIN</tt></dd>
+<dd><tt>WindowTitle &quot;My Application&quot; \*Text for main window titlebar*\</tt> </dd>
+<dd><tt>MenuFile &quot;File&quot; \*Text for menu item file*\</tt> </dd>
+<dd><tt>MenuEdit &quot;Edit&quot; \*Text for menu item edit*\</tt> </dd>
+<dd><tt>CloseMessage &quot;Do you really want to close the application?&quot;</tt> </dd>
+<dd><tt>END</tt></dd>
+</dl>
+<p><font size=1>Each message entry in a string table consists of the pool variable name by which the message will be referenced in your Smalltalk 
+application classes, a string constant defining the actual text string, and an optional comment describing the purpose of the 
+string. The pool variable name must be a legal Smalltalk global variable name: the first character must be an uppercase letter 
+[A...Z], followed by zero or more ASCII alphanumeric characters [a...z], [A...Z], and [0...9]. The comment which can be 
+associated with each text string can be used to provide information to a translator describing the purpose of the string.</font> </p>
+<p><font size=1>Once you have created a string resource definition file, you can load the translatable strings into your application string 
+dictionary using StringDictionaryReader. </font></p>
+<p><font size=1>The following example shows how to create and load a pool dictionary for your application strings:</font> </p>
+<dl>
+<dd><tt>AppText := Dictionary new.</tt> </dd>
+<dd><tt>StringDictionaryReader fill: AppText </tt></dd>
+<dd><tt>fromStringTable: 'AppTxtUS.RC'. </tt></dd>
+</dl>
+<p><font size=1>The strings from the resource definition file are loaded into the dictionary with the pool variable name as the key and the string 
+itself as the value.</font> <font size=1>Once you have loaded your string dictionary, you can use it as a pool dictionary in your application classes. 
+To reference a translatable string in a method, use the pool variable name for the string that you defined in the resource 
+definition file. </font></p>
+<p>The following example shows how the pool variable CloseMessage can be used in an application 
+method. When the processClose <font size=1>method shown below is executed, the message box displays the actual</font> <font size=1>text string 'Do 
+you really want to close the application?' :</font> </p>
+<dl>
+<dd><tt>processClose</tt> </dd>
+<dd><tt>(MessageBox confirm: CloseMessage)</tt> </dd>
+<dd><tt>ifTrue: [ self exit ].</tt> </dd>
+<dd><font size=1></font>&nbsp;</dd>
+</dl>
+<p><font size=1>You can add new strings or change the text in your application string dictionary at any time simply by editing the text definition 
+file and re-loading it into your pool dictionary. This method ensures that you maintain a hardcopy of the current state of the 
+application text as you develop your application. It is a good practice to add a comment at the time that you define a new string. 
+Describe its purpose and note any special considerations that would help a translator to correctly translate the string into 
+different languages.</font> </p>
+<h2>Managing Text Strings As Compiled Resources</h2>
+<hr>
+<p>The other alternative for maintaining translatable strings is to add them in compiled resource form to 
+your application EXE or a DLL. This method is probably more appropriate to use when you are 
+ready to deliver a final version of your multinational application than during initial application 
+development, when the text file form described in the previous section is more convenient for 
+making changes and additions to your text. Compiling the text definition of your string resources 
+into compiled resources and adding these to your application .EXE or a DLL requires <font size=1>using the 
+Resource Compiler provided in the Microsoft Windows Software Development Kit (SDK). The process is described in detail in 
+the SDK manuals.</font> </p>
+<p><font size=1>To load a pool variable from a compiled resource, StringDictionaryReader needs to know the resource identifier of each entry in 
+the pool dictionary. An id dictionary is used to associate the pool variable names in the string dictionary with the resource 
+identifiers of their compiled string resources, since the pool variable names that are used when loading the text resource 
+definition file are not available in the compiled resources. The id dictionary is created by the developer when the text resource 
+definition is complete and ready to be compiled. It is used at the time that the string dictionary in the application is loaded from 
+the resources.</font> <font size=1>The StringDictionaryReader class method createIdDictionary: creates an id dictionary from the resource header 
+file used to compile a resource definition. The following is an example of what a resource header file contains:</font> </p>
+<dl>
+<dd><font size=1>#define WindowTitle 1000</font> </dd>
+<dd><font size=1>#define MenuFile 1010</font> </dd>
+<dd><font size=1>#define MenuEdit 1020</font> </dd>
+<dd><font size=1>....</font></dd>
+<dd><font size=1>#define CloseMessage 2000</font> </dd>
+</dl>
+<p><font size=1>The resource header file uses the #define command of the C preprocessor syntax . The defined symbol is the pool variable name 
+of a string resource from your text definition file. The integer value assigned to the pool variable name is the resource identifier 
+assigned to this string resource and by which the compiled resource is accessed. You should create the id dictionary from the same 
+file used to compile your string resources.</font> </p>
+<p><font size=1>The StringDictionaryReader class method fill:fromModule:idDictionary: fills an application pool dictionary from the compiled 
+string resources in the EXE or a DLL. The id dictionary is used to determine the resource identifier of the string resource to load 
+into each pool variable in the string dictionary. The following is an example of how the application pool dictionary AppText 
+would be filled from the DLL module AppTxtUS using the string ids defined in the header file APPTXT.H:</font> </p>
+<dl>
+<dd><tt>| anIdDictionary |</tt> </dd>
+<dd><tt>anIdDictionary := StringDictionaryReader 
+createIdDictionary:'APPTXT.H' .</tt> </dd>
+<dd><tt>StringDictionaryReader fill: AppText </tt></dd>
+<dd><tt>fromModule: 'AppTxtUS.DLL' </tt></dd>
+<dd><tt>idDictionary: anIdDictionary.</tt> </dd>
+</dl>
+<p><font size=1>The id dictionary can be created at the time the string dictionary is loaded from the compiled resources or it can be prebuilt. The 
+ObjectFiler capability may be used to store a prebuilt id dictionary in an external file when not being used, and loaded back into 
+the Smalltalk image when needed. This way the dictionary does not have to reside in the image and can be packaged with the rest 
+of the application files for delivery.</font> </p>
+<p><font size=1>The id dictionary can be removed from the image once the string dictionary is loaded if you do not plan to reload the application 
+text again. However, if you wish to create an application which can dynamically change its language, you may wish to keep the 
+id dictionary in the image and provide a user interface which allows the user to dynamically reload the application text from a 
+one of a set of resource DLLs containing your application text in different languages.</font> </p>
+<p>If you have a large number of infrequently used messages, you can reduce the memory 
+requirements of your application by loading individual messages from string resources only when 
+needed. For example, this may be appropriate when your application has a large number of error 
+messages which are not needed during normal processing. To load a single string resource, you 
+send the String class message <font size=1>fromModule:id:, where id is the integer resource identifier of a compiled string resource.</font> </p>
+<h2>Programming Interface</h2>
+<hr>
+<p>Several changes have been made to the Smalltalk/V Windows base system to support NLS 
+features. Some of the semantics of existing classes and methods have been changed and some new 
+ones added. <font size=1>The existing classes that have been affected are:</font> </p>
+<p><font size=1>Character</font> </p>
+<menu>
+<li><font size=1>Date</font> </li>
+<li><font size=1>Float</font> </li>
+<li><font size=1>Number</font> </li>
+<li><font size=1>String</font> </li>
+<li><font size=1>Time</font> </li>
+</menu>
+<p><font size=1>New classes that have been introduced are:</font> </p>
+<menu>
+<li><font size=1>DoubleByteString </font></li>
+<li><font size=1>DoubleByteStringInspector (all methods private) </font></li>
+<li><font size=1>DoubleByteSymbol </font></li>
+<li><font size=1>MixedFileStream </font></li>
+<li><font size=1>NationalLanguageSupport</font> </li>
+<li><font size=1>StringDictionaryReader</font> </li>
+</menu>
+<h2>Accessing System NLS Settings</h2>
+<hr>
+<p><font size=1>There is a new global variable NationalLanguage which is the sole instance of the new class NationalLanguageSupport. Messages 
+can be sent to NationalLanguage to obtain the current values of various NLS properties from the Microsoft Windows 
+environment.</font> </p>
+<p>The messages country and countryName can be sent to find out the current country and language 
+settings of the system. </p>
+<p>NationalLanguage country. </p>
+<p>NationalLanguage countryName. </p>
+<h2>Cultural-Dependent Formatting</h2>
+<hr>
+<p><font size=1>Messages can be sent to NationalLanguage to obtain the current system values of various national language properties which 
+determine country-specific formatting, such as date, time, currency, and number formatting.</font> </p>
+<menu>
+<li><font size=1>NationalLanguage dateFormat.</font> </li>
+<li><font size=1>NationalLanguage dateSeparator.</font> </li>
+<li><font size=1>NationalLanguage timeFormat.</font> </li>
+<li><font size=1>NationalLanguage timeSeparator.</font> </li>
+<li><font size=1>NationalLanguage currencyFormat.</font> </li>
+<li><font size=1>NationalLanguage currency.</font> </li>
+<li><font size=1>NationalLanguage decimalPlace.</font> </li>
+<li><font size=1>NationalLanguage decimalSeparator.</font> </li>
+</menu>
+<p><font size=1>The Date and Time classes are sensitive to NationalLanguage so that the print messages sent to them answer with the culturally 
+correct format. The date and time text format may be different from the previous version of Smalltalk/V Windows.</font> </p>
+<h2>Text Comparison, Sorting, And Casing</h2>
+<hr>
+<p><font size=1>Character and string comparisons provided by the binary operators &lt;, &gt;, &lt;=, and &gt;= use the country specific collating sequence 
+determined by the current country and language settings of the host system. This is different than in previous versions of 
+Smalltalk/V, in which character and string comparisons were based solely on the character code value.</font> <font size=1>Casing functions on strings 
+and characters test for and convert between upper and lower case letters. In this Smalltalk/V Windows Release, these methods are 
+implemented using Microsoft Windows functions so that they are sensitive to the current system country and language settings, 
+rather than being hardwired to 7-bit ASCII character code values as in previous versions of Smalltalk/V.</font></p>
+<h2>Double-Byte Character and String Support </h2>
+<hr>
+<p><font size=1>Support for double-byte characters and strings introduces several new</font> <font size=1>classes and introduces new protocol in some existing 
+classes. </font></p>
+<h3>Characters</h3>
+<hr>
+<p>A Character object represents a single character and is defined by a character code value (code 
+point). A character with a code point value in the range [0...255] can be encoded in one byte and 
+is referred to as a single-byte character. A character with a code point value in the range 
+[256...65535] requires two bytes to encode its value and is thus referred to as a double-byte 
+character. </p>
+<p>aCharacter isSingleByte </p>
+<p>aCharacter isDoubleByte </p>
+<p>The mapping between characters and code point values is defined by the language module installed. </p>
+<p>Testing for character equality should be done using the = operator. The identity operator == should 
+not be used for this purpose. Because single-byte characters are unique, equality and identity 
+happen to be the same. However, this is not necessarily the case for double-byte characters, where 
+two double byte characters which are equal because they have the same character code value are 
+not necessarily identical. </p>
+<p>The character predicate message such as isLetter, isDigit, isAlphaNumeric, isLowerCase, 
+isUpperCase, etc, has been made sensitive to the language module installed. Only the standard 
+7-bit ASCII characters are guarantee to respond the same way for all language modules - this is a 
+very important consideration for code portablity. </p>
+<p>For the purpose of DBCS support in the Smalltalk/V compiler all characters with code point value 
+in the range [256...65535] is defined as capital letters, i.e. isLetter and isUpperCase sent to these 
+characters will return true. </p>
+<h2>Strings</h2>
+<hr>
+<p><font size=1>A string is an indexed collection of characters. A String is a single-byte string encoding with each character occupying one byte 
+and it contains only single-byte characters (with code point value in the range [0...255] occupying one byte of storage). A 
+instance of class DoubleByteString is</font> <font size=1>a double-byte string encoding with each character occupying two bytes and can contain 
+both single-byte characters and double-byte characters (with code point value in the range [0...65535]). In both cases, an element 
+of the collection is a Character and the size of the string is the number of</font> <font size=1>characters in the collection. The two representations 
+of strings share a common public protocol which provides the uniform abstraction of a string</font> <font size=1>as a sequence of characters.</font> </p>
+<p><font size=1>In general, you do not need to know which string representation is involved</font> <font size=1>when you use a string. All messages that can be sent 
+to a string can involve</font> <font size=1>any combination of String and DoubleByteString objects for the receiver</font> <font size=1>and the message arguments. 
+Similarly, a stream on a string works the same on both flavors of string representation. Messages to a string which</font> <font size=1>modify the 
+contents of the receiver will cause a String to be transformed</font> <font size=1>automatically into a DoubleByteString if a double-byte character is</font> 
+<font size=1>inserted into the string. You never have to do anything special to ensure</font> <font size=1>that an appropriate representation is used for a string - 
+this is handled</font> <font size=1>automatically by the string itself.</font> </p>
+<p>String literals in expressions and methods can contain double-byte characters. <font size=1>The cases when you must 
+be aware of the difference between the two</font> <font size=1>string encodings primarily involve interactions with the host operating system 
+through API calls and reading or writing strings from files. </font></p>
+<p><font size=1>These areas are discussed in detail in later sections.</font> </p>
+<h2>Symbols</h2>
+<hr>
+<p><font size=1>A symbol is a fixed size collection of characters guaranteed to be unique</font> <font size=1>across all symbols in the system. A symbol containing 
+only single-byte characters is an instance of class Symbol, while a symbol which contains one or more double-byte characters is 
+an instance of class </font></p>
+<p><font size=1>DoubleByteSymbol. As with strings, the size of a symbol is the number of characters in the collection. Both symbol 
+representations share the same public protocol. As with strings, you generally do not need to know which representation is used - 
+both types of symbols behave the same way. </font></p>
+<p><font size=1>Symbol literals and message selectors in expressions and methods can contain single-byte as well as double-byte characters. The 
+Smalltalk/V</font> <font size=1>syntax definition has been extended to include double-byte symbol literals and message selectors. You can also create 
+a double-byte symbol, by sending the message asSymbol to a DoubleByteString instance.</font> </p>
+<h2>Inserting Characters into Strings </h2>
+<hr>
+<p><font size=1>When a double-byte character is inserted into a single-byte String object, the receiver string mutates into a double-byte 
+DoubleByteString encoding. You do not need to take any special action either to anticipate or respond to the change in the 
+string's representation.</font> </p>
+<p><font size=1>A DoubleByteString is not automatically compacted to an equivalent single-byte String encoding when editing of its contents 
+results in it containing only single-byte characters. String encoding compaction can be explicitly requested by sending the 
+message asCompactString to a string. </font></p>
+<p><font size=1>The following code shows a double-byte character put into a single-byte string (changing it to a double-byte string), and then 
+replaced by a single-byte a (leaves it as a double-byte string). The message asCompactString then converts it back to a single-byte 
+string. </font></p>
+<dl>
+<dd><font size=1>| aString | </font></dd>
+<dd><font size=1>aString := abc . &quot;aString class = String&quot; </font></dd>
+<dd><font size=1>aString at: 1 put: aDBCharacter. &quot;aString class = DoubleByteString&quot; </font></dd>
+<dd><font size=1>aString at: 1 put: $a. &quot;aString class = DoubleByteString&quot; </font></dd>
+<dd><font size=1>aString := aString asCompactString. &quot;aString class = String&quot;</font> </dd>
+</dl>
+<h2>Passing Strings Between Smalltalk/V and The Host</h2>
+<hr>
+<p><font size=1>One of the few cases when you must be aware of the different string</font> <font size=1>encodings is when you make API calls to the host operating 
+system or other language DLLs. On a double-byte system, it is important to realize that Smalltalk/V uses a different string 
+encoding for strings containing double-byte characters than does the host operating system.</font> </p>
+<p><font size=1>Smalltalk/V uses a fixed-length normalized encoding for strings: a string uniformly uses either one or two bytes per character to 
+represent the codes of its characters and accordingly is an instance of either String or DoubleByteString, respectively. 
+Application logic is always expressed in terms of characters, regardless of the encoding. </font></p>
+<p><font size=1>The host operating system uses a variable-length mixed-string encoding for a string which contains one or more double-byte 
+characters: the mixed-string encoding uses one byte for single-byte characters and two bytes for double-byte characters. </font></p>
+<p><font size=1>Whenever a string is passed to, or obtained from, the host operating system, it must be converted from the host's mixed string 
+encoding to the normalized representation used within Smalltalk/V. This may also be the case when you make API calls to a DLL 
+in another language, unless the function that you are calling supports the normalized string encoding used within Smalltalk/V. To 
+convert strings between the two encoding schemes, you can use the new messages asNormalizedString and asMixedString. You 
+can also use the message asParameter, which answers a mixed string with a null terminator, which is the standard format expected 
+by many API calls. </font></p>
+<p><font size=1>Whenever an API call is made that passes a string as a parameter or as a field value in a record, the Smalltalk string must be 
+converted to the host's mixed-string encoding. For a string parameter, the usual API convention of aString asParameter for 
+specifying the argument value automatically handles the conversion of a Smalltalk string to a zero-terminated mixed-string 
+encoding. </font></p>
+<dl>
+<dd><font size=1>aMixedStringWithZeroTerminator := aString asParameter. </font></dd>
+</dl>
+<p><font size=1>When storing the value of a string into a record field or passing a non-zero-terminated string parameter to an API, the string 
+must first</font> <font size=1>be converted to a mixed-string encoding by sending it the message asMixedString. The length that you specify for such 
+a string is generally expected by the host operating system to be the length in bytes of the mixed string encoding (not the 
+number of characters).</font> </p>
+<p><font size=1>The following example shows how a string without a null terminator is passed to an API, along with its length in bytes: </font></p>
+<dl>
+<dd><font size=1>| aMixedString | </font></dd>
+<dd><font size=1>aMixedString := aString asMixedString. </font></dd>
+<dd><font size=1>GDILibrary</font> </dd>
+<dd><font size=1>getTextExtent: hDC</font> </dd>
+<dd><font size=1>string: aMixedString</font> </dd>
+<dd><font size=1>size: aMixedString size.</font> </dd>
+</dl>
+<p><font size=1>When a string value is returned by an API function by storing the string in a buffer or a record field or by returning an address to 
+a string in memory, a normalized Smalltalk string must be obtained from the mixed-string encoding. You get a normalized string 
+by sending the message asNormalizedString to the string encoding returned by the API. </font></p>
+<dl>
+<dd><font size=1>| aString size |</font> </dd>
+<dd><font size=1>aString := String new: 256.</font> </dd>
+<dd><font size=1>size := UserLibrary</font> </dd>
+<dd><font size=1>getWindowText: aWindowHandle</font> </dd>
+<dd><font size=1>text: aString</font> </dd>
+<dd><font size=1>maxLength: aString size.</font> </dd>
+<dd><font size=1>^(aString copyFrom: 1 to: size) asNormalizedString.</font> </dd>
+<dd><font size=1></font>&nbsp;</dd>
+</dl>
+<p><font size=1>All user-defined API methods and WinStructure subclasses should be reviewed to verify that strings are properly converted into 
+mixed-string encoding and returned to normalized Smalltalk strings when passing across the boundary between Smalltalk/V and 
+the host operating system. This is necessary for applications to execute properly in a double-byte system.</font> </p>
+<p><font size=1>Mixed string encodings obtained from asMixedString, asParameter, or obtained from Microsoft Windows are instances of String 
+which should be treated carefully. They should only be used at the moment when crossing the boundary between Smalltalk/V and 
+the outside environment. You are responsible for properly quarantining mixed strings that you create or obtain; once let loose in 
+the normal Smalltalk environment, the mixed string will be interpreted as a normal single-byte string, which will not produce the 
+intended sequence of characters! </font></p>
+<h2>FileStreams</h2>
+<hr>
+<p><font size=1>In Smalltalk/V a FileStream provides access to the contents of a file as a sequence of characters. Because the host operating 
+system uses mixed-string encoding in text files, a Smalltalk/V file stream must be able to answer a complete single or double-byte 
+character as a result of a next message on a double-byte system. </font></p>
+<p><font size=1>To access files containing mixed-string text without degrading FileStream performance on single-byte systems, class 
+MixedFileStream has been introduced. It automatically provides conversion between the external mixed-string encoding and the 
+normalized string representation used within Smalltalk/V as you read and write text in the file. The public protocol of a 
+MixedFileStream is the same as FileStream. </font></p>
+<h2>FileStreams with Double-Byte Characters</h2>
+<hr>
+<p><font size=1>When a stream on a file is opened in a double-byte system, a MixedFileStream is automatically created. A MixedFileStream treats 
+the file as a text stream. Messages to a MixedFileStream which read the contents of the file handle interpreting the mixed-string 
+encoding and always return complete characters and normalized strings. For example, the next message answers the next 
+character in the file and can advance the stream position with one or two bytes. </font></p>
+<p><font size=1>Messages to a MixedFileStream which write characters and strings to the file will convert normalized Smalltalk strings into the 
+equivalent mixed-string encoding. </font></p>
+<p><font size=1>The position of a file stream is always the byte offset in the file. Applications written for a double-byte environment should be 
+careful when explicitly manipulating the position of a MixedFileStream. It is generally not safe to do arbitrary arithmetic on a 
+position and use the result to change the position of the stream when the file contains mixed-string text. It is correct to save a 
+position and use that value later to reset the stream position, since this is guaranteed to be correctly positioned on a character. 
+When you compute the difference between two valid positions of a file stream, remember that this value is the byte difference 
+and not necessarily the number of characters contained in the file between the two positions. </font></p>
+<p><font size=1>To back up one character in a file stream on a double-byte system, it is not safe to reset the file stream by an expression such as: </font></p>
+<dl>
+<dd><font size=1>aStream position: (aStream position - 1). &quot;Incorrect for MixedFileStream&quot; </font></dd>
+</dl>
+<p><font size=1>The preceding expression will incorrectly position a MixedFileStream when the last character read from the stream was a 
+double-byte character. All subsequent text read from this file stream after such an operation is no longer guaranteed to correctly 
+reflect the characters in the file. </font></p>
+<p><font size=1>You should use the new message backupOver: to back up one character in a file stream: </font></p>
+<dl>
+<dd><font size=1>[(aChar := aStream next) = stopChar] </font></dd>
+<dd><font size=1>whileFalse:[ ]. </font></dd>
+<dd><font size=1>aStream backupOver: aChar. &quot;Correct for MixedFileStream&quot; </font></dd>
+</dl>
+<p><font size=1>It is always safe to save the position of a stream and later use the saved position to reset the stream. For example: </font></p>
+<dl>
+<dd><font size=1>originalPosition := aStream position. </font></dd>
+<dd><font size=1>&quot; ... read ahead in the stream for some reason ... &quot; </font></dd>
+<dd><font size=1>aStream position: originalPosition. </font></dd>
+</dl>
+<p><font size=1>is correct in both single-byte and double-byte environments. </font></p>
+<h2>Binary File Streams </h2>
+<hr>
+<p><font size=1>The introduction of MixedFileStream class for double-byte support will not be a concern in most cases. The exception is when 
+your file contains binary data and you need to have it treated as a byte stream, even when executing on double byte systems. The 
+message asByteFileStream can be sent to a newly-opened file stream to ensure that it is a FileStream rather than a 
+MixedFileStream (which is the default file stream in a double-byte environment). This ensures that the next message always 
+returns the next byte in the file. </font></p>
+<p><font size=1>When reading and writing strings to a binary FileStream on a double-byte system, you must explicitly handle string conversion 
+between mixed and normalized encoding. You can use the messages asMixedString and asNormalizedString for this purpose, as 
+discussed in the preceding section on passing strings between Smalltalk/V and the host environment. </font></p>
+<h2>Supporting Text In Multiple Languages </h2>
+<hr>
+<p><font size=1>An application that supports text in multiple languages can control the decoding of strings containing double-byte characters in 
+the host operating system s mixed-string encoding into normalized Smalltalk string objects. The normalization operations on 
+strings and the MixedFileStream messages that read text from a mixed-string encoding file are controlled by a lead-bytes array, 
+which is an array of boolean flags, indexed by lead byte character code value [1...255], indicating whether this code point value is 
+a lead byte value of a double-byte character. </font>You can construct the lead bytes array yourself or obtain it from 
+<font size=1>NationalLanguage by:</font> </p>
+<p><font size=1>aLeadBytesArray := NationalLanguage leadBytes. </font></p>
+<p><font size=1>You can normalize a mixed-string encoding for a language other than the one currently active if you have a lead-bytes array for 
+that language. Send the asNormalizedString: message to the mixed string and provide a lead-bytes flag array appropriate for the 
+desired language: </font></p>
+<p><font size=1>aString := aMixedString asNormalizedString: aLeadBytesArray. </font></p>
+<p><font size=1>You can read a mixed-string encoding from a file that you want to interpret in a language other than the one currently active. 
+Send the message leadBytes: to the MixedFileStream to set the lead bytes flags that control reading characters from the file: </font></p>
+<dl>
+<dd><font size=1>aMixedFileStream leadBytes: aLeadByteArray. </font></dd>
+<dd><font size=1>aFileStream := aFileStream asMixedFileStream: aLeadByteArray. </font></dd>
+</dl>
+<p><font size=1>Subsequent messages sent to this file stream will decode the bytes in the file according to the new lead bytes array that you have 
+supplied. </font></p>
+<p><font size=1>If your application supports multiple languages, you must design a mechanism for associating the language with a string instance 
+so that the character values can be interpreted as the intended sequence of characters. You must also handle rendering so that the 
+appropriate language is set in the presentation space when you render a character string from a language that is different than the 
+current system language.</font></p>
+<hr>
+<p><a href="#top">[top]</a><a href="index.htm">[index]</a></p>
+</body>
+
+</html>

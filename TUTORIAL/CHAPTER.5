@@ -1,0 +1,236 @@
+TUTORIAL EXAMPLES FOR CHAPTER 5 - CLASSES AND METHODS
+
+"Classes"
+
+"Evaluate each of the following using Show it."
+
+     #(Francesca Jackie Marisa Bree) class          
+
+     'Rakesh Vijay Charles Daniel Tyler' class     
+
+     Turtle class  
+
+
+"Methods"
+
+"Evaluate the following using Show it."
+
+     (1/7) numerator          
+
+
+"Evaluate the following using Show it."
+
+     ( 2/3 ) * ( 5/7 )                 
+
+
+"The Class Hierarchy Browser"
+
+"Evaluate the following using Do it."
+
+     ClassHierarchyBrowser new openOn: (Array with: Integer
+          with: Fraction with: String with: GraphicsDemo)
+
+
+"The Special Variable 'self'"
+
+"Use the Class Hierarchy Browser to add the following
+new method to class Fraction.  (Hint:  Try the edit
+menu functions copy and paste.)"
+
+fraction
+        "Answer the receiver minus its integral part."
+    ^self - self truncated
+
+
+"Evaluate each of the following using Show it."
+
+     ( 22/7 ) fraction     
+
+     ( 2/3 ) fraction   
+
+
+"Creating New Objects and the Special Object 'nil' "
+
+"Evaluate each of the following with Show it."
+
+     'bigger', ' string'    
+
+     1 / 3    
+
+
+"Evaluate each of the following with Show it."
+
+     Array new: 10          
+
+     Array new             
+
+     Pen new        
+
+     Date today       
+
+     Time now    
+
+
+"Instance Variables"
+
+"Evaluate each of the following with Show it."
+
+     'location' at: 2            
+
+     'parts' at: 5 put: $y           
+
+
+"Recursion"
+
+"Evaluate the following with Show it."
+
+    #( 0 1 2 3 4 10 15 20 ) collect: [ :n | n factorial ]  
+
+
+"Use the Class Hierarchy Browser to add the following
+method to class Integer."
+
+fibonacci
+        "Answer the nth fibonacci number,
+         where n is the receiver."
+    ^self < 3
+        ifTrue: [1]
+        ifFalse: [
+            (self - 1) fibonacci + (self - 2) fibonacci]
+
+
+"Evaluate the following using Show it."
+
+    #(1 2 3 4 5 6 7 10 20) collect: [ :m | m fibonacci ]
+
+
+"Pattern Matching"
+
+"Add the method indexOfString: to class String
+using the Class Hierarchy Browser."
+
+indexOfString: aString
+        "Answer the index position of the first occurrence
+         of aString in the receiver.  If no such element
+         is found, answer zero."
+    | index1 index2 limit1 limit2 |
+    limit2 := aString size.
+    limit1 := self size - limit2 + 1.
+    index1 := 1.
+    [ index1 <= limit1 ]
+        whileTrue: [
+            index2 := 1.
+            [index2 <= limit2
+                and: [ ( self at: index1 + index2 - 1 )
+                    = ( aString at: index2 ) ] ]
+                whileTrue: [ index2 := index2 + 1 ].
+            index2 > limit2
+                ifTrue: [ ^index1 ].
+            index1 := index1 + 1 ].
+    ^0
+
+
+"Evaluate each of the following using Show it."
+
+    'abcdebcd' indexOfString: 'ebg'
+
+    'abcdebcd' indexOfString: 'bcd'  
+
+    'abcdebcd' indexOfString: 'c' 
+
+    'abcdebcd' indexOfString: 'abcdebcd'  
+
+    'abcdebcd' indexOfString: ''   
+
+
+"Adding a Method to a Graphics Program"
+
+"Add the method polyFlower to class GraphicsDemo
+using the Class Hierarchy Browser."
+
+polyFlower
+        "Draw a polygon flower of size specified by user."
+    | flowerSize length |
+    flowerSize := Prompter
+        prompt: 'Number of sides?'
+        defaultExpression: '30'.
+    graphs removeKey: #polyFlower ifAbsent: [ ].
+    self
+        drawBlockNow: [
+        length := 240 // flowerSize.
+        pen
+            erase;
+            home;
+            north.
+        flowerSize timesRepeat: [
+            pen
+                up;
+                go: length // 2;
+                down;
+                go: length.
+        flowerSize - 1 timesRepeat: [
+            pen
+                turn: 360 // flowerSize;
+                go: length] ] ]
+    for: #polyFlower 
+
+
+"Replace the following method in GraphicsDemo 
+(a subclass of ViewManager)."
+
+graphicsMenu: aPane
+    aPane setMenu: ( (Menu
+        labels: 'Poly Flower\&Walk Line\&Mandala\M&ulti Mandala\&Dragon\Multi &Spiral\&Paste' withCrs
+        lines: #(6)
+        selectors: #(polyFlower walkLine mandala multiMandala dragon 
+            multiSpiral paste ) )
+                title: '~Graphics';
+                owner: self;
+                yourself) 
+
+"******  Important Note  ******"
+
+"The labels: message in the above method extends beyond the right 
+ border of this pane.  We would normally break up the line with carriage 
+ returns, which Smalltalk usually ignores.  HOWEVER, because the labels:
+ message contains a string of labels for the menu, if we inserted 
+ carriage returns, they would appear in the menu.  The line is broken
+ in the manual for appearance only."
+
+"******  End of Important Note  ******"
+
+
+"Class Variables"
+
+"After changing the class definition for GraphicsDemo, add the 
+following instance method for the class:"
+
+mandalaCount
+    ^MandalaCount
+
+
+"Add the following code at the end of the
+mandala method in GraphicsDemo. Remember to add a period 
+to the end of the preceding line" 
+
+    MandalaCount isNil
+        ifTrue:  [MandalaCount := 1]
+        ifFalse: [MandalaCount := MandalaCount + 1]
+
+
+"Evaluate the following using Show it.  Try it before
+and after drawing a mandala using the demo program."
+
+     GraphicsDemo new mandalaCount
+
+
+"Inspectors"
+
+"Evaluate the following using Do it."
+
+    | a |
+    a := #( 1 2 sam 'joe' ( 4 5 ) ).
+    a at: 2 put: 3 / 4.
+    a inspect
+                        
+

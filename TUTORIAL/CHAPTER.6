@@ -1,0 +1,198 @@
+TUTORIAL EXAMPLES FOR CHAPTER 6 - INHERITANCE
+
+"Inheritance"
+
+"Install the animal classes by evaluating the following
+expression with Do it."
+
+  (File pathName: 'tutorial\animal6.st') fileIn; close
+      
+  
+"Creating Animal Objects"
+
+"Evaluate the following expressions as a unit
+using Do it to create the animals.  The animals
+'talk' to the Transcript, so you may want to 
+reframe this window so it does not overlap the
+Transcript."  
+
+    "creating animals"
+    Snoopy := Dog new.
+    Snoopy name: 'Snoopy'.
+    Snoopy beQuiet.
+    Lassie := Dog new. 
+    Lassie name: 'Lassie'.
+    Lassie beNoisy.
+    Wally := Penguin new.
+    Wally name: 'Wally'.
+    Polly := Parrot new.
+    Polly name: 'Polly'.
+    Polly vocabulary: 'Polly want a Cracker'.
+    Moby := Whale new.
+    Moby name: 'Moby'      
+
+
+"Polymorphism"
+
+"Evaluate the following expression series using Do it and
+watch the results in the Transcript."
+
+    "let's hear them talk"
+    Lassie talk. 
+    Snoopy talk.
+    Wally talk.
+    Polly talk; talk; talk.
+    Polly vocabulary: 'Screeech@#!? Don''t bother me!'.
+    Polly talk.
+    Moby talk.
+    Snoopy beNoisy; talk.
+    Lassie beQuiet; talk   
+                                  
+
+"More General Pattern Matching"
+
+"Use the Class Hierarchy Browser to add the following
+method to class IndexedCollection.  To find the class
+IndexedCollection, use 'Show Subclasses' on its superclass
+Collection."
+
+indexOfCollection: aCollection 
+        "Answer the index position of the first occurrence 
+         of aCollection in the receiver.  If no such element 
+         is found, answer zero." 
+    | index1 index2 limit1 limit2 | 
+    limit2 := aCollection size. 
+    limit1 := self size - limit2 + 1. 
+    index1 := 1. 
+    [index1 <= limit1] 
+        whileTrue: [ 
+            (self at: index1) = (aCollection at: 1) 
+                ifTrue: [ 
+                    index2 := 2. 
+                    [index2 <= limit2 
+                        and: [ (self at: index1 + index2 - 1) =
+                            ( aCollection at: index2 ) ] ] 
+                        whileTrue: [index2 := index2 + 1]. 
+                    index2 > limit2 
+                        ifTrue: [ ^index1] ]. 
+            index1 := index1 + 1]. 
+    ^0 
+ 
+ 
+"Evaluate each of the following expressions with Show it."
+
+    'the time has come' indexOfCollection: 'tim' 
+        
+    #($c $a $n $  $y $o $u $ ) indexOfCollection: 'you'   
+          
+    #(1 2 3 (4 5) 'abc' 6) indexOfCollection: #(2 3)     
+          
+    #(1 2 3 (4 5) 'abc' 6) indexOfCollection: 'abc'       
+            
+ 
+"Processing Recursive Data Structures"
+
+"Evaluate the following expression series with Show it."
+                                          
+    | a b |
+    a := #(1 2), #(3 4).
+    b := a copy.
+    ^a = b                 "*** single equals sign = ***"
+                    
+
+"Evaluate the following expression series with Show it."
+
+    | a b |
+    a := #(1 2), #(3 4).
+    b := a copy.
+    ^a == b                    "*** double equals signs == ***"
+                             
+
+"Evaluate the following expression series with Show it."
+
+    | a b c |
+    a := #(1 2 3 4).
+    b := a.       
+    c := b.
+    ^c == a             
+                    
+ 
+"Evaluate each of the following with Show it."
+
+    #( 1 ( 2 ( 3 ) ) ) = #( 1 ( 2 ( 3 ) ) )  
+           
+    #(john smith) = #(john smith)  
+            
+    #(1 'two' 3) = #(1 'two' 3)     
+             
+
+"Evaluate each of the following with Show it."
+
+    #( ( 1 2 ) ( 3 4 )( 5 6 ) ) indexOfCollection: #( ( 3 4 ) ( 5 6 ) )  
+            
+    #(1 2 3 (4 5) 'abc' 6) indexOfCollection: #(3 (4 5) 'abc')  
+            
+    #(1 2 3 (4 5) 'abc' 6) indexOfCollection: #('abc')    
+             
+
+"A New Class: MonitoredArray"
+
+"Use the Class Hierarchy Browser to add a class definition
+which looks as follows."
+
+    Array variableSubclass: #MonitoredArray
+      instanceVariableNames: 'atCounts'
+      classVariableNames: ''
+      poolDictionaries: ''
+
+
+"Class Methods"
+
+"Use the Class Hierarchy Browser to add the following
+method as a CLASS method of class MonitoredArray."
+
+new: anInteger
+        "Answer a new MonitoredArray."
+    | answer |
+    answer := super new: anInteger.
+    answer initialize.
+    ^answer
+
+
+"Use the Class Hierarchy Browser to add the 
+following three methods as INSTANCE methods 
+of class MonitoredArray."
+
+accessCounts
+        "Answer the array of 'at:' counts."
+    ^atCounts
+
+
+at: anInteger
+        "Answer the element in the receiver at index 
+        position anInteger.  Increment the count for 
+        accesses to the receiver using anInteger."
+    atCounts
+        at: anInteger
+        put: (atCounts at: anInteger) + 1.
+    ^super at: anInteger
+
+
+initialize
+        "Private - Initialize the MonitoredArray by 
+         allocating and initializing the parallel 
+         atCounts array."
+    | size |
+    size := self size.
+    atCounts := Array new: size.
+    1 to: size do: [ :index | atCounts at: index put: 0 ]
+
+
+"Evaluate the following expression series with Show it."
+
+    | array |
+    array := MonitoredArray new: 20.
+    1 to: 10 do: [ :i |
+        1 to: 10 do: [ :j | array at: i + j ] ].
+    ^array accessCounts               
+                                       

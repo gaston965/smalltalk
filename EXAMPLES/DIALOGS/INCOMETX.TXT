@@ -1,0 +1,73 @@
+IncomeTax
+------------------
+
+This file contains a brief description of IncomeTax 
+application.  IncomeTax application is an example 
+of creating a dialog box that appears to have a 
+menu bar in Smalltalk.   It only appear that the 
+dialog box has a menu bar.  Actually, IncomeTax 
+is a ViewManager subclass that has a dialog box 
+as a subpane.  So IncomeTax is a window that
+has a menu bar that also contains a dialog box
+(without border) as a subpane.  IncomeTax also 
+demonstrates the use of the following:
+
+    - Creating a Modeless DialogBox.
+        (Modeless DialogBox does not disable 
+            the parent window).
+
+    - Changing the font of the controls.
+
+    - Use of FormattedEntryFields.
+        (Date, social security and currency field 
+         only accept numbers and their
+         output is formated.)
+
+    - Use of FormattedStaticText.
+        (currency field's output is formated.)
+
+    - Customizing FormattedEntryFields.
+        (Look at how social security entry field is created
+            in #open.)
+
+    - Use of #textChanged event to trigger an action.
+        (In the income section the total income is 
+            calculated automatically).
+
+
+To install IncomeTax into your system,
+evaluate the following expression:
+
+    (File pathName: 'examples\dialogs\incometx.st') fileIn; close.
+
+To open a IncomeTax, evaluate the following
+expression:
+
+    IncomeTax new open
+
+
+IncomeTax application shows one possible 
+implementation of a large form entry application. 
+This implementation divides the tasks into 
+three screens.  The user navigates between
+screens by using the 'Next' and 'Prev' buttons
+or by using the 'Section' menu.  IncomeTax only 
+demonstrates the user interface portion of an
+application and by no mean is it a complete 
+application. 
+
+IncomeTax application has a Section menu which
+has three menu items.
+
+Label: Label menu item will bring up TaxLabelDialog 
+    where the user can enter in name, address and 
+    phone number.   When IncomeTax is opened, this
+    dialog is opened by default.
+
+Filing: Filing menu item will bring up TaxFilingDialog
+    where the user can enter in their filing status.
+
+Income: Income menu item will bring up 
+    TaxIncomeDialog where the user can enter in
+    their income information.
+

@@ -1,0 +1,171 @@
+FormattedEntryField
+---------------------------------
+
+The FormattedEntryField class validates and formats
+the output of entry fields.  Validation is provided at 
+two levels.  First level of validation is at key stroke 
+level.  Every character entered is checked for validity 
+by evaluating the stroke block that was set with 
+the #strokeBlock: method.  Next level of validation is 
+at the field level.  When a new value is entered for 
+the field, (i.e. the user attempts to leave the field), the 
+accept block that was set with the #acceptBlock: 
+method is evaluated with the new value.  
+
+At the time of field level validation, if the new value is
+acceptable, the accept block formats the output also.  
+
+Another level of abstraction is provided by set of 
+methods that sets the accept block and stroke block 
+to predefined blocks.  These methods are:
+
+    #acceptAlpha
+    #acceptDate
+    #acceptDollar
+    #acceptFloat
+    #acceptInteger
+    #acceptPhoneNumber
+    #acceptPositiveInteger
+
+
+Inherits From:
+    EntryField
+
+Inherited By:
+    (None)
+
+Named Instance Variables:
+    strokeBlock
+        Contains a block with one argument.  Every key
+        stroke is validated by evaluating this block with
+        the character entered as the argument.  If the
+        character is accepted the block should return 
+        true other wise, false.
+
+    acceptBlock
+        Contains a block with one argument.  Every time
+        the entry field get a new value, (i.e. the user attempts
+        to leave the field), this block is evaluated with the
+        new value as the argument.  If the new value is 
+        accepted, the block should return the value as
+        formated output.  If the new value is not accepted,
+        this block should inform the user of the problem 
+        and just return the new value.
+
+    formatedOutput
+        contains the formated output of the entry field.
+
+
+Class Variables:     
+    (None)
+
+
+Pool Dictionaries:
+    WinConstants
+        Contains a Dictionary of Windows constants.  These
+        constants are defined in the header files like
+        WINDOWS.H.
+
+    VirtualKeyConstants
+        Contains a Dictionary associating virtual key names
+        to their values.
+
+    
+Class Methods:
+
+    formatDate: newValue
+        Answer the newValue as a formated date.
+            Format is: MM/DD/YY.
+
+    formatDollar: newValue
+        Answer the newValue as a formated dollar currency.
+            Format is: $ 999,999.99.
+
+    formatPhoneNumber: newValue
+        Answer the newValue as a formated phone number.
+            Format is: (999) 999-9999 or 999-9999.
+
+    validateAlpha: input withChar: ch position: pos
+        Validates whether ch is a acceptable alpha character
+            ( $A - $Z, $a - $z or space) in input string at positon
+            pos.  Answers true if it is acceptable
+            else false.
+
+    validateDollar: input withChar: ch position: pos
+        Validates whether ch is a acceptable character for a
+            dollar currency in input string at position pos.
+            Answers true if it is acceptable
+            else false.
+
+    validateFloat: input withChar: ch position: pos
+        Validates whether ch is a acceptable character for a
+            Float in input string at position pos.
+            Answers true if it is acceptable
+            else false.
+
+    validateInteger: input withChar: ch position: pos
+        Validates whether ch is a acceptable character for a
+            Integer in input string at position pos.
+            Answers true if it is acceptable
+            else false.
+
+    validatePositiveInteger: input withChar: ch position: pos
+        Validates whether ch is a acceptable character for a
+            Positive Integer in input string at position pos.
+            Answers true if it is acceptable
+            else false.
+
+Instance Methods:
+
+    acceptAlpha
+        Sets the FormattedEntryField to only accept alpha
+            characters (A - Z, a- z).
+
+    acceptBlock: aBlock
+        Set accept block to aBlock.  When FormattedEntryField
+            get a new value, aBlock is evaluated with the new
+            value as the argument.  If the new value is accepted,
+            aBlock should return the new value as formated output.
+            If the new value is not accepted, aBlock should inform
+            the user of the problem and just return the new value.
+
+    acceptDate
+        Sets the FormattedEntryField to only accept date.
+            (6 digit positive integer.)
+            The entered value will be shown in date format.
+
+    acceptDollar
+        Sets the FormattedEntryField to only accept dollar currency.
+            (a floating point number with two decimal places.)
+            The entered value will be shown in dollar currency format.
+
+    acceptFloat
+        Sets the FormattedEntryField to only accept floating point
+            number.
+
+    acceptInteger
+        Sets the FormattedEntryField to only accept integer.
+
+    acceptPhoneNumber
+        Sets the FormattedEntryField to only accept phone number.
+           (either a 7 or 10 digit number.)
+            The entered value will be shown in phone number format. 
+
+    acceptPositiveInteger
+        Sets the FormattedEntryField to only accept positive integer.
+
+    contents
+        Answer a string containing the text of the item.
+
+    contents: input
+        Set the String associated with this control.
+
+    formatedOutput
+        Answers formated output string of the FormattedEntryField.
+
+    strokeBlock: aBlock
+        Set stroke block to aBlock.  For each key stroke entered,
+            aBlock is evaluated with a Character as the argument.
+            If the character is accepted aBlock should return true,
+            other wise it should return false.
+

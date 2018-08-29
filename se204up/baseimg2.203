@@ -1,0 +1,456 @@
+"make sure classes needed by this package exist"
+#( 
+    ApplicationWindow Array CursorManager DeviceContext Fraction 
+    GraphicsTool Message NotificationManager Pen Process ProcessScheduler 
+    SignOnDLL SystemDictionary TextTool WinAddress Window WindowHandle 
+    WinHandle WinPaintStructure WinPoint WinStructArray WinStructure 
+)
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+
+!ApplicationWindow methods !
+   
+initSize
+        "Private - Answer the initial size of the receiver."
+    | size |
+    rectangle notNil ifTrue: [ ^rectangle ].
+    size := (owner respondsTo: #initWindowSize)
+        ifTrue: [ owner initWindowSize ]
+        ifFalse: [ self initWindowSize ].
+    ^size isRectangle
+        ifTrue: [ size ]
+        ifFalse: [
+            size isPoint
+                ifTrue: [ self boxOfSize: size ]
+                ifFalse: [0 @ 0 extent: 100@100 ]].! !
+
+!CursorManager methods !
+   
+display
+        "Display the receiver on the screen; answer the
+        hide/show level of the cursor."
+
+    ^self showCursor: true!
+
+hide
+        "Hide the cursor from the screen;
+        answer the hide/show level of the cursor."
+
+    ^self showCursor: false!
+ 
+setWinCursor
+        "Private - Change the current cursor to the shape of the receiver."
+    | w defaultCursor |
+    handle isNil ifTrue: [
+        (w := self class windowUnderCursor) isNil
+            ifTrue: [ ^self class setWinCursor: IdcArrow ]
+            ifFalse: [
+                (defaultCursor := w defaultCursor) notNil
+                    ifTrue: [ ^UserLibrary setCursor: defaultCursor handle ]
+                    ifFalse:[
+                        (defaultCursor := UserLibrary getClassWord: w handle index: GcwHcursor) = 0
+                            ifTrue: [ defaultCursor := self class arrow handle ].
+                        ^UserLibrary setCursor: defaultCursor ]]].
+    handle isWinHandle
+        ifTrue: [ ^UserLibrary setCursor: handle ].
+    handle isInteger
+        ifTrue: [ self class setWinCursor: handle ].!
+ 
+showCursor: aBoolean
+        "Private - Display the receiver on the screen
+         if aBoolean is true else hide it; answer
+         the hide/show level of the cursor."
+
+    ^UserLibrary showCursor: aBoolean! !
+
+!Fraction methods !
+ 
+= aNumber
+        "Answer true if the receiver is equal
+         to aNumber, else answer false."
+
+    aNumber isFloat ifTrue: [ ^aNumber = self ].
+    ^aNumber isNumber and:
+        [numerator = aNumber numerator and:
+            [denominator = aNumber denominator]]! !
+
+!GraphicsTool methods !
+ 
+canvasBox
+        "Private - Answer a rectangle which is the total
+         drawable area."
+
+    ^graphicsMedium isGraphPane
+        ifTrue: [ graphicsMedium scrollingRectangle ]
+        ifFalse: [ self boundingBox ]!
+ 
+location
+        "Answer a Point which represents the current
+         position of the pen."
+    | answer |
+    graphicsMedium isStoredPicture
+        ifTrue: [ ^location ].
+    answer := WinStructure fromBytes: (GDILibrary getCurrentPosition: self handle).
+    ^(answer shortAtOffset: 0) @ (answer shortAtOffset: 2)!
+
+selectObject: anObject
+        "Select anObject into the device context and answer
+          the previously selected object."
+    | hPrevious |
+    anObject isNil
+        ifTrue: [ ^nil ]
+        ifFalse: [
+           self allHandles do: [ :h |
+                h notNil ifTrue: [
+                    hPrevious := GDILibrary selectObject: h with: anObject ]]].
+    graphicsMedium isStoredPicture
+        ifTrue: [ ^nil ]
+        ifFalse: [ ^hPrevious ]! !
+
+!Message methods !
+
+performDeferred
+        "Perform the expression by requeueing the request."
+
+    [ DeferredRequests add: self ] evaluateWithoutInterrupts.! !
+
+!NotificationManager methods !
+  
+add: aWindow
+        "Private - Add aWindow to the Notifier so aWindow can
+         receive incoming events."
+    [ windows at: aWindow handle asInteger put: aWindow ]
+        evaluateWithoutInterrupts!
+  
+consumeInputUntil: aBlock
+        "Consume all input events until aBlock evaluates true.  aBlock takes
+         one argument which is the current Message event."
+    | e |
+    [ CurrentEvents isEmpty ] whileTrue: [ self readWinQueue ].
+    [ e := CurrentEvents removeFirst ] evaluateWithoutInterrupts.
+    [ aBlock value: e ] whileFalse: [
+        [ CurrentEvents isEmpty ] whileTrue: [ self readWinQueue ].
+        [ e := CurrentEvents removeFirst ] evaluateWithoutInterrupts ]!
+ 
+notify: aWinMessage
+    "Private - Translate a host system event into the appropriate
+    message sent to the window specified in the event."
+    | receiver selector newWindow |
+
+    "If the handle of the event's destination window is not present
+    in the windows instance variable, it may be a newly created
+    window (getting a WmCreate message)"
+    (receiver := self findWindow: aWinMessage hwnd) isNil ifTrue: [
+        (newWindow := ApplicationWindow newWindow) notNil ifTrue: [
+            receiver := newWindow
+                handle: ( WindowHandle fromInteger: aWinMessage hwnd );
+                yourself.
+            ]].
+    selector := self selectorFor: aWinMessage msg.
+    (receiver isNil or: [ selector == #unknownWinEvent:with: ])
+        ifTrue: [ ^nil ].
+    ^receiver
+        perform: selector
+        withArguments: (Array with: aWinMessage wparam with: aWinMessage lparam)!
+   
+postInputEvent: aMessage
+        "Private - Add a Message to CurrentEvents."
+
+    [ CurrentEvents add: aMessage ] evaluateWithoutInterrupts.
+    KeyboardSemaphore signal!
+  
+remove: aWindow
+        "Private - Remove aWindow from the Notifier."
+
+    self removeEventsFor: aWindow.
+    [ windows removeKey: aWindow handle asInteger ifAbsent: [ nil ] ]
+        evaluateWithoutInterrupts!
+ 
+remove: events for: aWindow
+        "Private - Remove queued events for aWindow."
+
+    [   CurrentEvents copy do: [ :e |
+            ((e receiver == aWindow) and: [ events includes: e selector ])
+                ifTrue: [ CurrentEvents remove: e ifAbsent: [ nil ]]].
+    ] evaluateWithoutInterrupts.!
+  
+removeEventsFor: aWindow
+        "Private - Remove queued and deferred events for aWindow."
+
+    [   CurrentEvents copy do: [ :e |
+            e receiver == aWindow
+                ifTrue: [ CurrentEvents remove: e ifAbsent: [ nil ]]].
+        DeferredRequests copy do: [ :e |
+            e receiver == aWindow
+                ifTrue: [ DeferredRequests remove: e ifAbsent: [ nil ]]].
+    ] evaluateWithoutInterrupts.! !
+
+!Pen methods !
+ 
+winPointList: anArrayOfPoints
+        "Private - answer a WinStructArray containing a list
+        of POINT structures corresponding to anArrayOfPoints."
+    | winPoints |
+    winPoints := anArrayOfPoints collect: [ :p | WinPoint fromPoint: p ].
+    ^WinStructArray fromCollection: winPoints! !
+
+!Process methods !
+   
+terminateWithoutProtection
+        "Terminate the receiver without causing protection
+        blocks to be executed."
+
+    Processor unschedule: self.
+    self == CurrentProcess ifTrue: [ Processor schedule ]! !
+
+!ProcessScheduler methods !
+ 
+readyToRun
+        "Answer the receiver's OrderedCollection of ready to run processes."
+
+    ^readyProcesses!
+
+schedule: process
+        "Private - add the <process> to the queue of runnable processes."
+
+    | queue |
+    queue := self readyToRun at: process priority.
+    queue addLast: process!
+  
+terminateActive
+        "Terminate the active process."
+
+    Process enableInterrupts: false.
+    self suspendActive.!
+  
+unschedule: process
+        "Private - if the <process> is in the queue of runnable
+        processes, remove it."
+
+    | queue |
+    queue := self readyToRun at: process priority.
+    queue remove: process ifAbsent: []! !
+
+!SystemDictionary methods !
+ 
+closeSignOn
+        "Private - Close the sign on screen."
+    | signOnLib |
+    Smalltalk isRunTime
+        ifTrue: [
+            signOnLib := SignOnDLL open: Smalltalk signonDLL ]
+        ifFalse: [
+            signOnLib := SignOnDLL open: 'vwvm20.dll' ].
+    (Message new
+         receiver: signOnLib
+        selector: #closeSignOn
+        arguments: (Array new) ) performDeferred.
+    (Message new
+        receiver: signOnLib
+        selector: #free
+        arguments: (Array new) ) performDeferred.! !
+
+!TextTool methods !
+ 
+displayText: aString at: aPoint
+        "Display aString at aPoint."
+    | str strMem stringWidth |
+    str := (aString isString)
+        ifTrue: [aString]
+        ifFalse: [aString printString].
+    str size > 8000 ifTrue: [ "size must be < 32k"
+        str := (str copyFrom: 1 to: 8000), '...etc...'].
+    str := str asMixedString.
+    strMem := WinAddress copyToNonSmalltalkMemory: str asAsciiZ.
+    self allHandles do: [: h |
+        GDILibrary
+            textOut: h
+            x: aPoint x
+            y: aPoint y
+            textPtr: strMem asParameter
+            length: str size ].
+     strMem free.
+
+    "metafile DCs don't support GetTextExtent API"
+    self graphicsMedium isStoredPicture
+        ifTrue: [ stringWidth := 0 ]
+        ifFalse: [ stringWidth := self stringWidthOf: str ].
+    self place: ("self location" aPoint right: stringWidth).! !
+
+!Window methods !
+ 
+close
+        "Private - Close the window."
+    |aHandle|
+    self stopReceivingMessages.
+    (graphicsTool isGraphicsTool) ifTrue: [
+        graphicsTool destroy.
+        graphicsTool := nil ].
+    children size > 0 ifTrue: [
+        children do: [ :subpane | subpane close ]].
+    self destroy.!
+  
+mainWindow
+        "Answer the receiver's main window.  For example,
+         if the receiver is a subpane, the main window will be an
+         instance of TopPane."
+
+    ^parent isWindow
+        ifTrue: [ parent mainWindow ]
+        ifFalse: [ self ]!
+ 
+noRedraw: aBoolean
+        "Private - Stop the receiver from
+         repainting itself."
+
+    handle noRedraw: aBoolean.!
+  
+realInvalidateRect: aRectangle
+        "Invalidate aRectangle in the receiver.  Causes the
+         window to be repainted."
+    UserLibrary
+        redrawWindow: self asParameter
+        rectangle: aRectangle asParameter
+        region: nil
+        redraw: RdwInvalidate | RdwAllchildren | RdwUpdatenow!
+ 
+sendMouseMoveInputEvent: selector with: argument
+        "Private - Add a MessageExpression to CurrentEvents."
+
+    | lastMessage int |
+    CurrentEvents isEmpty
+        ifTrue: [^self sendInputEvent: selector with: argument].
+    int := Process enableInterrupts: false.
+    lastMessage := CurrentEvents last.
+    ((selector = lastMessage selector)  and:
+        [(self = lastMessage receiver)])
+            ifTrue:
+                [lastMessage arguments: (Array with: argument).
+                 CurrentEvents at: CurrentEvents size put: lastMessage]
+            ifFalse:
+                [self sendInputEvent: selector with: argument].
+    "KeyboardSemaphore signal"
+    Process enableInterrupts: int.!
+ 
+wmPaint: wordInteger with: longInteger
+        "Private - Process the paint message."
+    | displayContext paintStructure oldDC result |
+    self graphicsTool isGraphicsTool ifFalse: [ ^nil ].
+    "needed because beginPaint generates wmEraseBkgrnd"
+    paintStructure := WinAddress copyToNonSmalltalkMemory: WinPaintStructure new asParameter.
+    result := UserLibrary
+        beginPaint: self asParameter
+        paintStructure: paintStructure asParameter.
+    displayContext := DeviceContext fromInteger: result.
+    oldDC := graphicsTool privateHandle.
+    self graphicsTool setHandle: displayContext.
+    self display.
+    self graphicsTool handle: oldDC.
+
+    UserLibrary
+        endPaint:       self asParameter
+        paintStructure: paintStructure asParameter.
+    paintStructure unlockAndFree.
+    ^1! !
+
+!WindowHandle methods !
+ 
+isValid
+        "Private - Answer true if the receiver is a valid window
+         handle."
+
+    ^super isValid and: [ UserLibrary isWindow: self ]! !
+
+!WinHandle methods !
+   
+= aHandle
+        "Answer true if the receiver is the same as aHandle."
+    aHandle isWinHandle ifFalse: [^false].
+    1 to: self size do: [:i | (self at: i) = (aHandle at: i)
+        ifFalse: [^false]].
+    ^true!
+ 
+isValid
+        "Answer whether the receiver is a valid (non-NULL)
+         handle."
+
+    ^self ~= self class nullValue! !
+
+!WinStructure methods !
+   
+asParameter
+        "Answer the receiver in a form suitable for passing
+         as a parameter to a host system procedure call."
+
+    ^contents isString
+        ifTrue: [ contents ]        "kludge for old VWin16 structs in os memory"
+        ifFalse: [ contents asParameter ]! !
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.03 Base Image Fixes #2'.
+package makeCurrent;
+    organize: ApplicationWindow methodsFor: '' include: #( 
+        initSize 
+    );
+    organize: CursorManager methodsFor: '' include: #( 
+        display hide setWinCursor showCursor: 
+    );
+    organize: Fraction methodsFor: 'comparing' include: #( 
+        = 
+    );
+    organize: GraphicsTool methodsFor: '' include: #( 
+        canvasBox location selectObject: 
+    );
+    organize: Message methodsFor: '' include: #( 
+        performDeferred 
+    );
+    organize: NotificationManager methodsFor: '' include: #( 
+        add: consumeInputUntil: postInputEvent: remove: remove:for: 
+        removeEventsFor: 
+    );
+    organize: NotificationManager methodsFor: 'dispatching os messages' include: #( 
+        notify: 
+    );
+    organize: Pen methodsFor: '' include: #( 
+        winPointList: 
+    );
+    organize: Process methodsFor: '' include: #( 
+        terminateWithoutProtection 
+    );
+    organize: ProcessScheduler methodsFor: '' include: #( 
+        readyToRun schedule: terminateActive unschedule: 
+    );
+    organize: SystemDictionary methodsFor: 'session model' include: #( 
+        closeSignOn 
+    );
+    organize: TextTool methodsFor: '' include: #( 
+        displayText:at: 
+    );
+    organize: Window methodsFor: '' include: #( 
+        close mainWindow noRedraw: realInvalidateRect: sendMouseMoveInputEvent:with: 
+        wmPaint:with: 
+    );
+    organize: WindowHandle methodsFor: '' include: #( 
+        isValid 
+    );
+    organize: WinHandle methodsFor: '' include: #( 
+        = isValid 
+    );
+    organize: WinStructure methodsFor: '' include: #( 
+        asParameter 
+    );
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'BASEIMG2.203';
+    fileTime: ( Time fromSeconds: 63253 )
+          on: ( Date fromDays: 35101 );
+    takeCurrent;
+    yourself  !

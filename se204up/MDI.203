@@ -1,0 +1,214 @@
+"make sure classes needed by this package exist"
+#( 
+    MDIChild MDIFrame MDIMenu MDISystem StatusPane ToolPane 
+)
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+
+"MDI Fixes for Smalltalk Express v2.0
+
+    Description:
+
+        This package corrects several MDI issues in Smalltalk Express v2.0 and
+        updates the image to v2.03. This package is a superset of the fixes that Digitalk
+        provided in their Smalltalk/V v2.02 patch upgrade.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+
+    Details and Original Digitalk Problem Report #'s:
+
+        *  MDIFrame>>buildWindow does not return the result of super>>buildWindow. This
+            causes a fatal lockup if the window fails to be created.
+
+        *  PR#1243 The last maximized MDIChild window that is closed does not
+            refresh the MDIClient window.
+
+        *  PR#1260 Debugger window is not responding in MDI mode.
+
+        *  PR#1376 In MDI mode, CTRL+N brings up workspace, instead of filing in code.
+
+        *  PR#1549 In the MDIDemo the MDI children are not removed from 'views' after closing.
+"!
+
+!MDIChild methods !
+ 
+closeView 
+        "Private - Close the receiver and all its children." 
+ 
+    |answer active max| 
+ 
+    self isHandleOk ifFalse: [^self]. "already closed" 
+ 
+    answer:=super closeView. 
+    answer isNil ifTrue:[ 
+        ^nil]. 
+ 
+    owner removeView: self. 
+    self frame childClose. 
+    self frame renumber:self. 
+    active:=self frame mdiGetActive. 
+    active isNil ifTrue:[self setInitMenu]. 
+    self updateClient.
+    ^answer!
+  
+initSize
+        "Private - Answer the initial size of the receiver."
+    | size |
+    self frame isNil ifTrue: [^nil ].
+    size := (owner respondsTo: #initMdiWindowSize)
+        ifTrue: [ owner initMdiWindowSize ]
+        ifFalse: [ self initMdiWindowSize ].
+    ^size isRectangle
+        ifTrue: [ size ]
+        ifFalse: [
+            size isPoint
+                ifTrue: [ self boxOfSize: size ]
+                ifFalse: [ 0 @ 0 extent: 100@100 ]].!
+  
+showMaximizedWindow
+        "Private - Show the receiver window with maximized size."
+
+    self frame mdiMaximize:self.
+    "self resize: (self rectangle)"!
+
+superWindow
+        "Answer the non-frame parent window of the receiver."
+    ^self frame! !
+
+!MDIFrame methods !
+   
+buildWindow
+        "Private - Create the host window for the receiver."
+
+    menuWindow:=self mdiInitMenu.
+    ^super buildWindow.!
+
+wmCommand: wordInteger with: longInteger
+        "Private - Process the command message.
+        need to be reimplemented to send directly
+        #performMenuItem to the menuWindow's owner."
+
+    | control |
+    (self helpModeCommand: wordInteger) notNil ifTrue:[ ^0 ].
+    (( longInteger \\ 65536 ) > 0 or: [ self isDialogTopPane ])
+        ifTrue: [                    "= 0 for 'enter' key"
+            control :=  self childAtId: wordInteger.
+            control notNil
+                ifTrue: [ control
+                    syncControlEvent: ( longInteger // 65536 ) ]]
+        ifFalse: [
+            "Modified by DMZ, OSI 2/1/97 to send #performMenuItem directly to
+            the menuWindow. By sending it to the owner (ie. the MDIFrame) it is
+            possible that the owner's menuWindow may change between now
+            and when the message is performed."
+            #modifiedByOSI.
+            self menuWindow "owner" sendInputEvent: #performMenuItem:     "specify the receiver now !!"
+                with: wordInteger ].
+
+    ^nil!
+
+wmSize: wordInteger with: longInteger
+        "Private - Process the erase wmSize message."
+        "Reimplemented here because the MDIClient is
+        resized by Smalltalk."
+
+    rectangle := 0 @ 0 extent: 0 @ 0.
+    super  wmSize: wordInteger with: longInteger.
+    ^true! !
+
+!MDISystem class methods !
+  
+mdiMenu
+    "Private - Answer the standard MDI Window menu."
+    ^MDIMenu new
+    appendItem: '&New Window' selector:#mdiNewWindow;
+    appendItem: '&Cascade    Shift+F5' selector: #mdiCascade accelKey: VkF5 accelBits: AfVirtualkey|AfShift ;
+    appendItem: '&Tile    Shift+F4' selector: #mdiTile accelKey: VkF4 accelBits: AfVirtualkey|AfShift ;
+    appendItem: 'Arrange &Icons' selector: #mdiArrange;
+    appendItem: 'Close &All' selector: #mdiCloseAll;
+    title: '&Window'.! !
+
+!StatusPane methods !
+
+affectsFreeClientArea
+        "Private - Answer whether the receiver reduces the amount of
+        free client area in its parent for the receiver's siblings."
+
+    ^true!
+ 
+isMDISupportPane
+        "Answer true if receiver is a support pane for MDI."
+
+    ^true! !
+
+!ToolPane methods !
+   
+affectsFreeClientArea
+    "Private - Answer whether the receiver reduces the amount of
+    free client area in its parent for the receiver's siblings."
+    ^true!
+   
+isMDISupportPane
+        "Answer true if receiver is a support pane for MDI."
+    ^true! !
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.03 MDI Fixes'.
+package makeCurrent;
+    organize: MDIChild methodsFor: '' include: #( 
+        closeView initSize showMaximizedWindow superWindow 
+    );
+    organize: MDIFrame methodsFor: '' include: #( 
+        buildWindow wmCommand:with: wmSize:with: 
+    );
+    organize: MDISystem class methodsFor: '' include: #( 
+        mdiMenu 
+    );
+    organize: StatusPane methodsFor: '' include: #( 
+        affectsFreeClientArea isMDISupportPane 
+    );
+    organize: ToolPane methodsFor: '' include: #( 
+        affectsFreeClientArea isMDISupportPane 
+    );
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'MDI.203';
+    comments:
+'"MDI Fixes for Smalltalk Express v2.0
+
+    Description:
+
+        This package corrects several MDI issues in Smalltalk Express v2.0 and
+        updates the image to v2.03. This package is a superset of the fixes that Digitalk
+        provided in their Smalltalk/V v2.02 patch upgrade.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+
+    Details and Original Digitalk Problem Report #''s:
+
+        *  MDIFrame>>buildWindow does not return the result of super>>buildWindow. This
+            causes a fatal lockup if the window fails to be created.
+
+        *  PR#1243 The last maximized MDIChild window that is closed does not
+            refresh the MDIClient window.
+
+        *  PR#1260 Debugger window is not responding in MDI mode.
+
+        *  PR#1376 In MDI mode, CTRL+N brings up workspace, instead of filing in code.
+
+        *  PR#1549 In the MDIDemo the MDI children are not removed from ''views'' after closing.
+"';
+    fileTime: ( Time fromSeconds: 62849 )
+          on: ( Date fromDays: 35101 );
+    takeCurrent;
+    yourself  !

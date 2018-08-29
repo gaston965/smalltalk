@@ -1,0 +1,17 @@
+In previous versions of Smalltalk/V Windows, 
+several error message strings were buried in the
+Smalltalk virtual machine, VWVMxx.DLL, and
+therefore impossible for a programmer to 
+change. In VW 2.0, these strings are now
+changeable.  To do this, create a DLL with
+string resources in it as defined in the VWMSGS 
+files in this directory.  Lets say you named
+this DLL MYAPP.DLL then when you run Smalltalk 
+application include the command line option
+/LANG MYAPP.DLL. Smalltalk will use the strings 
+in this DLL instead of the hardwired english 
+strings in VWVM20.DLL.
+
+To build VWMSGS.DLL, make VWMSGS.  To build
+your own DLL copy and rename all the VWMSGS
+files, edit VWMSGS.RC, VWMSGS, and VWMSGS.DEF.

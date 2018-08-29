@@ -1,0 +1,215 @@
+<HTML>
+<HEAD>
+<TITLE>Untitled</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z">
+</HEAD>
+<BODY BGCOLOR="#ffffff" TEXT="#000000" LINK="#0000ff" VLINK="#00ffff">
+<H1><CENTER><A NAME="top"><FONT SIZE=5 COLOR=#0000FF>HELP MANAGER</FONT></A></CENTER>
+</H1>
+<HR>
+<P>
+<FONT SIZE=1>This chapter describes how you can access and use
+the Windows Help facility from a Smalltalk/V Windows application.
+The user interface to Help from Smalltalk/V Windows is identical
+to that found by accessing Windows Help directly without using
+Smalltalk/V Windows. This document assumes that the reader is
+familiar with the process of supporting Help in MS Windows (For
+more information on this, refer to MS Windows SDK manuals).</FONT>
+<HR>
+<H2>User Interface</H2>
+<P>
+To understand the Help Manager user interface, install the Puzzle15
+puzzle found in your Smalltalk/V Windows EXAMPLES\PUZZLE15 directory.
+This puzzle has been enhanced to illustrate Help features, as
+follows:
+<P>
+1.Press the Help key F1; a help window displays extended help
+for Puzzle15. A Help menu has been added to the end of the menu
+bar.
+<P>
+2.Select the Help Contents menu item. It lists all the help topics
+available for Puzzle15.
+<P>
+3.Press and hold the left mouse button over the Puzzle menu in
+the menu bar and press the F1 key. A help window displays, describing
+the Puzzle menu commands. Then, drag the mouse to the Scramble
+menu item, press the F1 key, and a help window displays that describes
+Scramble menu item.
+<P>
+4.Choose the Select Colors... menu item from the Puzzle menu,
+and a dialog window opens. Press F1 without selecting anything
+in the dialog window, and a help window displays the help window
+for the whole dialog window. Next, select one of the combo boxes
+and press F1. An appropriate help window displays. 
+<HR>
+<H2>Programming Interface</H2>
+<P>
+<FONT SIZE=1>To include Help in your application, do the following:</FONT>
+<P>
+<FONT SIZE=1>1.Using any compatible text editor, compose your
+help text into an .RTF file. Details are given below on how to
+identify your panels. Compile the .RTF file into a .HLP file using
+Help Compiler from the Software Development Kit.</FONT>
+<P>
+<FONT SIZE=1>When writing your help panels, identify them according
+to following:</FONT>
+<P>
+<FONT SIZE=1>The context string of a menu is its menu title.</FONT>
+<P>
+<FONT SIZE=1>The context string of a menu item is its selector.</FONT>
+<P>
+<FONT SIZE=1>The context string of a subpane is its name (defined
+by #getContents event or by sending the setName: message to it).</FONT>
+<P>
+<FONT SIZE=1>The context string of a DialogBox is defined by the
+application at runtime by the sending the extendedHelpPanelId:
+message the HelpManager instance before opening the DialogBox
+or DialogTopPane. </FONT>
+<P>
+<FONT SIZE=1>The context string of a control in a DialogBox is
+the name of the item as specified in the ItemIds dictionary of
+the subclass of DialogBox.</FONT>
+<P>
+<FONT SIZE=1>The context string of TopPane and its subclass is
+the HelpIndex topic. This default topic can be changed by sending
+the extendedHelpPanelId: to the helpManager instance.</FONT>
+<P>
+<FONT SIZE=1>2.In the open: method for your application, create
+an instance of HelpManager. </FONT>
+<P>
+<FONT SIZE=1>Details are given below.</FONT>
+<P>
+Creating an Instance of HelpManager before you do self openWindow,
+create an instance of HelpManager in your open method by sending
+the message #for:title:file: to HelpManager. For example, 
+<P>
+<TT>hm := HelpManager</TT>
+<P>
+<TT>for: self mainView</TT>
+<P>
+<TT>title:nil</TT>
+<P>
+<TT>file: 'puzzle15.hlp'.</TT>
+<P>
+<TT>hm mapDictionary: aMapDictionary</TT>
+<P>
+<FONT SIZE=1>In this example, it is assumed that the application
+is a subclass of ViewManager and it has only one view. The #for:title:file:
+message needs to be sent once for each view, passing that view
+as the parameter of for: While each view of the ViewManager has
+a different HelpManager associated with it, the help file associated
+with each of them is the same.</FONT>
+<HR>
+<H2>Programming interface</H2>
+<H2><TT>HelpManager class&gt;&gt;for: aWindow title: aString file:
+aFileName</TT></H2>
+<P>
+<FONT SIZE=1>&quot;Answer an instance of the receiver initialized
+for aWindow with aString as its title and whose help file is in
+aFileName (a .HLP file). Under Windows, aString is ignored</FONT>
+<P>
+<FONT SIZE=1>HelpManager class&gt;&gt;for: aWindow title: aString
+file: aFileName dialogs: aCollection</FONT>
+<P>
+&quot;Answer an instance of the receiver initialized
+<P>
+<FONT SIZE=1>for aWindow with aString as its title and whose help
+file is in aFileName (a .HLP file). aCollection must contain the
+dialog box ids for the application.</FONT>
+<P>
+Under Windows aString and aCollection are ignored
+<P>
+<FONT SIZE=1>HelpManager class&gt;&gt;for: aWindow title: aString
+file: aFileName dialogs: aCollection aboutDlgClass: aboutDlg</FONT>
+<P>
+&quot;Answer an instance of the receiver initialized
+<P>
+<FONT SIZE=1>for aWindow with aString as its title and whose help
+file is in aFileName (a .HLP file). aCollection must contain the
+dialog box ids for the application. aboutDlg is a class which
+implements an open instance method creating the about dialog.</FONT>
+<P>
+Under Windows aString and aCollection areignored&quot;
+<H2><TT>HelpManager&gt;&gt;displayHelp: anId</TT></H2>
+<P>
+&quot;Brings up the Windows Help for the topic defined by anId.anId
+can be either a string, an Integer or nil&quot;
+<H2><TT>HelpManager&gt;&gt;extendedHelpPanelId</TT></H2>
+<P>
+&quot;Answer the default topic It can be either a string, an integer
+or nil&quot;
+<H2><TT>HelpManager&gt;&gt;extendedHelpPanelId: anId</TT></H2>
+<P>
+&quot;Set the default topic to anId.
+<P>
+anId can be either a string, an integer or nil&quot;
+<P>
+HelpManager&gt;&gt;map:aDictionary
+<P>
+<FONT SIZE=1>&quot;Set the receiver's map dictionary The keys
+are the context strings defined in the RFT help file The values
+are integer defined in the include file used by the Microsoft
+Help Compiler&quot;</FONT>
+<H2><TT>HelpManager&gt;&gt;map</TT></H2>
+<P>
+<FONT SIZE=1>&quot;Answer the receiver's map dictionary The keys
+are the context strings defined in the RFT help file The values
+are integer defined in the include file used by the Microsoft
+Help Compiler&quot;</FONT>
+<P>
+To create the map dictionary use
+<P>
+<FONT SIZE=1>StringDictionaryReader class&gt;&gt;createIdDictionary:
+aFileName</FONT>
+<P>
+&quot;Create a string identifier dictionary from a text <FONT SIZE=1>file
+aFileName with dictionary keys being string identifiers and values
+being integer values. Contents of aFileName must be in standard
+C Language (.H) header file format.&quot;</FONT>
+<P>
+<FONT SIZE=1>aFileName should be the include file you use in your
+help project file (.hpj)</FONT>
+<HR>
+<H2>Errata: Help for Controls in DialogBox</H2>
+<P>
+<FONT SIZE=1>A late bug was discovered with associating help panels
+with controls inside a subclass of DialogBox. If your application
+needs to do this, file in the following two methods:</FONT>
+<P>
+<FONT SIZE=1>!UserDLL methods !</FONT>
+<P>
+<FONT SIZE=1>getDlgCtrlID: hWnd</FONT>
+<MENU>
+<LI><FONT SIZE=1>&lt;api: getDlgCtrlID ushort ushort&gt;</FONT>
+<LI><FONT SIZE=1>^self invalidArgument! !<BR>
+</FONT>
+</MENU>
+<P>
+<P>
+<FONT SIZE=1>!DialogBox methods !</FONT>
+<P>
+<FONT SIZE=1>wmHelp: wordInteger with: longInteger</FONT>
+<MENU>
+<LI><FONT SIZE=1>&quot;Private - Process the Smalltalk help message.&quot;</FONT>
+<LI><FONT SIZE=1>|focusWindow name|</FONT>
+<LI><FONT SIZE=1>focusWindow := longInteger \\ 65536.</FONT>
+<LI><FONT SIZE=1>wordInteger = MsgfMenu</FONT>
+</MENU>
+<P>
+<FONT SIZE=1>ifTrue:[^super wmHelp: wordInteger with: longInteger].
+wordInteger = MsgfDialogbox ifTrue:[ name := self itemIds at:
+(UserLibrary getDlgCtrlID: focusWindow asParameter) ifAbsent:
+[nil]. self helpManager displayHelp: name].! !<BR>
+</FONT>
+<P>
+<FONT SIZE=1>Once you file in these methods, to associate a help
+panel with a control in a subclass of DialogBox, you simply use
+the control id of the control (as defined in the ItemIds dictionary)
+as the context string in your help text file.<BR>
+</FONT>
+<HR>
+<P>
+<A HREF="#top" >[top]</A><A HREF="index.htm" >[index]</A>
+</BODY>
+</HTML>

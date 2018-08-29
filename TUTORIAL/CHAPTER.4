@@ -1,0 +1,253 @@
+TUTORIAL EXAMPLES FOR CHAPTER 4 - CONTROL STRUCTURES
+
+"Comparing Objects"
+
+"Evaluate each of the following with Show it."
+
+     3 < 4
+
+     #( 1 2 3 4) = #(1 2 3 4)
+
+
+"Evaluate the following with Show it."
+
+      'hello' <= 'goodbye'
+
+"Evaluate the following with Show it."
+
+     5 = (2 + 3)
+
+     5 = 2 + 3
+
+
+"Testing Objects"
+
+"Evaluate each of the following with Show it."
+
+     $a isUpperCase                        
+
+     ('hello' at: 1) isVowel
+
+     7 odd
+
+
+"Conditional Execution"
+
+"Evaluate the following with Show it."
+
+     | max a b |
+     a := 5 squared.
+     b := 4 factorial.
+     a < b
+         ifTrue: [max := b]
+         ifFalse: [max := a].
+     ^max 
+                   
+
+"Evaluate the following with Show it."
+
+     3 < 4
+        ifTrue: ['the true block']
+        ifFalse: ['the false block']         
+
+
+"Evaluate the following with Show it."
+
+    | string index c |
+    string := 'Now is the time'.
+    index := 1.
+    string size timesRepeat: [
+         c := string at: index.
+         string
+             at: index
+             put:
+                 (c isVowel
+                     ifTrue: [ c asUpperCase ]
+                     ifFalse: [ c asLowerCase ] ).
+         index := index + 1 ].
+    ^string        
+                                     
+
+"Boolean Expressions"
+
+"Evaluate the following with Show it."
+
+      "compute the value of the first integer in a string"
+      | string index answer c |
+      string := '1234 is the number'.
+      answer := 0.
+      index := 1.
+      string size timesRepeat: [
+           c := string at: index.
+           (c < $0 or: [ c > $9 ] )
+               ifTrue: [^answer].
+           answer := answer * 10
+               + c asciiValue - $0 asciiValue.
+           index := index + 1].
+     ^answer                   
+                  
+
+"Looping Messages"
+
+"Evaluate the following with Do it."
+
+     "copy a disk file"
+     | input output |
+     input := File pathName: 'tutorial\chapter.2'.
+     output := File pathName: 'tutorial\copychap.2'.
+     [input atEnd]
+          whileFalse: [output nextPut: input next].
+     input close.
+     output close 
+
+
+"Evaluate the following with Do it."
+
+     "draw several polygons"
+     | sides |
+     Window turtleWindow: 'Turtle Graphics'.
+     sides := 3.
+     [sides <= 6]
+         whileTrue: [
+             sides timesRepeat: [
+                 Turtle
+                     go: 60;
+                     turn: 360 // sides].
+             sides := sides + 1]
+
+
+"Simple Iterators"
+
+"Evaluate the following with Do it."
+
+     "draw several polygons"
+     Window turtleWindow: 'Turtle Graphics'. 
+     3 to: 6 do: [ :sides |
+         sides timesRepeat: [
+             Turtle
+                 go: 60;
+                 turn: 360 // sides ] ]
+
+
+"Evaluate the following with Show it."
+
+     "compute the sum of 1/2, 5/8, 3/4, 7/8, 1"
+     | sum |
+     sum := 0.
+     1/2 to: 1 by: 1/8 do: [ :i |
+          sum := sum + i ].
+     ^sum        
+                     
+
+"Generalized Iterators"
+
+"The do: Iterator"
+
+"Evaluate the following with Show it."
+
+     "count vowels in a string"
+     | vowels |
+     vowels := 0.
+     'Now is the time' do: [ :char |
+         char isVowel
+             ifTrue: [ vowels := vowels + 1 ] ].
+     ^vowels   
+                    
+
+"Evaluate the following with Show it."
+
+     "count vowels in a string"
+     | vowels string index |
+     vowels := 0.
+     index := 1.
+     string := 'Now is the time'.
+     [index <= string size]
+         whileTrue: [
+             (string at: index) isVowel
+                 ifTrue: [vowels := vowels + 1].
+             index := index + 1].
+     ^vowels      
+                     
+
+"Evaluate the following with Do it."
+
+     "draw several polygons"
+     Window turtleWindow: 'Turtle Graphics'.
+     #( 3 4 12 24 ) do: [ :sides |
+         sides timesRepeat: [
+             Turtle
+                 go: 20;
+                 turn: 360 // sides ] ] 
+
+
+"Evaluate the following with Show it."
+
+     "Strip all line feed characters (ascii 10)
+     from a disk file. Answer the number of characters
+     stripped."
+     | input output stripped |
+     stripped := 0.
+     input := File pathName: 'tutorial\striplf.pc'.
+     output := File pathName: 'tutorial\striplf.mac'.
+     input do: [ :char |
+          char = 10 asCharacter
+               ifTrue: [ stripped := stripped + 1 ]
+               ifFalse: [ output nextPut: char ] ].
+     input close.
+     output close.
+     ^stripped        
+
+
+"The select: Iterator"
+
+"Evaluate the following with Show it."
+
+     "count the vowels in a string"
+     ('Now is the time' select: [ :c | c isVowel ] )
+         size                  
+
+
+"The reject: Iterator"
+
+"Evaluate the following with Show it."
+
+     "answer all digits whose factorial is
+     less than the digit raised to the 4th power"
+     #( 1 2 3 4 5 6 7 8 9 ) reject: [ :i |
+          i factorial >= ( i * i * i * i ) ]               
+
+
+"The collect: Iterator"
+
+"Evaluate the following with Show it."
+
+     "square each element in the array"
+     #(1 13 7 10) collect: [ :i | i * i ]             
+
+
+"Evaluate each of the following with Show it."
+
+     #(1 2 3 4 5 6 7) select: [ :c | c odd ]   
+                                                            
+     #(1 2 3 4 5 6 7) reject: [ :c | c odd ]            
+                                                               
+     #(1 2 3 4 5 6 7) collect: [ :c | c odd ]
+                                                                
+
+"Concluding Example"
+
+"Evaluate the following with Show it"
+
+     "abbreviate a long file name to 8 characters"
+     | name length |
+     name := 'Some Big File Name'.
+     length := name size.
+     ^( name reversed reject: [ :c |
+         c isSeparator or: [
+         c isVowel and: [
+         c isLowerCase and: [
+         ( length := length - 1 ) >= 8 ] ] ] ] )
+             reversed, '        '
+                 copyFrom: 1 to: 8                
+
+

@@ -1,0 +1,72 @@
+Smalltalk at: #HelpMDISystem put: ((Dictionary new)
+add: (Association key: ('globalReferences') value: ('Find global references'));
+add: (Association key: ('printIt') value: ('Evaluates the selected text and display the result'));
+add: (Association key: ('copySelection') value: ('Copies the selection and puts it on the clipboard'));
+add: (Association key: ('doIt') value: ('Compiles and executes the selected text'));
+add: (Association key: ('inspectIt') value: ('Opens an inspector on the result of evaluating the selected text'));
+add: (Association key: ('toggleStatusPane') value: ('Toggles the StatusPane on/off'));
+add: (Association key: ('Settings') value: ('Hides, shows the StatusPane, the ToolPane, quits the MDI mode'));
+add: (Association key: ('deactivate') value: ('Quits the MDI mode'));
+add: (Association key: ('toggleToolPane') value: ('Toggles the ToolPane on/off'));
+add: (Association key: ('fileItIn') value: ('Compiles and evaluates the selected text (in change log format)'));
+add: (Association key: ('pasteSelection') value: ('Replaces the selection with the Clipboard contents'));
+add: (Association key: ('cutSelection') value: ('Cuts the selection and puts it on the clipboard'));yourself).!
+
+
+WinStructure subclass: #WinClientCreateStruct
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''!
+
+TopPane subclass: #MDIFrame
+  instanceVariableNames: 
+    'initMenu mdiChildren mdiMenu '
+  classVariableNames: 
+    'MDIFrameWndProcAddress '
+  poolDictionaries: 
+    'WinConstants VirtualKeyConstants '!
+
+ControlPane subclass: #MDIClient
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: 
+    'WinConstants '!
+
+WinStructure subclass: #WinMdiCreateStruct
+  instanceVariableNames: 
+    'pszClass pszTitle '
+  classVariableNames: ''
+  poolDictionaries: ''!
+
+Menu subclass: #MDIMenu
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''!
+
+TopPane subclass: #MDIChild
+  instanceVariableNames: 
+    'frame mdiMenuWindow '
+  classVariableNames: 
+    'DefMDIChildProcAddress '
+  poolDictionaries: 
+    'WinConstants VirtualKeyConstants '!
+
+TextWindow subclass: #MDITranscript
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: 
+    'WinConstants VirtualKeyConstants '!
+
+ViewManager subclass: #MDIViewManager
+  instanceVariableNames: 
+    'mdiFrame '
+  classVariableNames: ''
+  poolDictionaries: 
+    'WinConstants VirtualKeyConstants '!
+
+MDIViewManager subclass: #MDISystem
+  instanceVariableNames: ''
+  classVariableNames: 
+    'MdiSelected ExtraTools MdiFrame Mdidisplay TranscriptText Mdiactive '
+  poolDictionaries: 
+    'WinConstants VirtualKeyConstants '!

@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>User Interrupts</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#00FFFF" alink="#FF0000">
+<h1 align=center><font color="#0000FF">User </font><a name="top"><font color="#0000FF">Interupts</font></a></h1>
+<pre><hr>There are times when another module needs to interrupt Smalltalk 
+asynchronously to have it perform a task.  When speed is of the essence, 
+sending a Windows message to Smalltalk is not desirable because it can 
+take a relatively long time to get through to Smalltalk.  The user interrupt 
+mechanism described below has been created to solve these types of problems.</pre>
+<pre>An API has been added to the Smalltalk Virtual Machine that allows an
+interrupt to be placed in the Virtual Machine's interrupt queue.  The API is</pre>
+<pre>    VOID FAR PASCAL userAddInt (int nIntNumber)</pre>
+<pre>It must be called from protected mode, and Smalltalk must be currently
+running. Both of these conditions will always be true if you write a 
+normal DLL using C, Pascal or assembly (generally, only device drivers 
+need to be in real mode). If the device driver can run in protected mode,
+it can also use this mechanism.</pre>
+<pre>The following code fragment illustrates the setup for and usage of this new Smalltalk API:</pre>
+<pre>#include &lt;windows.h&gt;
+extern VOID FAR PASCAL userAddInt (int intNumber);
+ .
+ .
+ .</pre>
+<pre>WORD FAR PASCAL TimerFunc (HWND hWnd, WORD wMsg, int nIDEvent, DWORD dwTime)
+{
+    userAddInt (12);
+    KillTimer (NULL, nIDEvent);
+    return 1;
+}
+
+</pre>
+<pre>The .def file of the DLL must have the routine imported:</pre>
+<pre>        IMPORTS VWVM20.USERADDINT</pre>
+<pre>The argument is an interrupt number that you will have previously associated 
+with a selector in the Smalltalk global variable InterruptSelectors.  
+InterruptSelectors is an Array with interrupt number as the key and selector 
+as the value.  You can inspect this array and use the numbers that are not 
+currently used. You can also grow the array by hand, i.e., create a larger array, 
+copy the old selectors into it and assign the new array to the global variable.  
+There is no size limit associated with InterruptSelectors. A selector that is 
+assigned to the InterruptSelectors must be implemented as a class method in 
+the Process class.  This method can be anything, but it is generally not supposed 
+to take too much time executing.  It, or a method it calls, MUST execute</pre>
+<pre>    Process enableInterrupts: true.
+  </pre>
+<pre>before returning back into Smalltalk (note that the method is entered with interrupts disabled).</pre>
+<pre>The following Smalltalk code will add an interrupt handler to the 
+InterruptSelectors global array:</pre>
+<pre>InterruptSelectors at: 12 put:#testInterrupt.
+</pre>
+<pre>The following class method in Process class will handle the interrupt:</pre>
+<pre>Process&gt;&gt;testInterrupt
+        &quot;Implement user interrupt.&quot;
+    MessageBox message:'Timed out'.
+    self enableInterrupts: true.
+</pre>
+<pre>For sample code that demonstrates user interrupts, look in the 
+examples\vwint subdirectory.  &quot;vwint.st&quot; will install the Smalltalk portion of the code.  
+Make sure you have &quot;vwint.dll&quot; in your path statement before filing in &quot;vwint.st&quot;.</pre>
+<pre><hr></pre>
+<p><a href="#top">[top]</a> <a href="index.htm">[index]</a></p>
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+"make sure classes needed by this package exist"
+#( )
+do: [ :className |
+     Smalltalk at: className ifAbsent: [
+        ^self error: className asString, ' is needed to install this package.'
+    ]
+];
+yourself!
+
+
+"Smalltalk Express v2.03 Obsolete Methods
+
+    Description:
+
+        This package removes methods from the image that have been obsoleted by
+        the v2.03 upgrade process.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+"
+
+Float class
+    removeSelector: #exit.
+ApplicationWindow
+    removeSelector: #searchForDefaultTextPane.
+ControlPane
+    removeSelector: #wmSetcursor:with:.
+Bitmap class
+    removeSelector: #fromOS2BitmapFile:;
+    removeSelector: #readOS2CoreHeader:;
+    removeSelector: #replacementFromFile:in:.
+Bitmap
+    removeSelector: #createPlanes:bitCount:;
+    removeSelector: #createPlanes:bitCount:bits:.
+DIB class
+    removeSelector: #readFileHeader:.
+DIB
+    removeSelector: #readBitmapHeader:.
+Icon
+    removeSelector: #displayWith:.!
+
+
+"construct package" | pkgClass package |
+pkgClass := Smalltalk at: #XoPackage ifAbsent: [ ^nil ].
+package := pkgClass named: 'Version 2.03 Obsolete Methods'.
+package makeCurrent;
+    postPackageFiles;
+    integratesClasses: true;
+    sharesBehaviors: true;
+    fileSpec: 'OBSMTH.203';
+    comments:
+'"Smalltalk Express v2.03 Obsolete Methods
+
+    Description:
+
+        This package removes methods from the image that have been obsoleted by
+        the v2.03 upgrade process.
+
+    Author: David Zeleznik, ObjectShare, Inc.
+    Date: 2/1/97
+"
+
+Float class
+    removeSelector: #exit.
+ApplicationWindow
+    removeSelector: #searchForDefaultTextPane.
+ControlPane
+    removeSelector: #wmSetcursor:with:.
+Bitmap class
+    removeSelector: #fromOS2BitmapFile:;
+    removeSelector: #readOS2CoreHeader:;
+    removeSelector: #replacementFromFile:in:.
+Bitmap
+    removeSelector: #createPlanes:bitCount:;
+    removeSelector: #createPlanes:bitCount:bits:.
+DIB class
+    removeSelector: #readFileHeader:.
+DIB
+    removeSelector: #readBitmapHeader:.
+Icon
+    removeSelector: #displayWith:.';
+    fileTime: ( Time fromSeconds: 35152 )
+          on: ( Date fromDays: 35103 );
+    takeCurrent;
+    yourself  !

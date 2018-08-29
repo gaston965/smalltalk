@@ -1,0 +1,188 @@
+ViewManager subclass: #SalesCom
+  instanceVariableNames:
+    'custsPane custDetPane stratPane stratForm replyStream curEvent curEventMessage curCust custDetInfo'
+  classVariableNames: ''
+  poolDictionaries: 'SalesStrategy' !
+
+!SalesCom class methods ! !
+
+
+!SalesCom methods !
+
+activate
+        "Bring the window panes current every time the window
+         is activated."
+    super activate.
+    curCust isNil
+        ifFalse: [self viewCust: curCust]!
+
+addCust
+        "Prompt for new customer, update customer list and detailPane"
+  | newCustomer custData newContact newPhone newAddress newCityStZip |
+    custData := #('No Contact Yet' 'No Address' 'No Zip' 'No phone' 'Kick-off Ltr' 'No date set' ()).
+                            "Initialize newCust data"
+    custData at: 6 put: 'No date yet'.  "Schedule the kick-off letter for today."
+    (newCustomer := Prompter
+        prompt: ' What is the new customer company name? '
+        default: 'DoubleClick Inc.') isNil
+            ifTrue: [^self].
+    (newContact := Prompter
+        prompt: ' Who is our contact at the new company? '
+        default: '') isNil
+            ifTrue: [^self].
+    (newPhone := Prompter
+        prompt: ' What is the new customer''s phone number? '
+        default: '') isNil
+            ifTrue: [^self].
+    (newAddress := Prompter
+        prompt: ' What is the new customer address? '
+        default: '') isNil
+            ifTrue: [^self].
+    (newCityStZip := Prompter
+        prompt: ' What is the new customer cityStZip? '
+        default: '') isNil
+            ifTrue: [^self].
+    custData at: 1 put: newContact.
+    custData at: 2 put: newAddress.
+    custData at: 3 put: newCityStZip.
+    custData at: 4 put: newPhone.
+    Customers at: newCustomer put: custData.
+    curCust:= newCustomer.
+    custDetInfo := WriteStream on: String new.
+    self 
+        changed: #customers: with: #restoreSelected: with: newCustomer;
+        changed: #custDet:!
+
+changeAddress
+        "Prompt for new address (field 2), update customer info and detailPane"
+    | custData custHist newAddress |
+    custData := Customers at: curCust.
+    custHist := custData at: 7.
+    newAddress := Prompter
+        prompt: ' What is the new customer address? '
+        default: (custData at: 2).
+    custData at: 2 put: newAddress.
+    Customers at: curCust put: custData.
+    self viewCust: curCust!
+
+changeCityStZip
+        "Prompt for new CityStZip (field 3), update customer info and detailPane"
+    | custData newCityStZip index |
+    custData := Customers at: curCust.
+    newCityStZip := Prompter
+        prompt: ' What is the new customer city, state and ZIP? '
+        default: (custData at: 3).
+    custData at: 3 put: newCityStZip.
+    Customers at: curCust put: custData.
+    self viewCust: curCust!
+
+changeContact
+        "Prompt for new contact, update customer info and detailPane"
+    | custData custHist newContact |
+    custData := Customers at: curCust.
+    custHist := custData at: 7.
+    newContact := Prompter
+        prompt: ' What is the new customer contact name? '
+        default: (custData at: 1).
+    custData at: 1 put: newContact.
+    Customers at: curCust put: custData.
+    self viewCust: curCust!
+
+changePhone
+        "Prompt for new phone (field 4), update customer info and detailPane"
+    | custData newPhone custHist |
+    custData := Customers at: curCust.
+    custHist := custData at: 7.
+    newPhone := Prompter
+        prompt: ' What is the new customer phone number? '
+        default: (custData at: 4).
+    custData at: 4 put: newPhone.
+    Customers at: curCust put: custData.
+    self viewCust: curCust!
+
+custDet: detailPane
+        "Fill the detailPane with current Customer Detail."
+
+    detailPane contents: custDetInfo contents!
+
+custDetMenu: detailPane
+        "Set the Menu for the Customer Detail Pane."
+    detailPane setMenu: ((Menu
+        labels: 'Change Contact \Change Address \Change City St Zip \Change Phone \Print Detail ' withCrs
+        lines: #(3 4)
+        selectors: #(changeContact changeAddress changeCityStZip changePhone printDetail))
+            title: 'ContactInfo')!
+
+customers: customerPane
+        "Set the contents of the customer pane to the keys 
+         of a Customers dictionary as a Sorted Collection."
+    customerPane contents: #('ABC Inc.' 'DEF Co.')!
+
+custsMenu: customerPane
+        "Set the Menu for the Customer List Pane."
+    customerPane setMenu: ((Menu
+        labels: 'Add Customer \Import Customers \All/Today''s \Print Letter \Make Call ' withCrs
+        lines: #(2 3)
+        selectors: #(addCust importCusts allTodayFocus printLetter makeCall))
+            title: 'Customers')!
+
+customerSelected: customerPane
+        "A customer was selected in the customer pane."
+    curCust := customerPane selectedItem.
+    self viewCust: curCust!
+
+open
+        "Create a SalesCom window with a Network
+         as its marketing strategy."
+    custDetInfo := WriteStream on: String new.   "no customer detail to start"
+    self label: 'SalesCom'.
+    self addSubpane:
+         (custsPane := ListBox new
+             owner: self;
+             when: #getContents perform: #customers: ;
+             when: #select perform: #customerSelected: ;
+             when: #getMenu perform: #custsMenu: ;
+             framingRatio: (Rectangle leftTopUnit 
+                extentFromLeftTop: 2/3 @ (1/4))).
+    self addSubpane:
+        (stratPane := GraphPane new
+            owner: self;
+            when: #getContents perform: #picture: ;
+            when: #getMenu perform: #pictureMenu: ;
+            framingRatio: (Rectangle leftBottomUnit
+                extentFromLeftBottom: 2/3 @ (3/4))).
+    self addSubpane:
+        (custDetPane := TextPane new
+            owner: self;
+            when: #getMenu perform: #custDetMenu: ;
+            when: #getContents perform: #custDet: ;
+            framingRatio: ((Rectangle leftTopUnit rightAndDown: (2/3 @ 0)) 
+                extentFromLeftTop: 1/3 @ 1)).
+    self openWindow!
+
+picture: graphPane
+        "Draw the network in graphPane."
+    StratNet drawOn: graphPane!
+
+pictureMenu: graphPane
+        "Set the Menu for the Graph Network Pane."
+    graphPane setMenu: ((Menu
+        labels: 'Edit Messages \Show Totals ' withCrs
+        lines: #(1)
+        selectors: #(editMessages showTotals))
+            title: 'Strategy')!
+
+viewCust: aCust
+        "Change: method response for the Customer List pane.
+        It updates the Customer Detail pane to show the currently
+        selected customer.  For now just test text." 
+    custDetInfo := WriteStream on: String new.   "no customer detail to start"
+    custDetInfo
+        nextPutAll: 'cust data goes here';
+        cr; cr;
+        nextPutAll: '------HISTORY------';
+        cr;
+        nextPutAll: 'cust history goes here';
+        cr.          
+    self changed: #custDet:! !
+

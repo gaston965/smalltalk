@@ -1,0 +1,38 @@
+/* Macros for user-defined primitives
+   (C) Digitalk Inc. 1989 all rights  reserved */
+
+#define isPointerObject( anObject )  \
+    ((anObject->header.ObjectFlags & PointerBit) == PointerBit)
+
+#define isIndexedObject( anObject ) \
+    ((anObject->header.ObjectFlags & IndexedBit) == IndexedBit)
+
+/* Offset of large object is zero. */
+#define isSmallObject( anObject ) \
+    (FP_OFF( anObject))
+
+/*plusSmallSeg must be initialized prior to usage. */
+#define isSmallPosInt( anObject ) \
+    (FP_SEG( anObject ) == plusSmallSeg)
+
+/*minusSmallSeg must be initialized prior to usage. */
+#define isSmallNegInt( anObject ) \
+    (FP_SEG( anObject ) == minusSmallSeg)
+
+#define getObjectSize( anObject, result ) \
+    result = (anObject->header.ExtObjectSize) * 65536; \
+    result = (anObject->header.ObjectSize) + result;
+
+#define getByteSize( anObject, result ) \
+    getObjectSize( anObject, result ); \
+    if isPointerObject( anObject )  \
+       result = result * 4;	/*each pointer object occupies 4 bytes */   \
+    result = result + HeaderSize + 1; \
+    result = result & 0xFFFE;
+
+
+
+
+
+
+        

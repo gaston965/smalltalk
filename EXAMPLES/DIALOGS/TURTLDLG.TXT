@@ -1,0 +1,67 @@
+TurtleDialog
+------------------- 
+
+This file contains a brief description of TurtleDialog.  
+TurtleDialog is an example of a DialogBox created
+in Smalltalk (by creating a subclass of WindowDialog).
+It also demonstrates the use of the following:
+
+    - Creating a DialogBox with a GraphPane 
+        (or any other SubPane).
+
+    - Creating a Modeless DialogBox.
+       (Modeless DialogBox does not disable the
+        parent window).
+
+    - Use of FormattedEntryFields
+        (The entry fields in this dialog box only accepts
+          Integer values).
+
+To install Turtle Dialog into your system, evaluate 
+the following expression: 
+
+    (File pathName: 'examples\dialogs\turtldlg.st') fileIn; close.
+
+To open a TurtleDialog, evaluate the following 
+expression: 
+
+    TurtleDialog new  open
+
+
+TurtleDialog contains a GraphPane and several entry 
+field and buttons to draw on the GraphPane with a pen.
+The following are the commands allowed in TurtleDialog.
+
+Home: 
+    Centers the pen on the GraphPane.
+
+Clear:  
+    Clears the GraphPane
+
+Go:      
+    Moves the pen by the value in the entry field
+    in the current direction.
+
+Circle:
+    Draws a circle with a radius of the value in
+    the entry field at current location.
+
+Turn:
+    Changes the direction of the pen by the value
+     in the entry field.  If positive it turns clockwise,
+     if negative counter-clockwise.
+
+Dir:
+    Sets the direction of the pen by the value
+    in the entry field.  East is 0, south is 90.
+
+Mandala:
+    Draws a mandala with diameter of the value
+    in the entry field.
+
+PenDown: 
+    Sets the pen down.
+
+PenUp:      
+    Sets the pen up.
+
