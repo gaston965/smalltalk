@@ -58,11 +58,17 @@ ingreso:= (Prompter prompt:'ingrese algo' default:'') .
 1 to: ( ingreso size ) do:[:i| ( (ingreso at:i)==(( 32 asciiValue)) ifTrue:[ cont:= cont +1.]. ]. ^cont
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+| ingreso cociente resto inco acumulando | 
 
-
-
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso > 2] whileTrue:[ inco:=inco+1. ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando at:(inco) put:(resto asString).].^acumulando
+                                                                                                                
+-------------------------------------------------------------------------------                    
 
 
                           
 
                           
+

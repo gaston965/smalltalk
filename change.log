@@ -7255,3 +7255,13 @@ ingreso:= (Prompter prompt:'ingrese algo' default:'') .
 
 "evaluate" 
 ((91 asCharacter)  asciiValue)!
+
+"evaluate" 
+| ingreso cociente resto acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=0.
+[ingreso > 2] whileTrue:[ ingreso:=  ( ingreso // 2). resto:= (ingreso \\ 2) . acumulando:= (acumulando + resto).].^acumulando!
+
+"evaluate"   
+4 \\ 3!
