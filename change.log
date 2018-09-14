@@ -7265,3 +7265,877 @@ acumulando:=0.
 
 "evaluate"   
 4 \\ 3!
+
+"evaluate" 
+""*** saved image on: Aug 29, 2018 23:12:47 ***""!
+
+"evaluate"  
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso > 2] whileTrue:[ inco:=inco+1. ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (resto ).].^acumulando!
+
+"evaluate"  
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso > 2] whileTrue:[ inco:=inco+1. ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (resto asString , ingreso asString ).].^acumulando!
+
+"evaluate"  
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ inco:=inco+1. ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (resto asString , ingreso asString ).].^acumulando!
+
+"evaluate" 
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (resto asString,ingreso asString ).].^acumulando!
+
+"evaluate" 
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (ingreso asString,resto asString ).].^acumulando!
+
+"evaluate" 
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso > 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (ingreso asString,resto asString ).].^acumulando!
+
+"evaluate"  
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (ingreso asString,resto asString ).].^acumulando!
+
+"evaluate" 
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (ingreso asString,resto asString ).].^acumulando!
+
+"evaluate" 
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (ingreso asString ).].^acumulando!
+
+"evaluate"
+| ingreso cociente resto inco acumulando |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulando:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2). acumulando add: (ingreso asString ).].
+acumulando at: (acumulando size).!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (ingreso asString ).].
+acumulandoCocientes at: (acumulandoCocientes size).^acumulandoRestos!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=0.
+[ingreso > 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (ingreso asString ).].
+acumulandoCocientes at: (acumulandoCocientes size).^acumulandoRestos!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=0.
+[ingreso > 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (ingreso asString ).].
+
+
+MessageBox message:'esto',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', acumulandoRestos asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (ingreso asString ).].
+
+
+MessageBox message:'esto',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', acumulandoRestos asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (ingreso asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=0.
+[ingreso >= 2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (ingreso asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+[inco >= 2] whileTrue:[ inco:=  ( inco // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+[inco >= 2] whileTrue:[ inco:=  ( inco // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+[inco >= 2] whileTrue:[ inco:=  ( inco // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >= 2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.
+
+                                                                false!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >= 2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >= 2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(inco \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(inco \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(inco \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(inco \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" !
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(inco \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(inco \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(inco \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(inco \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).ingreso:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).ingreso:=(ingreso \\ 2).acumulandoRestos add:(ingreso asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).ingreso:=(ingreso \\ 2).acumulandoRestos add:(ingreso asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >2] whileTrue:[ inco:=  ( inco // 2).ingreso:=(ingreso \\ 2).acumulandoRestos add:(ingreso asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).ingreso:=(ingreso \\ 2).acumulandoRestos add:(ingreso asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(ingreso asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(ingreso asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+
+[inco >2] whileTrue:[ inco:=  ( inco // 2).resto:=(ingreso \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"   
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+inco:=ingreso.
+resto:=ingreso.
+[inco >=2] whileTrue:[ inco:=  ( inco // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+ resto:=ingreso.
+[ingreso >=2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (inco asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"  
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+[ingreso >=2] whileTrue:[ ingreso:=  ( ingreso // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (ingreso asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate"
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(cociente \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(cociente \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(cociente \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(cociente \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(cociente \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(cociente \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ resto:=(cociente \\ 2).cociente:=  ( cociente // 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ resto:=(cociente \\ 2).cociente:=  ( cociente // 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(cociente \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(cociente \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!
+
+"evaluate" 
+| ingreso cociente resto inco acumulandoCocientes acumulandoRestos |
+
+ingreso:=(Prompter prompt:'ingrese un numero' default:'')asInteger.
+acumulandoCocientes:=OrderedCollection new.
+acumulandoRestos:=OrderedCollection new.
+resto:=ingreso.
+cociente:=ingreso.
+[cociente >=2] whileTrue:[ cociente:=  ( cociente // 2).resto:=(resto \\ 2).acumulandoRestos add:(resto asString). acumulandoCocientes add: (cociente asString ).].
+
+
+
+MessageBox message:'valor en binario',(acumulandoCocientes at: (acumulandoCocientes size) )asString , ' ', (acumulandoRestos) asString.!

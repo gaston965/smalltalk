@@ -1,0 +1,51 @@
+"1. Convertir una cadena a mayúsculas y minúsculas.
+| ingreso lista |
+
+ingreso:= (Prompter prompt: 'Ingrese algo ' default:' ' ) .
+
+lista:=OrderedCollection new.
+
+1 to:(ingreso size) do:[:i| ( (ingreso at:i ) isLowerCase ) ifTrue:[ lista add:( (ingreso at:i ) asUpperCase) ].
+                                    ( (ingreso at:i ) isUpperCase ) ifTrue:[ lista add:(ingreso at:i) asLowerCase].].
+
+MessageBox message:' resultado', lista asString.      "
+
+" |ingreso lista|
+
+ingreso:= (UIManager default request: 'ingrese algo' ) asString.
+
+lista:=OrderedCollection new.
+
+1 to:(ingreso size) do:[:i| ((ingreso at:i) isLowercase) ifTrue:[ lista add:((ingreso at:i ) asUppercase)]
+	                                                     ifFalse:[ lista add:((ingreso at:i) asLowercase)].].
+
+UIManager default inform: '', lista asString."
+
+"
+3. vericar si es un palindromo
+
+| lista2 ingreso lista |
+
+ingreso:= (Prompter prompt:'ingrese algo ' default:'') .
+
+(ingreso = (ingreso reversed)) ifTrue:[MessageBox message:'es palindromo']
+                                                 ifFalse:[MessageBox message:'no es palindromo']. ""
+
+
+" " |ingreso |
+
+ingreso:=(UIManager  default  request: 'ingrese una palabra para saber si es palindromo' ).
+(ingreso =(ingreso reverse )) ifTrue:[ UIManager default inform: 'la palabra ', ingreso , 'es palindromo']
+                              ifFalse:[UIManager default inform: 'la palabra', ingreso,'no es palindromo']. ""
+
+4. Contar la cantidad de vocales de una frase.     
+
+| ingreso cont |
+
+ingreso:=(Prompter prompt:'ingrese algo' default:'').
+                                      cont:=0.
+1 to: (ingreso size) do:[:i| ((ingreso at:i) isVowel) ifTrue:[ cont:= cont + 1 ].].
+MessageBox message:'la cantidad de vocales de ', ingreso asString , ' son ', cont asString.
+ "
+
+| ingreso  |
