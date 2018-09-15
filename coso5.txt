@@ -67,10 +67,59 @@ inco:=0.
                                                                                                                 
 -------------------------------------------------------------------------------
 
-                    
 
+|ingresoTexto ingresoLetra contLetras|
+
+ingresoTexto:=(UIManager default request:'ingrese la frase a contar') substrings.
+ingresoLetra:=(UIManager default request:'ingrese la letra que desea buscar') .
+contLetras:=0.
+
+1 to: (ingresoTexto size) do:[:i| 1 to: ((ingresoTexto at:i) size) do:[:j| ( ((ingresoTexto at:i) at:j) = (ingresoLetra at:1) ) ifTrue:[ contLetras:=contLetras + 1.].  ].].^contLetras
+
+
+-----------------------------------------------------------------------------------
+
+
+|ingresoTexto ingresoLetra contLetras|
+
+ingresoTexto:=(UIManager default request:'ingrese la frase a contar') substrings.
+ingresoLetra:=(UIManager default request:'ingrese la letra que desea buscar') .
+contLetras:=0.
+
+1 to: (ingresoTexto size) do:[:i| 1 to: ((ingresoTexto at:i) size) do:[:j| ( ((ingresoTexto at:i) at:j) = (ingresoLetra at:1) ) ifTrue:[ contLetras:=contLetras + 1.].  ].].^contLetras
+------------------------------------------------------------------------------------------
+
+9. A partir de una frase ingresada por el usuario contar la cantidad de palabras que
+empiezan con una determinada letra (también ingresada por el usuario).                          
 
                           
+|ingresoTexto ingresoLetra contLetras contPal|
 
-                          
+ingresoTexto:=(UIManager default request:'ingrese la frase a contar') substrings.
+ingresoLetra:=(UIManager default request:'ingrese la letra que desea buscar') .
+contLetras:=0.
+contPal:=0.
+1 to:(ingresoTexto size) do:[:i| (((ingresoTexto at:i) at:1)=(ingresoLetra at:1)) ifTrue:[contPal:=contPal+1.].].
+
+UIManager default inform:'la cantidad de palabras que comienzan con ', (ingresoLetra at:1) , 'en la frase' , ingresoTexto.
+--------------------------------------------------------------------------------------------------------
+
+10. Ídem anterior, pero contar la cantidad de palabras que terminan con una letra
+determinada. 
+
+|ingresoTexto ingresoLetra contLetras contPal|
+
+ingresoTexto:=(UIManager default request:'ingrese la frase a contar') substrings.
+ingresoLetra:=(UIManager default request:'ingrese la letra que desea buscar') .
+contLetras:=0.
+contPal:=0.
+1 to:(ingresoTexto size) do:[:i| (((ingresoTexto at:i) at:(ingresoTexto  at:i) size)=(ingresoLetra at:1)) ifTrue:[contPal:=contPal+1.].].^contPal 
+
+--------------------------------------------------------------------------------------------------------------------------
+
+a. Dado un texto, se pide:
+i. la posición inicial de la palabra más larga,
+ii. la longitud del texto,
+iii. cuantas palabras con una longitud entre 8 y 16 caracteres poseen
+más de tres veces la vocal ‘a’.
 
