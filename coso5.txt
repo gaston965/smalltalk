@@ -123,3 +123,15 @@ ii. la longitud del texto,
 iii. cuantas palabras con una longitud entre 8 y 16 caracteres poseen
 más de tres veces la vocal ‘a’.
 
+| cona conpala posicionInicial may ingreso  |
+
+ingreso:=(UIManager default request:'ingrese un texto') substrings.
+may:=0.
+posicionInicial:=0.
+conpala:=0.
+1 to: (ingreso size) do:[:i|cona:=0.  (( (ingreso at:i) size )> may) ifTrue:[  may:= ( (ingreso at:i) size ). posicionInicial:=i. ]. 
+((((ingreso at:i ) size )>8 ) |(((ingreso at:i ) size )<16 )) ifTrue:[ 1 to: ((ingreso at:i) size) do:[:j| ( ((ingreso at:i) at:j)=$a)ifTrue:[cona:=cona +1. ].]  . (cona>3) ifTrue:[conpala:=conpala +1]. ].].
+Transcript show: 'el texto ingresado es', ingreso asString.
+Transcript show:'la posicion inicial de la palabra mas larga del texto es' , posicionInicial asString , 'la longitud del texto es' , (ingreso size) asString , 'la cantidad de palabras con una longitud mayor a 8 y menor que 16 con mas de tres veces la vocal a es', conpala asString.
+
+-----------------------------------------------------------------------------------------------------------------------------------
