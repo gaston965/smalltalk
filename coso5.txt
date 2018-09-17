@@ -231,3 +231,29 @@ Transcript show: ingreso asString.
 Transcript show: 'la cantidad de veces que 3 palabras consecutivas comienzan con la misma letra es ', con asString.
 
  
+----------------------------------------------------------------------------------
+
+"15. Leer dos letras de teclado y luego un texto terminado en ‘/’. Se pide determinar la
+cantidad de veces que la primera letra precede a la segunda en el texto.
+ 
+
+|i con ingreso resguardo letraUna letraDos |
+letraUna:=(UIManager default request:'ingrese una primer letra').
+letraDos:=(UIManager default request:'ingrese una segunda letra').
+ingreso:=(UIManager default request:'ingrese un texto').
+con:=0.
+resguardo:=nil.
+i:=1.
+[(i<(ingreso size)) and:[((ingreso at:i)~=$/)]] whileTrue:[
+	    ( ( (ingreso at:i) )=(letraUna at:1) ) ifTrue:[
+		          i:=i+1.
+		         ( ( (ingreso at:i) )=( letraDos at:1)) ifTrue:
+		               [ con:=con+1.
+			               i:=i+1.
+			                 ]
+		                ]. i:=i+1]. 
+Transcript show: ingreso asString.
+Transcript show: 'la cantidad de veces que la letra  ', letraUna  asString, 'precede a la letra', letraDos asString , 'es ', con asString. 
+
+"
+-----------------------------------------------------------------------------------------------
