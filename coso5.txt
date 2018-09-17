@@ -135,3 +135,64 @@ Transcript show: 'el texto ingresado es', ingreso asString.
 Transcript show:'la posicion inicial de la palabra mas larga del texto es' , posicionInicial asString , 'la longitud del texto es' , (ingreso size) asString , 'la cantidad de palabras con una longitud mayor a 8 y menor que 16 con mas de tres veces la vocal a es', conpala asString.
 
 -----------------------------------------------------------------------------------------------------------------------------------
+12. Dado un texto terminado en punto, determinar cuál es la vocal que aparece con
+mayor frecuencia.
+
+
+
+| pos j i max contadorPosiciones ingreso arregloVocales |
+
+ingreso:=(UIManager default request:'ingrese un texto').
+arregloVocales:= #($a $e $i $o $u).
+"contadorPosiciones:= Array new:5."
+contadorPosiciones:=#(0 0 0 0 0).
+
+i:=1.
+max:=0.
+[(i<=(ingreso size)) and:[((ingreso at:i)~=$.)]] whileTrue:[
+       
+ 1 to:(arregloVocales size) do:[:l| ((arregloVocales at:l) = (ingreso at:i)) ifTrue:[ contadorPosiciones at:l put:( (contadorPosiciones at:l) +1)  ].]. 	
+	
+	
+i:=i+1.	
+	
+].
+
+1 to: ( contadorPosiciones size ) do:[:m|  (((contadorPosiciones at:m)>max)) ifTrue:[max:= (contadorPosiciones at:m). pos:=m.].].
+
+UIManager default inform:'la vocal que mas se repite es ', (arregloVocales at:pos) asString , 'con', max asString.
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+" 13. Dado un texto terminado en ‘/’ se pide determinar cuántas veces aparece
+determinada letra, leída de teclado. 
+
+
+| ingresoLetra pos j i max contadorPosiciones ingreso arregloVocales |
+
+ingreso:=(UIManager default request:'ingrese un texto').
+" arregloVocales:= #($a $e $i $o $u)."
+ingresoLetra:=(UIManager default request:'ingrese la letra deseada').
+"contadorPosiciones:=#(0 0 0 0 0)."
+
+i:=1.
+max:=0.
+
+[(i<=(ingreso size)) and:[((ingreso at:i)~=$/)]] whileTrue:[
+       
+ " 1 to:(arregloVocales size) do:[:l| ((arregloVocales at:l) = (ingreso at:i)) ifTrue:[ contadorPosiciones at:l put:( (contadorPosiciones at:l) +1)  ].]. 	
+   	"
+	 
+	((ingreso at:i)= ( ingresoLetra at:1) )ifTrue:[ max:=max+1.].  
+	
+	i:=i+1.	
+	
+].
+
+"1 to: ( contadorPosiciones size ) do:[:m|  (((contadorPosiciones at:m)>max)) ifTrue:[max:= (contadorPosiciones at:m). pos:=m.].].
+"
+UIManager default inform:'la letra ingresada ', ingresoLetra asString , 'se repite ', max asString. 
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
