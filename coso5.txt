@@ -257,3 +257,33 @@ Transcript show: 'la cantidad de veces que la letra  ', letraUna  asString, 'pre
 
 "
 -----------------------------------------------------------------------------------------------
+
+
+| cosoResultado j arregloResultado arreglo1 arreglo2 grado1 grado2 |
+
+grado1:=(UIManager default request:'ingrese el grado del primer polinomio') asInteger.
+
+arreglo1:= Array new:grado1.
+
+(arreglo1 size) to:1 by:-1 do:[:i| arreglo1 at:i put:0].
+
+ (arreglo1 size) to:1 by:-1 do:[:i| arreglo1 at:i put:((UIManager default request:'ingrese el termino ', i asString) asInteger).].
+grado2:=(UIManager default request:'ingrese el grado del segundo polinomio') asInteger.
+
+arreglo2 := Array new:grado2.
+
+(arreglo2 size) to:1  by:-1 do:[:i| arreglo2 at:i put:0].
+
+(arreglo2 size) to:1 by:-1 do:[:i| arreglo2 at:i put:((UIManager default request:'ingrese el termino ', i asString) asInteger).].
+
+
+
+arregloResultado:= OrderedCollection new.
+
+cosoResultado:=(grado1 + grado2).
+
+cosoResultado to: 1 by:-1  do:[:i| ].
+
+
+
+Transcript show:arregloResultado asString.
