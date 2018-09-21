@@ -258,8 +258,7 @@ Transcript show: 'la cantidad de veces que la letra  ', letraUna  asString, 'pre
 "
 -----------------------------------------------------------------------------------------------
 
-
-| cosoResultado j arregloResultado arreglo1 arreglo2 grado1 grado2 |
+| resta largo lista cosoResultado j arregloResultado arreglo1 arreglo2 grado1 grado2 |
 
 grado1:=(UIManager default request:'ingrese el grado del primer polinomio') asInteger.
 
@@ -270,20 +269,29 @@ arreglo1:= Array new:grado1.
  (arreglo1 size) to:1 by:-1 do:[:i| arreglo1 at:i put:((UIManager default request:'ingrese el termino ', i asString) asInteger).].
 grado2:=(UIManager default request:'ingrese el grado del segundo polinomio') asInteger.
 
-arreglo2 := Array new:grado2.
+
+((grado1>grado2))ifTrue:[ resta:= grado1-grado2].
+ arreglo2 := Array new:grado2 + resta.
 
 (arreglo2 size) to:1  by:-1 do:[:i| arreglo2 at:i put:0].
 
 (arreglo2 size) to:1 by:-1 do:[:i| arreglo2 at:i put:((UIManager default request:'ingrese el termino ', i asString) asInteger).].
 
 
-((arreglo1 size)<(arreglo2 size)) ifTrue:[
-arregloResultado:= Array new:(arreglo2 size).]ifFalse:[arregloResultado:=Array new:(arreglo1 size).].
 
-1 to:(arregloResultado size) do:[:i| arregloResultado at:i put:0].
-1 to:(arregloResultado size) do:[:i| (((arreglo1 at:i) isNotNil)&((arreglo2 at:i) isNotNil)) ifTrue:[arregloResultado at:i put:((arreglo1 at:i)+(arreglo2 at:i)).].
-         (((arreglo1 at:i)isNil)&((arreglo2 at:i)isNotNil)) ifTrue:[arregloResultado at:i put:(arreglo2 at:i).].
-	      (((arreglo2 at:i)isNil)and:[((arreglo1 at:i)isNotNil)])  ifTrue:[arregloResultado at:i put:(arreglo1 at:i).]. ].
+
+((grado1<grado2))ifTrue:[resta:=grado2-grado1.].
+
+
+
+
+
+
+
+
 
 
 Transcript show:arregloResultado asString.
+
+
+
